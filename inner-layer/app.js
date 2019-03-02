@@ -1,3 +1,6 @@
+const config = require('./config');
+
+const socket = require('./socket');
 const express = require('express');
 
 const app = express();
