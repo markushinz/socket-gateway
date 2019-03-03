@@ -5,7 +5,9 @@ const socket = require('./socket');
 const http = require('http');
 const server = http.createServer(app);
 
-app.set('port', config.port);
+const proxy = socket(server);
 
-socket(server);
+app.set('port', config.port);
+app.set('proxy', proxy);
+
 server.listen(config.port, 'localhost');
