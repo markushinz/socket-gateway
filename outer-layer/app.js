@@ -4,9 +4,21 @@ const express = require('express');
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.post('/', function (req, res) {
-    if (req.body.host == null) {
+app.get('/', function (req, res, next) {
+    res.sendFile(__dirname + '/index.html');
+})
+
+app.post('/', function (req, res, next) {
+
+    Object.keys(req.body).forEach(function (key) {
+        if (req.body[key] == '') {
+            delete req.body[key];
+        }
+    });
+
+    if (!req.body.host) {
         res.status(400).json({ message: 'Bad Request' });
         return;
     }
@@ -22,8 +34,6 @@ app.post('/', function (req, res) {
     if (
         !['http', 'https'].includes(req.body.schema) ||
         req.body.host.includes('/') ||
-        typeof (req.body.port) != 'number' ||
-        req.body.port % 1 != 0 ||
         !['HEAD', 'GET', 'POST', 'PUT', 'DELETE'].includes(req.body.method)
     ) {
         res.status(400).json({ message: 'Bad Request', url: req.body.url });
@@ -35,6 +45,16 @@ app.post('/', function (req, res) {
     } else {
         res.status(403).json({ message: 'Forbidden', url: req.body.url });
     }
+});
+
+app.use(function (req, res, next) {
+    res.status(404).json({ message: 'Not Found' });
+});
+
+// error handler
+app.use(function (err, req, res, next) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error' });
 });
 
 module.exports = app;

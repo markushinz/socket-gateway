@@ -1,11 +1,11 @@
 const config = require('./config');
 
+const https = require('https');
+
 const app = require('./app');
-const http = require('http');
-const appServer = http.createServer(app);
+const appServer = https.createServer(config.appSslOptions, app);
 
 const socket = require('./socket');
-const https = require('https');
 const socketServer = https.createServer(config.socketSslOptions);
 const gateway = socket.createGateway(socketServer);
 
