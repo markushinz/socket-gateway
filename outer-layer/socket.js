@@ -10,7 +10,7 @@ module.exports.createGateway = function (server) {
         console.log('Inner layer connected.');
 
         socket.on('request', function (incomingData) {
-            console.log('incoming data: ', incomingData);
+            // console.log('incoming data: ', incomingData);
 
             const pendingRequest = pendingRequests[incomingData.uuid];
             delete pendingRequests[pendingRequest.uuid];
@@ -21,7 +21,7 @@ module.exports.createGateway = function (server) {
         socket.on('disconnect', function () {
 
             Object.keys(pendingRequests).forEach(function (uuid) {
-                console.log(pendingRequests[uuid].status(500).json({ message: 'Internal Server Error' }));
+                pendingRequests[uuid].res.status(500).json({ message: 'Internal Server Error' });
             });
 
             console.log('Inner Layer disconnected.');
@@ -39,14 +39,15 @@ module.exports.createGateway = function (server) {
 
         const outgoingData = {
             uuid: pendingRequest.uuid,
-            method: req.body.method,
+            host: req.body.host,
             url: req.body.url,
+            method: req.body.method,
             headers: req.body.headers,
-            qs: req.body.query,
+            query: req.body.query,
             body: req.body.body,
         };
 
-        console.log('outgoing data: ', outgoingData);
+        // console.log('outgoing data: ', outgoingData);
 
         io.emit('request', outgoingData)
     };
