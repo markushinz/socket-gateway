@@ -12,7 +12,6 @@ const parseCas = function () {
 }
 
 module.exports = {
-    port: process.env.PORT || 3002,
     outerLayer: process.env.OUTER_LAYER || 'https://localhost:3001',
 
     sslOptions: {
