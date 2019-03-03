@@ -4,12 +4,13 @@ const app = require('./app');
 const http = require('http');
 const appServer = http.createServer(app);
 
-const gateway = require('./gateway');
+const socket = require('./socket');
 const https = require('https');
-const gatewayServer = https.createServer(config.gatewaySslOptions);
+const socketServer = https.createServer(config.socketSslOptions);
+const gateway = socket.createGateway(socketServer);
 
 app.set('port', config.appPort);
-app.set('gateway', gateway(gatewayServer));
+app.set('gateway', gateway);
 
 appServer.listen(config.appPort);
-gatewayServer.listen(config.gatewayPort);
+socketServer.listen(config.socketPort);

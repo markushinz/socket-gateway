@@ -3,7 +3,7 @@ const uuid = require('uuid/v1');
 
 const pendingRequests = {};
 
-module.exports = function (server) {
+module.exports.createGateway = function (server) {
     const io = socketio(server);
 
     io.on('connection', function (socket) {
@@ -39,11 +39,11 @@ module.exports = function (server) {
 
         const outgoingData = {
             uuid: pendingRequest.uuid,
-            method: 'GET',
-            url: 'https://jsonplaceholder.typicode.com/todos/1',
-            headers: {},
-            qs: {},
-            body: {},
+            method: req.body.method,
+            url: req.body.url,
+            headers: req.body.headers,
+            qs: req.body.query,
+            body: req.body.body,
         };
 
         console.log('outgoing data: ', outgoingData);
