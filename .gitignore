@@ -64,3 +64,4 @@ typings/
 *.crt
 policies.json
 cas.json
+clr-ui.min.css

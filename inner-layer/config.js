@@ -1,8 +1,8 @@
 const fs = require('fs');
 
 const parseCas = function () {
-    const casFilename = process.env.CAS_FILENAME || '/cas.json'
-    const cas = fs.existsSync(__dirname + casFilename) ? JSON.parse(fs.readFileSync(__dirname + casFilename)) : {}
+    const casFile = process.env.CAS_FILE || __dirname + '/cas.json'
+    const cas = fs.existsSync(casFile) ? JSON.parse(fs.readFileSync(casFile)) : {}
     Object.keys(cas).forEach(function (host) {
         for (let i = 0; i < cas[host].length; i++) {
             cas[host][i] = fs.readFileSync(__dirname + cas[host][i]);

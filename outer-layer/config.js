@@ -1,8 +1,8 @@
 const fs = require('fs');
 
 const parsePolicies = function () {
-    const policiesFilename = process.env.POLICIES_FILENAME || '/policies.json';
-    return fs.existsSync(__dirname + policiesFilename) ? JSON.parse(fs.readFileSync(__dirname + policiesFilename)) : {};
+    const policiesFile = process.env.POLICIES_FILE || __dirname + '/policies.json';
+    return fs.existsSync(policiesFile) ? JSON.parse(fs.readFileSync(policiesFile)) : {};
 }
 
 module.exports = {
