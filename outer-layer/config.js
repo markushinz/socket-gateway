@@ -23,5 +23,7 @@ module.exports = {
         rejectUnauthorized: true
     },
 
-    policies: parsePolicies()
+    policies: parsePolicies(),
+
+    pingTimeout: process.env.PING_TIMEOUT || 5000 // ms
 };

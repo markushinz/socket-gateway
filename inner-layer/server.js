@@ -39,6 +39,13 @@ io.on('request', function (incomingData) {
     });
 })
 
+io.on('customPing', function (incomingData) {
+    const outgoingData = {
+        uuid: incomingData.uuid,
+    };
+    io.emit('customPing', outgoingData);
+});
+
 io.on('disconnect', function () {
     console.log('Outer Layer disconnected.');
 });

@@ -8,7 +8,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res, next) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/public/index.html');
+})
+
+app.get('/ping', function(req, res, next) {
+    app.get('gateway').ping(req, res);
 })
 
 app.post('/', function (req, res, next) {
@@ -42,7 +46,7 @@ app.post('/', function (req, res, next) {
     }
 
     if (policy.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
-        app.get('gateway')(req, res);
+        app.get('gateway').request(req, res);
     } else {
         res.status(403).json({ message: 'Forbidden', url: req.body.url });
     }
