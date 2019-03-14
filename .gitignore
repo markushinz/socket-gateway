@@ -63,5 +63,5 @@ typings/
 *.key
 *.crt
 policies.json
-cas.json
+certificateAuthorities.json
 clr-ui.min.css

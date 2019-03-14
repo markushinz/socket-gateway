@@ -1,14 +1,14 @@
 const fs = require('fs');
 
-const parseCas = function () {
-    const casFile = process.env.CAS_FILE || __dirname + '/cas.json'
-    const cas = fs.existsSync(casFile) ? JSON.parse(fs.readFileSync(casFile)) : {}
-    Object.keys(cas).forEach(function (host) {
-        for (let i = 0; i < cas[host].length; i++) {
-            cas[host][i] = fs.readFileSync(__dirname + cas[host][i]);
+const parseCertificateAuthorities = function () {
+    const certificateAuthoritiesFile = process.env.CERTIFICATE_AUTHORITIES_FILE ||  __dirname + '/certificateAuthorities.json'
+    const certificateAuthorities = fs.existsSync(certificateAuthoritiesFile) ? JSON.parse(fs.readFileSync(certificateAuthoritiesFile)) : {}
+    Object.keys(certificateAuthorities).forEach(function (host) {
+        for (let i = 0; i < certificateAuthorities[host].length; i++) {
+            certificateAuthorities[host][i] = fs.readFileSync(__dirname + certificateAuthorities[host][i]);
         }
     });
-    return cas;
+    return certificateAuthorities;
 }
 
 module.exports = {
@@ -21,5 +21,5 @@ module.exports = {
         rejectUnauthorized: true
     },
 
-    cas: parseCas()
+    certificateAuthorities: parseCertificateAuthorities()
 };
