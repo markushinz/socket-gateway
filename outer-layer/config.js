@@ -10,15 +10,15 @@ module.exports = {
     socketPort: process.env.SOCKET_PORT || 3001,
 
     appSslOptions: {
-        cert: fs.readFileSync(process.env.APP_SERVER_CERT || __dirname + '/ssl/server.crt'),
-        key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/ssl/server.key'),
-        ca: fs.readFileSync(process.env.APP_CA_CERT || __dirname + '/ssl/ca.crt'),
+        cert: fs.readFileSync(process.env.APP_SERVER_CERT || __dirname + '/ssl/app_server.crt'),
+        key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/ssl/app_server.key'),
+        ca: fs.readFileSync(process.env.APP_CA_CERT || __dirname + '/ssl/app_ca.crt'),
     },
 
     socketSslOptions: {
-        cert: fs.readFileSync(process.env.SOCKET_SERVER_CERT || __dirname + '/ssl/server.crt'),
-        key: fs.readFileSync(process.env.SOCKET_SERVER_KEY || __dirname + '/ssl/server.key'),
-        ca: fs.readFileSync(process.env.SOCKET_CA_CERT || __dirname + '/ssl/ca.crt'),
+        cert: fs.readFileSync(process.env.SOCKET_SERVER_CERT || __dirname + '/ssl/socket_server.crt'),
+        key: fs.readFileSync(process.env.SOCKET_SERVER_KEY || __dirname + '/ssl/socket_server.key'),
+        ca: fs.readFileSync(process.env.SOCKET_CA_CERT || __dirname + '/ssl/socket_ca.crt'),
         requestCert: true,
         rejectUnauthorized: true
     },

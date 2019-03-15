@@ -13,7 +13,7 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 
 ### Outer Layer
 
-Put files `server.crt`, `server.key`, and `ca.crt` into `./ssl/`. The certificate is used for SSL connections from/to clients as well as from/to the inner layer. Create a file `./policies.json` to define which request should be allowed. Check the following example:
+Put files `app_server.crt`, `app_server.key`, `app_ca.crt`, `socket_server.crt`, `socket_server.key`, and `socket_ca.crt` into `./ssl/`. The certificates are used for SSL connections from/to clients as well as from/to the inner layer. Create a file `./policies.json` to define which request should be allowed. Check the following example:
 
 ```
 {
@@ -29,11 +29,13 @@ Put files `server.crt`, `server.key`, and `ca.crt` into `./ssl/`. The certificat
 
 Check `config.js` and `policy.js` on how to change further (environment) variables and how `policies.json` is parsed.
 
-Finally, deploy the outer layer with `sudo ./deploy.sh master npm`.
+Finally, start the outer layer with `sudo ./deploy.sh master npm`.
 
 ### Inner Layer
 
-Put files `client.crt`, `client.key`, and `ca.crt` into `./ssl/`. The certificate is used for SSL connections from/to the outer layer and must be issued by the same certificate authority as the SSL certificate used for the outer layer.
+Put files `client.crt`, `client.key`, and `ca.crt` into `./ssl/`. The certificate is used for SSL connections from/to the outer layer.
+
+**The outer layer will only accept connections from the inner layer if `client.crt` is issued by the same CA as the certificate used for the outer layer (`socket_server.crt`). In order to satisfy all kinds of security goals, you have to make sure that no thrid party has access to such a certificate. The best way to go is to create a seperate CA that only issues two certificates, one for the outer and one for the inner layer.**
 
 *Optional*: Create a file `./certificateAuthorities.json` to set certificate authorities for hosts (if self signed) and put the certificates in `./ssl/`. Check the following example:
 
@@ -47,7 +49,7 @@ Put files `client.crt`, `client.key`, and `ca.crt` into `./ssl/`. The certificat
 
 Check `config.js` on how to change further (environment) variables and how `certificateAuthorities.json` is parsed.
 
-Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER` and deploy the inner layer with `sudo ./deploy.sh master npm`.
+Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER` and start the inner layer with `sudo ./deploy.sh master npm`.
 
 ## Gateway
 
