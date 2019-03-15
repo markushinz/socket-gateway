@@ -10,8 +10,6 @@ io.on('connect', function () {
 });
 
 io.on('request', function (incomingData) {
-    //console.log('incoming data: ', incomingData);
-
     let options = {};
     if (config.cas[incomingData.host]) {
         options.ca = config.cas[incomingData.host];
@@ -33,7 +31,6 @@ io.on('request', function (incomingData) {
         }
 
         if (error) { console.error(error) };
-        // console.log('outgoing data: ', outgoingData);
 
         io.emit('request', outgoingData);
     });
