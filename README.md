@@ -15,7 +15,7 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 
 Put files `server.crt`, `server.key`, and `ca.crt` into `./ssl/`. The certificate is used for SSL connections from/to clients as well as from/to the inner layer. Create a file `./policies.json` to define which request should be allowed. Check the following example:
 
-```json
+```
 {
     "my.private.api": {         // allowed host(s)
         "443": {                // allowed port(s), may be *
@@ -37,7 +37,7 @@ Put files `client.crt`, `client.key`, and `ca.crt` into `./ssl/`. The certificat
 
 *Optional*: Create a file `./certificateAuthorities.json` to set certificate authorities for hosts (if self signed) and put the certificates in `./ssl/`. Check the following example:
 
-```json
+```
 {
     "my.private.api": [       // hostname
         "myPrivateApiCa.crt"  // filename(s)
@@ -53,7 +53,7 @@ Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`
 
 To use the gateway, either use the form provided at `GET /` or directly perform a `POST /`request with the following JSON body:
 
-```json
+```
 {
 	"schmea" : "https",        // optional, either http or https, defaults to https
 	"host": "my.private.api",  // required
