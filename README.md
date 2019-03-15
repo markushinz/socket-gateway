@@ -19,7 +19,7 @@ Put files `server.crt`, `server.key`, and `ca.crt` into `./ssl/`. The certificat
 {
     "my.private.api": {         // allowed host(s)
         "443": {                // allowed port(s), may be *
-            "/exposedRoute": [  // allowed path(s), may be *
+            "/": [              // allowed path(s), may be *
                 "GET", "POST"   // allowed method(s), may be *
             ]
         }
