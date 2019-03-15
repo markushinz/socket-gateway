@@ -4,47 +4,50 @@ const socketio = require('socket.io');
 const uuid = require('uuid/v1');
 
 const pendingRequests = {};
+var innerLayerCounter = 0;
 
 module.exports.createGateway = function (server) {
     const io = socketio(server);
 
     io.on('connection', function (socket) {
+        innerLayerCounter++;
         console.log('Inner layer connected.');
-
-        socket.on('request', function (incomingData) {
-            // console.log('incoming data: ', incomingData);
-
-            const pendingRequest = pendingRequests[incomingData.uuid];
-            delete pendingRequests[pendingRequest.uuid];
-
-            pendingRequest.res.status(incomingData.statusCode).json(incomingData.body);
-        });
 
         socket.on('customPing', function (incomingData) {
             const end = new Date().getTime();
 
             const pendingRequest = pendingRequests[incomingData.uuid];
-            delete pendingRequests[pendingRequest.uuid];
+            if (pendingRequest) {
+                delete pendingRequests[pendingRequest.uuid];
 
-            const outgoingData = {
-                'rtt': (end - pendingRequest.start) + "ms"
+                const outgoingData = {
+                    'rtt': (end - pendingRequest.start) + "ms"
+                }
+
+                pendingRequest.res.json(outgoingData);
             }
+        });
 
-            pendingRequest.res.json(outgoingData);
-        })
+        socket.on('request', function (incomingData) {
+            const pendingRequest = pendingRequests[incomingData.uuid];
+            if (pendingRequest) {
+                delete pendingRequests[pendingRequest.uuid];
+                pendingRequest.res.status(incomingData.statusCode).json(incomingData.body);
+            }
+        });
 
         socket.on('disconnect', function () {
-
             Object.keys(pendingRequests).forEach(function (uuid) {
                 pendingRequests[uuid].res.status(500).json({ message: 'Internal Server Error' });
             });
 
+            innerLayerCounter--;
             console.log('Inner Layer disconnected.');
         });
     });
 
-    return {
-        request: function (req, res) {
+    return function (event, req, res, outgoingData) {
+        if (innerLayerCounter > 0) {
             const pendingRequest = {
                 uuid: uuid(),
                 start: new Date().getTime(),
@@ -54,42 +57,18 @@ module.exports.createGateway = function (server) {
 
             pendingRequests[pendingRequest.uuid] = pendingRequest;
 
-            const outgoingData = {
-                uuid: pendingRequest.uuid,
-                host: req.body.host,
-                url: req.body.url,
-                method: req.body.method,
-                headers: req.body.headers,
-                query: req.body.query,
-                body: req.body.body,
-            };
+            outgoingData.uuid = pendingRequest.uuid;
+            io.emit(event, outgoingData);
 
-            // console.log('outgoing data: ', outgoingData);
-
-            io.emit('request', outgoingData);
-        },
-        ping: function (req, res) {
-            const pendingRequest = {
-                uuid: uuid(),
-                start: new Date().getTime(),
-                req,
-                res
-            };
-
-            pendingRequests[pendingRequest.uuid] = pendingRequest;
-
-            const outgoingData = {
-                uuid: pendingRequest.uuid,
-            };
-
-            io.emit('customPing', outgoingData);
             setInterval(() => {
                 if (pendingRequests[pendingRequest.uuid]) {
-                    res.json({
-                        timeout: config.pingTimeout + "ms"
+                    res.status(504).json({
+                        message: 'Gateway Timeout'
                     });
                 }
-            }, config.pingTimeout);
+            }, config.timeout);
+        } else {
+            res.status(503).json({ message: 'Bad Gateway' });
         }
     };
 }

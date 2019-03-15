@@ -11,8 +11,8 @@ app.get('/', function (req, res, next) {
     res.sendFile(__dirname + '/public/index.html');
 })
 
-app.get('/ping', function(req, res, next) {
-    app.get('gateway').ping(req, res);
+app.get('/ping', function (req, res, next) {
+    app.get('gateway')('customPing', req, res, {});
 })
 
 app.post('/', function (req, res, next) {
@@ -34,7 +34,6 @@ app.post('/', function (req, res, next) {
     req.body.method = req.body.method || 'GET';
 
     req.body.url = req.body.schema + '://' + req.body.host + ':' + req.body.port + req.body.path;
-    // console.log('URL: ', req.body.url);
 
     if (
         !['http', 'https'].includes(req.body.schema) ||
@@ -46,7 +45,16 @@ app.post('/', function (req, res, next) {
     }
 
     if (policy.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
-        app.get('gateway').request(req, res);
+        const outgoingData = {
+            uuid: pendingRequest.uuid,
+            host: req.body.host,
+            url: req.body.url,
+            method: req.body.method,
+            headers: req.body.headers,
+            query: req.body.query,
+            body: req.body.body,
+        };
+        app.get('gateway')('request', req, res, outgoingData);
     } else {
         res.status(403).json({ message: 'Forbidden', url: req.body.url });
     }

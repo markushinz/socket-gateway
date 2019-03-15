@@ -25,5 +25,5 @@ module.exports = {
 
     policies: parsePolicies(),
 
-    pingTimeout: process.env.PING_TIMEOUT || 5000 // ms
+    timeout: process.env.TIMEOUT || 5000 // ms
 };
