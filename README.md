@@ -19,8 +19,8 @@ Put files `server.crt`, `server.key`, and `ca.crt` into `./ssl/`. The certificat
 {
     "my.private.api": {         // allowed host(s)
         "443": {                // allowed port(s), may be *
-            "/exposedRoute":    // allowed path(s), may be *
-                "GET", "POST".  // allowed method(s), may be *
+            "/exposedRoute": [  // allowed path(s), may be *
+                "GET", "POST"   // allowed method(s), may be *
             ]
         }
     }
@@ -40,7 +40,7 @@ Put files `client.crt`, `client.key`, and `ca.crt` into `./ssl/`. The certificat
 ```json
 {
     "my.private.api": [       // hostname
-        "myPrivateApiCa.crt". // filename(s)
+        "myPrivateApiCa.crt"  // filename(s)
     ]
 }
 ```
@@ -61,7 +61,7 @@ To use the gateway, either use the form provided at `GET /` or directly perform 
 	"path": "/",               // optional, defaults to /
 	"method": "GET",           // either HEAD, GET, POST, PUT, DELETE, defaults to GET
 	"headers": {},             // optional
-	"query": {],               // optional
+	"query": {},               // optional
 	"body": {}                 // optional
 }
 ```
