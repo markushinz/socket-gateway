@@ -4,7 +4,7 @@ const socketio = require('socket.io');
 const uuid = require('uuid/v1');
 
 const pendingRequests = {};
-var innerLayerCounter = 0;
+var innerLayerCounter = 0; // number of connected inner layers
 
 module.exports.createGateway = function (server) {
     const io = socketio(server);

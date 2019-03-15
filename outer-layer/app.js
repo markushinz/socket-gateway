@@ -64,7 +64,6 @@ app.use(function (req, res, next) {
     res.status(404).json({ message: 'Not Found' });
 });
 
-// error handler
 app.use(function (err, req, res, next) {
     console.error(err);
     res.status(500).json({ message: 'Internal Server Error' });
