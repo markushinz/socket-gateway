@@ -11,8 +11,8 @@ io.on('connect', function () {
 
 io.on('request', function (incomingData) {
     let options = {};
-    if (config.cas[incomingData.host]) {
-        options.ca = config.cas[incomingData.host];
+    if (config.certificateAuthorities[incomingData.host]) {
+        options.ca = config.certificateAuthorities[incomingData.host];
     }
 
     request({
