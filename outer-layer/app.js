@@ -46,7 +46,6 @@ app.post('/', function (req, res, next) {
 
     if (policy.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
         const outgoingData = {
-            uuid: pendingRequest.uuid,
             host: req.body.host,
             url: req.body.url,
             method: req.body.method,
