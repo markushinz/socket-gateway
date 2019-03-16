@@ -38,7 +38,7 @@ module.exports.createGateway = function (server) {
 
         socket.on('disconnect', function () {
             Object.keys(pendingRequests).forEach(function (uuid) {
-                pendingRequests[uuid].res.status(500).json({ message: 'Internal Server Error' });
+                pendingRequests[uuid].res.status(502).json({ message: 'Bad Gateway' });
             });
 
             innerLayerCounter--;
@@ -68,7 +68,7 @@ module.exports.createGateway = function (server) {
                 }
             }, config.timeout);
         } else {
-            res.status(503).json({ message: 'Bad Gateway' });
+            res.status(502).json({ message: 'Bad Gateway' });
         }
     };
 }
