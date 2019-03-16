@@ -20,7 +20,7 @@ Put files `app_server.crt`, `app_server.key`, `app_ca.crt`, `socket_server.crt`,
     "my.private.api": {         // allowed host(s)
         "443": {                // allowed port(s), may be *
             "/": [              // allowed path(s), may be *
-                "GET", "POST"   // allowed method(s), may be *
+                "GET", "POST"   // allowed method(s), may include *
             ]
         }
     }
