@@ -16,10 +16,15 @@ app.get('/ping', function (req, res, next) {
 })
 
 app.post('/', function (req, res, next) {
-
     Object.keys(req.body).forEach(function (key) {
         if (req.body[key] == '') {
             delete req.body[key];
+        } else if (['headers', 'query', 'body'].includes(key) && typeof req.body[key] === 'string') {
+            try {
+                req.body[key] = JSON.parse(req.body[key]);
+            } catch (err) {
+                res.status(400).json({ message: 'Bad Request' });
+            }
         }
     });
 
