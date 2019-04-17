@@ -3,10 +3,10 @@ const config = require('./config');
 const https = require('https');
 
 const app = require('./app');
-const appServer = https.createServer(config.appSslOptions, app);
+const appServer = https.createServer(config.appTlsOptions, app);
 
 const socket = require('./socket');
-const socketServer = https.createServer(config.socketSslOptions);
+const socketServer = https.createServer(config.socketTlsOptions);
 const gateway = socket.createGateway(socketServer);
 
 app.set('port', config.appPort);

@@ -3,7 +3,7 @@ const config = require('./config');
 const socketio = require('socket.io-client');
 const request = require('request');
 
-const io = socketio(config.outerLayer, config.sslOptions);
+const io = socketio(config.outerLayer, config.tlsOptions);
 
 io.on('connect', function () {
     console.log('Outer Layer connected.');

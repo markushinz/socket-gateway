@@ -9,16 +9,16 @@ module.exports = {
     appPort: process.env.APP_PORT || process.env.PORT || 3000,
     socketPort: process.env.SOCKET_PORT || 3001,
 
-    appSslOptions: {
-        cert: fs.readFileSync(process.env.APP_SERVER_CERT || __dirname + '/ssl/app_server.crt'),
-        key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/ssl/app_server.key'),
-        ca: fs.readFileSync(process.env.APP_CA_CERT || __dirname + '/ssl/app_ca.crt'),
+    appTlsOptions: {
+        cert: fs.readFileSync(process.env.APP_SERVER_CERT || __dirname + '/tls/app_server.crt'),
+        key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/tls/app_server.key'),
+        ca: fs.readFileSync(process.env.APP_CA_CERT || __dirname + '/tls/app_ca.crt'),
     },
 
-    socketSslOptions: {
-        cert: fs.readFileSync(process.env.SOCKET_SERVER_CERT || __dirname + '/ssl/socket_server.crt'),
-        key: fs.readFileSync(process.env.SOCKET_SERVER_KEY || __dirname + '/ssl/socket_server.key'),
-        ca: fs.readFileSync(process.env.SOCKET_CA_CERT || __dirname + '/ssl/socket_ca.crt'),
+    socketTlsOptions: {
+        cert: fs.readFileSync(process.env.SOCKET_SERVER_CERT || __dirname + '/tls/socket_server.crt'),
+        key: fs.readFileSync(process.env.SOCKET_SERVER_KEY || __dirname + '/tls/socket_server.key'),
+        ca: fs.readFileSync(process.env.SOCKET_CA_CERT || __dirname + '/tls/socket_ca.crt'),
         requestCert: true,
         rejectUnauthorized: true
     },
