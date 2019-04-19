@@ -1,3 +1,4 @@
+#!/bin/bash
 branch=${1:-master}
 deploy=${2:-systemctl}
 
