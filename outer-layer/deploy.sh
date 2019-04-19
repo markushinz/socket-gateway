@@ -10,6 +10,8 @@ sudo -u $USER npm ci
 sudo -u $USER rm -f ./public/clr-ui.min.css
 sudo -u $USER cp ./node_modules/@clr/ui/clr-ui.min.css ./public/clr-ui.min.css
 
+# sudo setcap CAP_NET_BIND_SERVICE=+eip /urs/bin/node
+
 if [ $deploy = systemctl ]; then
    systemctl restart socket-gateway-outer-layer
    systemctl status socket-gateway-outer-layer
