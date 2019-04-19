@@ -11,8 +11,7 @@ module.exports = {
 
     appTlsOptions: {
         cert: fs.readFileSync(process.env.APP_SERVER_CERT || __dirname + '/tls/app_server.crt'),
-        key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/tls/app_server.key'),
-        ca: fs.readFileSync(process.env.APP_CA_CERT || __dirname + '/tls/app_ca.crt'),
+        key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/tls/app_server.key')
     },
 
     socketTlsOptions: {
