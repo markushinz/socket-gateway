@@ -1,3 +1,3 @@
-input, .select {
+.clr-control-container, .clr-input-wrapper, .clr-select-wrapper, input, select {
     width: 100%;
 }

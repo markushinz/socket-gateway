@@ -12,36 +12,57 @@
 
 <body>
     <div class="main-container">
+        <header class="header-6">
+            <div class="branding">
+                <div class="nav-link">
+                    <span class="title">Socket Gateway</span>
+                </div>
+            </div>
+        </header>
         <div class="content-container">
             <div class="content-area">
-                <form action="/" method="POST" target="_blank">
-                    <section class="form-block">
-                        <label>Request</label>
-                        <div class="form-group">
-                            <label for="scheme">Scheme</label>
-                            <div class="select">
-                                <select name="scheme" id="scheme">
+                <h1>Request</h1>
+                <form class="clr-form clr-form-horizontal" action="/" method="POST" target="_blank">
+                    <div class="clr-form-control">
+                        <label for="scheme" class="clr-control-label">Scheme</label>
+                        <div class="clr-control-container">
+                            <div class="clr-select-wrapper">
+                                <select name="scheme" id="scheme" class="clr-select">
                                     <option>http</option>
                                     <option selected>https</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="host" class="required">Host</label>
-                            <input type="text" name="host" id="host">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="host" class="clr-control-label">Host</label>
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                                <input type="text" name="host" id="host" class="clr-input">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="port">Port</label>
-                            <input type="text" name="port" id="port" value="443">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="port" class="clr-control-label">Port</label>
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                                <input type="text" name="port" id="port" value="443" class="clr-input">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="path">Path</label>
-                            <input type="text" name="path" id="path" value="/">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="path" class="clr-control-label">Path</label>
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                                <input type="text" name="path" id="path" value="/" class="clr-input">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="method">Method</label>
-                            <div class="select">
-                                <select name="method" id="method">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="method" class="clr-control-label">Method</label>
+                        <div class="clr-control-container">
+                            <div class="clr-select-wrapper">
+                                <select name="method" id="method" class="clr-select">
                                     <option>HEAD</option>
                                     <option selected>GET</option>
                                     <option>POST</option>
@@ -50,24 +71,39 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="headers">Headers</label>
-                            <input type="text" name="headers" id="headers" placeholder="{}">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="headers" class="clr-control-label">Headers</label>
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                                <input type="text" name="headers" id="headers" placeholder="{}" class="clr-input">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="query">Query</label>
-                            <input type="text" name="qeury" id="query" placeholder="{}">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="query" class="clr-control-label">Query</label>
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                                <input type="text" name="query" id="query" placeholder="{}" class="clr-input">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="body">Body</label>
-                            <input type="text" name="body" id="body" placeholder="{}">
+                    </div>
+                    <div class="clr-form-control">
+                        <label for="body" class="clr-control-label">Body</label>
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                                <input type="text" name="body" id="body" placeholder="{}" class="clr-input">
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Request</button>
-                    </section>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Request</button>
                 </form>
                 <footer>
                     <hr>
-                    <span>socket-gateway | </span><a href="/ping" target="_blank">Ping</a>
+                    <span>socket-gateway | </span>
+                    <a href="https://github.com/markushinz/socket-gateway " target="_blank">GitHub</a>
+                    <span> | </span>
+                    <a href="/ping" target="_blank">Ping</a>
                 </footer>
             </div>
         </div>
