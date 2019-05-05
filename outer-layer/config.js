@@ -9,6 +9,9 @@ module.exports = {
     appPort: process.env.APP_PORT || process.env.PORT || 3000,
     socketPort: process.env.SOCKET_PORT || 3001,
 
+    appHostname: process.env.APP_HOSTNAME || '0.0.0.0',
+    socketHostname: process.env.SERVER_HOSTNAME ||'0.0.0.0',
+
     appTlsOptions: {
         cert: fs.readFileSync(process.env.APP_SERVER_CERT || __dirname + '/tls/app_server.crt'),
         key: fs.readFileSync(process.env.APP_SERVER_KEY || __dirname + '/tls/app_server.key')

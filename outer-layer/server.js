@@ -12,5 +12,5 @@ const gateway = socket.createGateway(socketServer);
 app.set('port', config.appPort);
 app.set('gateway', gateway);
 
-appServer.listen(config.appPort);
-socketServer.listen(config.socketPort);
+appServer.listen(config.appPort, config.appHostname);
+socketServer.listen(config.socketPort, config.socketHostname);
