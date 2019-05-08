@@ -56,17 +56,9 @@ Put files `client.crt`, `client.key`, and `ca.crt` into `./tls/`. The certificat
 
 **The outer layer will only accept connections from the inner layer if `client.crt` is issued by the same CA as the certificate used for the outer layer (`socket_server.crt`). In order to satisfy all kinds of security goals, you have to make sure that no thrid party has access to such a certificate. The best way to go is to create a seperate CA that only issues two certificates, one for the outer and one for the inner layer.**
 
-*Optional*: Create a file `./certificateAuthorities.json` to set certificate authorities for hosts (if self signed) and put the certificates in `./tls/`. Check the following example:
+*Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
-```
-{
-    "my.private.api": [       // hostname
-        "myPrivateApiCa.crt"  // filename(s)
-    ]
-}
-```
-
-Check `config.js` on how to change further (environment) variables and how `certificateAuthorities.json` is parsed.
+Check `config.js` on how to change further (environment) variables.
 
 Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER` and start the inner layer with `sudo ./deploy.sh master npm`.
 

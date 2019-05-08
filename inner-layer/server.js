@@ -10,11 +10,6 @@ io.on('connect', function () {
 });
 
 io.on('request', function (incomingData) {
-    let options = {};
-    if (config.certificateAuthorities[incomingData.host]) {
-        options.ca = config.certificateAuthorities[incomingData.host];
-    }
-
     request({
         method: incomingData.method,
         url: incomingData.url,
@@ -22,7 +17,6 @@ io.on('request', function (incomingData) {
         qs: incomingData.query,
         body: incomingData.body,
         json: true,
-        ...options
     }, function (error, response, body) {
         const outgoingData = {
             uuid: incomingData.uuid,
