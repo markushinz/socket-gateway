@@ -1,10 +1,5 @@
 const fs = require('fs');
 
-const parsePolicies = function () {
-    const policiesFile = process.env.POLICIES_FILE || __dirname + '/policies.json';
-    return fs.existsSync(policiesFile) ? JSON.parse(fs.readFileSync(policiesFile)) : {};
-}
-
 module.exports = {
     appPort: process.env.APP_PORT || process.env.PORT || 3000,
     socketPort: process.env.SOCKET_PORT || 3001,
@@ -25,7 +20,7 @@ module.exports = {
         rejectUnauthorized: true
     },
 
-    policies: parsePolicies(),
+    policiesFile: process.env.POLICIES_FILE || __dirname + '/policies.json',
 
     timeout: process.env.TIMEOUT || 5000 // ms
 };
