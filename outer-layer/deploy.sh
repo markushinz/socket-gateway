@@ -10,7 +10,7 @@ sudo -u $USER npm ci
 sudo -u $USER cp ./node_modules/@clr/ui/clr-ui.min.css ./public/clr-ui.min.css
 sudo -u $USER cp ./node_modules/@clr/ui/clr-ui.min.css.map ./public/clr-ui.min.css.map
 sudo -u $USER cp ./node_modules/@clr/icons/clr-icons.min.css ./public/clr-icons.min.css
-sudo -u $USER cp ./node_modules/@clr/icons/clr-icons.min.css.map ./public/clr-icons.min.css.msp
+sudo -u $USER cp ./node_modules/@clr/icons/clr-icons.min.css.map ./public/clr-icons.min.css.map
 sudo -u $USER cp ./node_modules/@clr/icons/clr-icons.min.js ./public/clr-icons.min.js
 
 # sudo setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/node
