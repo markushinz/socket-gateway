@@ -7,97 +7,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" type="text/css" href="clr-ui.min.css">
+    <link rel="stylesheet" href="clr-icons.min.css">
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <script src="clr-icons.min.js"></script>
 </head>
 
 <body>
     <div class="main-container">
-        <header class="header-6">
+        <header class="header-2">
             <div class="branding">
                 <div class="nav-link">
+                    <clr-icon shape="cloud-traffic" class="title"></clr-icon>
                     <span class="title">Socket Gateway</span>
                 </div>
             </div>
         </header>
         <div class="content-container">
             <div class="content-area">
-                <h1>Request</h1>
-                <form class="clr-form clr-form-horizontal" action="/" method="POST" target="_blank">
-                    <div class="clr-form-control">
-                        <label for="scheme" class="clr-control-label">Scheme</label>
-                        <div class="clr-control-container">
-                            <div class="clr-select-wrapper">
-                                <select name="scheme" id="scheme" class="clr-select">
-                                    <option>http</option>
-                                    <option selected>https</option>
-                                </select>
+                <div class="nonfluid-content">
+                    <h1>Request</h1>
+                    <form class="clr-form clr-form-horizontal" action="/" method="POST" target="_blank">
+                        <div class="clr-form-control">
+                            <label for="scheme" class="clr-control-label">Scheme</label>
+                            <div class="clr-control-container">
+                                <div class="clr-select-wrapper">
+                                    <select name="scheme" id="scheme" class="clr-select">
+                                        <option>http</option>
+                                        <option selected>https</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="host" class="clr-control-label">Host</label>
-                        <div class="clr-control-container">
-                            <div class="clr-input-wrapper">
-                                <input type="text" name="host" id="host" class="clr-input">
+                        <div class="clr-form-control">
+                            <label for="host" class="clr-control-label">Host</label>
+                            <div class="clr-control-container">
+                                <div class="clr-input-wrapper">
+                                    <input type="text" name="host" id="host" class="clr-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="port" class="clr-control-label">Port</label>
-                        <div class="clr-control-container">
-                            <div class="clr-input-wrapper">
-                                <input type="text" name="port" id="port" value="443" class="clr-input">
+                        <div class="clr-form-control">
+                            <label for="port" class="clr-control-label">Port</label>
+                            <div class="clr-control-container">
+                                <div class="clr-input-wrapper">
+                                    <input type="text" name="port" id="port" value="443" class="clr-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="path" class="clr-control-label">Path</label>
-                        <div class="clr-control-container">
-                            <div class="clr-input-wrapper">
-                                <input type="text" name="path" id="path" value="/" class="clr-input">
+                        <div class="clr-form-control">
+                            <label for="path" class="clr-control-label">Path</label>
+                            <div class="clr-control-container">
+                                <div class="clr-input-wrapper">
+                                    <input type="text" name="path" id="path" value="/" class="clr-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="method" class="clr-control-label">Method</label>
-                        <div class="clr-control-container">
-                            <div class="clr-select-wrapper">
-                                <select name="method" id="method" class="clr-select">
-                                    <option>HEAD</option>
-                                    <option selected>GET</option>
-                                    <option>POST</option>
-                                    <option>PUT</option>
-                                    <option>DELETE</option>
-                                </select>
+                        <div class="clr-form-control">
+                            <label for="method" class="clr-control-label">Method</label>
+                            <div class="clr-control-container">
+                                <div class="clr-select-wrapper">
+                                    <select name="method" id="method" class="clr-select">
+                                        <option>HEAD</option>
+                                        <option selected>GET</option>
+                                        <option>POST</option>
+                                        <option>PUT</option>
+                                        <option>DELETE</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="headers" class="clr-control-label">Headers</label>
-                        <div class="clr-control-container">
-                            <div class="clr-input-wrapper">
-                                <input type="text" name="headers" id="headers" placeholder="{}" class="clr-input">
+                        <div class="clr-form-control">
+                            <label for="headers" class="clr-control-label">Headers</label>
+                            <div class="clr-control-container">
+                                <div class="clr-input-wrapper">
+                                    <input type="text" name="headers" id="headers" placeholder="{}" class="clr-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="query" class="clr-control-label">Query</label>
-                        <div class="clr-control-container">
-                            <div class="clr-input-wrapper">
-                                <input type="text" name="query" id="query" placeholder="{}" class="clr-input">
+                        <div class="clr-form-control">
+                            <label for="query" class="clr-control-label">Query</label>
+                            <div class="clr-control-container">
+                                <div class="clr-input-wrapper">
+                                    <input type="text" name="query" id="query" placeholder="{}" class="clr-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="clr-form-control">
-                        <label for="body" class="clr-control-label">Body</label>
-                        <div class="clr-control-container">
-                            <div class="clr-input-wrapper">
-                                <input type="text" name="body" id="body" placeholder="{}" class="clr-input">
+                        <div class="clr-form-control">
+                            <label for="body" class="clr-control-label">Body</label>
+                            <div class="clr-control-container">
+                                <div class="clr-input-wrapper">
+                                    <input type="text" name="body" id="body" placeholder="{}" class="clr-input">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Request</button>
-                </form>
+                        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Request</button>
+                    </form>
+                </div>
                 <footer>
                     <hr>
                     <span>socket-gateway | </span>

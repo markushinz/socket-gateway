@@ -1,3 +1,44 @@
+.nonfluid-content {
+    width: 100%;
+    padding: 24px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.code-wrapper {
+    margin: .5rem 0;
+    border-radius: .125rem;
+    border: 1px solid #ccc;
+}
+
 .clr-control-container, .clr-input-wrapper, .clr-select-wrapper, input, select {
     width: 100%;
+}
+
+code {
+    word-break: break-all;
+}
+
+@media (min-width: 576px) {
+    .nonfluid-content {
+        max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    .nonfluid-content {
+        max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    .nonfluid-content {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .nonfluid-content {
+        max-width: 1140px;
+    }
 }
