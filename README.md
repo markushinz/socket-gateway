@@ -4,6 +4,8 @@ A gateway implementation based on websockets to expose endpoints not reachable f
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
+ ![](screenshot.png)
+
 ## Prerequisites
 
 * **Outer Layer**: A machine/server that is reachable from the Internet (usually cloud hosted).
