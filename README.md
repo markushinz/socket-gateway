@@ -26,7 +26,7 @@ echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out outerLayer.crt -config outerLayer.conf -extensions "v3_req"
 ```
 
-You may also use `./crypto.sh`to autogenerate all required files.
+You may also use `./crypto.sh` to autogenerate all required files.
 
 * A sever certificate for the outer layer. Let's Encrypt is your friend 😉
 
