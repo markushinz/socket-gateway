@@ -13,28 +13,29 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 
 ### Certificates
 
-* Two certificates issed by the same CA for mutual authentication of the two layers. You should create a custom CA and make sure that no more than the two used certifcates exist. This can be done with the following commands:
+* Two certificates for mutual authentication of the two layers. Such certificates con be created with the following commands:
 
 ```
-outerLayer=the.outer.layer
+innerLayer=dns.inner.layer
+outerLayer=dns.outer.layer
 
-openssl req -x509 -newkey rsa:4096 -nodes -keyout ca.key -out ca.crt -days 365 -subj "/CN=Socket Gateway Root CA"
-openssl req -newkey rsa:2048 -nodes -keyout client.key -out client.csr -subj "/CN=Socket Gateway Inner Layer"
-openssl x509 -req -days 365 -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -sha256
-openssl req -newkey rsa:2048 -nodes -keyout socket_server.key -out socket_server.csr -subj "/CN=$outerLayer"
-openssl x509 -req -days 365 -in socket_server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out socket_server.crt -sha256
+echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v3_req\nprompt = no\n[req_distinguished_name]\nCN = $innerLayer\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = $innerLayer" > innerLayer.conf
+openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout innerLayer.key -out innerLayer.crt -config innerLayer.conf -extensions "v3_req"
 
-cp ca.crt socket_ca.crt
+echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v3_req\nprompt = no\n[req_distinguished_name]\nCN = $outerLayer\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = $outerLayer" > outerLayer.conf
+openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out outerLayer.crt -config outerLayer.conf -extensions "v3_req"
 ```
-* A sever certificate for the outer layer.
 
 You may also use `./crypto.sh`to autogenerate all required files.
+
+* A sever certificate for the outer layer. Let's Encrypt is your friend 😉
+
 
 ## Deployment
 
 ### Outer Layer
 
-Put files `app_server.crt`, `app_server.key`, `app_ca.crt`, `socket_server.crt`, `socket_server.key`, and `socket_ca.crt` into `./tls/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./policies.json` to define which request should be allowed. Check the following example:
+Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./tls/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./policies.json` to define which request should be allowed. Check the following example:
 
 ```
 {
@@ -54,9 +55,7 @@ Finally, start the outer layer with `sudo ./deploy.sh master npm`.
 
 ### Inner Layer
 
-Put files `client.crt`, `client.key`, and `ca.crt` into `./tls/`. The certificate is used for TLS connections from/to the outer layer.
-
-**The outer layer will only accept connections from the inner layer if `client.crt` is issued by the same CA as the certificate used for the outer layer (`socket_server.crt`). In order to satisfy all kinds of security goals, you have to make sure that no thrid party has access to such a certificate. The best way to go is to create a seperate CA that only issues two certificates, one for the outer and one for the inner layer.**
+Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./tls/`. The certificate is used for TLS connections from/to the outer layer.
 
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
