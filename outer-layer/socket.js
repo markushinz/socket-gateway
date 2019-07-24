@@ -32,7 +32,12 @@ module.exports.createGateway = function (server) {
             const pendingRequest = pendingRequests[incomingData.uuid];
             if (pendingRequest) {
                 delete pendingRequests[pendingRequest.uuid];
-                pendingRequest.res.status(incomingData.statusCode).json(incomingData.body);
+                pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
+                if (typeof incomingData.body === 'object') {
+                    pendingRequest.res.json(incomingData.body);
+                } else {
+                    pendingRequest.res.send(incomingData.body);
+                }
             }
         });
 
