@@ -13,7 +13,7 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 
 ### Certificates
 
-* Two certificates for mutual authentication of the two layers. Such certificates con be created with the following commands:
+* Two certificates for mutual authentication of the two layers. Such certificates can be created with the following commands:
 
 ```
 innerLayer=dns.inner.layer
@@ -28,7 +28,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 You may also use `./crypto.sh` to autogenerate all required files.
 
-* A sever certificate for the outer layer. Let's Encrypt is your friend 😉 Alternatively, you can also use the outer layer certificate for mutual authentication you just created.
+* A sever certificate for the outer layer. Let's Encrypt is your friend 😉 Alternatively, you can also use the outer layer certificate you just created.
 
 
 ## Deployment
@@ -65,11 +65,13 @@ Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`
 
 ## Gateway
 
-Use one of the folling ways to use the gateway.
+Use one of the following ways to use the gateway.
 
-Be aware that header values will be sanitized before forwarding them. The following headers will be removed: host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-language, content-length, content-location, content-md5, content-range, content-type, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via.
+Be aware that header values will be sanitized before forwarding them. The following headers will be removed:
 
-This gateway is no reverse proxy. Both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
+*host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-language, content-length, content-location, content-md5, content-range, content-type, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via*
+
+This gateway is **no** reverse proxy. Both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
 
 ### A) Prepend host to path
 
