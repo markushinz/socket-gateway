@@ -6,6 +6,7 @@ COPY package*.json ./
 
 RUN npm ci
 
+RUN mkdir public
 RUN  cp ./node_modules/@clr/ui/clr-ui.min.css ./public/clr-ui.min.css
 RUN  cp ./node_modules/@clr/ui/clr-ui.min.css.map ./public/clr-ui.min.css.map
 RUN  cp ./node_modules/@clr/icons/clr-icons.min.css ./public/clr-icons.min.css
