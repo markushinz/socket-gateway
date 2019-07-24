@@ -47,7 +47,7 @@ module.exports.createGateway = function (server) {
             innerLayers.delete(socket.id)
 
             if (innerLayers.size == 0) {
-                pendingRequests.values.forEach(function (pendingRequest) {
+                Array.from(pendingRequests.values()).forEach(function (pendingRequest) {
                     pendingRequest.res.status(502).json({ message: 'Bad Gateway' });
                 });
             }

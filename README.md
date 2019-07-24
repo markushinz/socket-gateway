@@ -35,7 +35,7 @@ You may also use `./crypto.sh` to autogenerate all required files.
 
 ### Outer Layer
 
-Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./tls/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./policies.json` to define which request should be allowed. Check the following example:
+Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
 
 ```
 {
@@ -55,7 +55,7 @@ Finally, start the outer layer with `sudo ./deploy.sh master npm`.
 
 ### Inner Layer
 
-Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./tls/`. The certificate is used for TLS connections from/to the outer layer.
+Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./config/`. The certificate is used for TLS connections from/to the outer layer.
 
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
