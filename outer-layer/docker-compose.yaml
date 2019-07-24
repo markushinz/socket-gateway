@@ -9,4 +9,4 @@ services:
       - 443:3000
       - 3001:3001
     volumes:
-      - ./volume:/usr/src/socket-gateway/outer-layer/config
+      - ./config:/usr/src/socket-gateway/outer-layer/config
