@@ -77,7 +77,7 @@ This gateway is **no** reverse proxy. Both absolute and relative paths from subs
 
 If you want to perform "GET https://my.private.api/router?key=value" through the gateway, simply perform "GET https://socket.gateway/my.private.api/router?key=value".
 
-The request path, method, headers, query and body will be forwarded, too. The schema is fixed to "https" and the port ist fixed to "443".
+The request path, method, headers, query and body will be forwarded, too. The schema is fixed to "https" and the port is fixed to "443".
 
 ### B) Perform "POST /"
 
