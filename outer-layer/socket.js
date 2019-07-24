@@ -3,7 +3,7 @@ const config = require('./config');
 const socketio = require('socket.io');
 const uuid = require('uuid/v1');
 
-const pendingRequests = {};
+const pendingRequests = new Map();
 
 const innerLayers = new Set();
 var innerLayerScheduler = 0;
@@ -18,9 +18,9 @@ module.exports.createGateway = function (server) {
         socket.on('customPing', function (incomingData) {
             const end = new Date().getTime();
 
-            const pendingRequest = pendingRequests[incomingData.uuid];
+            const pendingRequest = pendingRequests.get(incomingData.uuid);
             if (pendingRequest) {
-                delete pendingRequests[pendingRequest.uuid];
+                pendingRequests.delete(incomingData.uuid);
 
                 const outgoingData = {
                     'rtt': (end - pendingRequest.start) + "ms"
@@ -31,9 +31,9 @@ module.exports.createGateway = function (server) {
         });
 
         socket.on('request', function (incomingData) {
-            const pendingRequest = pendingRequests[incomingData.uuid];
+            const pendingRequest = pendingRequests.get(incomingData.uuid);
             if (pendingRequest) {
-                delete pendingRequests[pendingRequest.uuid];
+                pendingRequests.delete(incomingData.uuid);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (typeof incomingData.body === 'object') {
                     pendingRequest.res.json(incomingData.body);
@@ -44,11 +44,13 @@ module.exports.createGateway = function (server) {
         });
 
         socket.on('disconnect', function () {
-            Object.keys(pendingRequests).forEach(function (uuid) {
-                pendingRequests[uuid].res.status(502).json({ message: 'Bad Gateway' });
-            });
-
             innerLayers.delete(socket.id)
+
+            if (innerLayers.size == 0) {
+                pendingRequests.values.forEach(function (pendingRequest) {
+                    pendingRequest.res.status(502).json({ message: 'Bad Gateway' });
+                });
+            }
             console.log(`Inner layer ${socket.id} disconnected.`);
         });
     });
@@ -62,17 +64,17 @@ module.exports.createGateway = function (server) {
                 res
             };
 
-            pendingRequests[pendingRequest.uuid] = pendingRequest;
+            pendingRequests.set(pendingRequest.uuid, pendingRequest);
 
             outgoingData.uuid = pendingRequest.uuid;
 
             innerLayersArray = Array.from(innerLayers);
-            innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length; 
+            innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length;
             io.to(innerLayersArray[innerLayerScheduler]).emit(event, outgoingData);
 
             setInterval(() => {
-                if (pendingRequests[pendingRequest.uuid]) {
-                    delete pendingRequests[pendingRequest.uuid];
+                if (pendingRequests.has(pendingRequest.uuid)) {
+                    pendingRequests.delete(pendingRequest.uuid);
                     res.status(504).json({
                         message: 'Gateway Timeout'
                     });
