@@ -9,7 +9,7 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 ## Prerequisites
 
 * **Outer Layer**: A machine/server that is reachable from the Internet (usually cloud hosted).
-* **Inner Layer**: A machine/server that is able to reach the desired endpoint(s) (usually a machine/server located in the same LAN) that is able to reach the Internet. The other way round is not required.
+* **Inner Layer(s)**: A machine/server that is able to reach the desired endpoint(s) (usually a machine/server located in the same LAN) that is able to reach the Internet. The other way round is not required. If you deploy multiple inner layers, the requests will be forwarded to the different inner layers using round robin scheduling.
 
 ### Certificates
 
@@ -28,7 +28,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 You may also use `./crypto.sh` to autogenerate all required files.
 
-* A sever certificate for the outer layer. Let's Encrypt is your friend 😉
+* A sever certificate for the outer layer. Let's Encrypt is your friend 😉 Alternatively, you can also use the outer layer certificate for mutual authentication you just created.
 
 
 ## Deployment
@@ -65,7 +65,21 @@ Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`
 
 ## Gateway
 
-To use the gateway, either use the form provided at `GET /` or directly perform a `POST /`request with the following JSON body:
+Use one of the folling ways to use the gateway.
+
+Be aware that header values will be sanitized before forwarding them. The following headers will be removed: host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-language, content-length, content-location, content-md5, content-range, content-type, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via.
+
+This gateway is no reverse proxy. Both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
+
+### A) Prepend host to path
+
+If you want to perform "GET https://my.private.api/router?key=value" through the gateway, simply perform "GET https://socket.gateway/my.private.api/router?key=value".
+
+The request path, method, headers, query and body will be forwarded, too. The schema is fixed to "https" and the port ist fixed to "443".
+
+### B) Perform "POST /"
+
+Perform a `POST /`request with the following JSON body:
 
 ```
 {
@@ -79,3 +93,5 @@ To use the gateway, either use the form provided at `GET /` or directly perform 
 	"body": {}                 // optional
 }
 ```
+
+You may also use the provided form at `GET /` to perform the request. 
