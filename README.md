@@ -28,7 +28,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 You may also use `./crypto.sh` to autogenerate all required files.
 
-* A sever certificate for the outer layer. Let's Encrypt is your friend 😉 Alternatively, you can also use the outer layer certificate you just created.
+* A sever certificate for the outer layer. Let's Encrypt is your friend 😉. Alternatively, you can also use the outer layer certificate you just created.
 
 
 ## Deployment
