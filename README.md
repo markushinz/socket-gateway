@@ -33,6 +33,20 @@ You may also use `./crypto.sh` to autogenerate all required files.
 
 ## Deployment
 
+The best way to go is using Docker. You find the corresponding `Dockerfile`s as well as `docker-compose.yaml` files in the two subfolders for the inner and outer layer.
+
+Even if you're not going to use docker-compose - Have a look at the `docker-compose.yaml` (example) files to get an idea how to configure both layers.
+
+If you want to deploy without Docker, make sure to run the following commands in `./outer-layer` to copy stylesheets and related files:
+
+```
+cp ./node_modules/@clr/ui/clr-ui.min.css ./public/clr-ui.min.css
+cp ./node_modules/@clr/ui/clr-ui.min.css.map ./public/clr-ui.min.css.map
+cp ./node_modules/@clr/icons/clr-icons.min.css ./public/clr-icons.min.css
+cp ./node_modules/@clr/icons/clr-icons.min.css.map ./public/clr-icons.min.css.map
+cp ./node_modules/@clr/icons/clr-icons.min.js ./public/clr-icons.min.js
+```
+
 ### Outer Layer
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
@@ -51,8 +65,6 @@ Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `o
 
 Check `config.js` and `policy.js` on how to change further (environment) variables and how `policies.json` is parsed.
 
-Finally, start the outer layer with `sudo ./deploy.sh master npm`.
-
 ### Inner Layer
 
 Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./config/`. The certificate is used for TLS connections from/to the outer layer.
@@ -61,7 +73,7 @@ Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./confi
 
 Check `config.js` on how to change further (environment) variables.
 
-Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER` and start the inner layer with `sudo ./deploy.sh master npm`.
+Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`.
 
 ## Gateway
 
