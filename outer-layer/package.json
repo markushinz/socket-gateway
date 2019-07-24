@@ -6,10 +6,9 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@clr/icons": "^1.1.5",
-    "@clr/ui": "^1.1.5",
-    "@webcomponents/custom-elements": "^1.2.4",
-    "express": "^4.16.4",
+    "@clr/icons": "^2.0.2",
+    "@clr/ui": "^2.0.2",
+    "express": "^4.17.1",
     "socket.io": "^2.2.0",
     "uuid": "^3.3.2"
   }
