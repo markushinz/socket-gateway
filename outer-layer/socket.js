@@ -4,14 +4,16 @@ const socketio = require('socket.io');
 const uuid = require('uuid/v1');
 
 const pendingRequests = {};
-var innerLayerCounter = 0; // number of connected inner layers
+
+const innerLayers = new Set();
+var innerLayerScheduler = 0;
 
 module.exports.createGateway = function (server) {
     const io = socketio(server);
 
     io.on('connection', function (socket) {
-        innerLayerCounter++;
-        console.log('Inner layer connected.');
+        innerLayers.add(socket.id);
+        console.log(`Inner layer ${socket.id} connected.`);
 
         socket.on('customPing', function (incomingData) {
             const end = new Date().getTime();
@@ -46,13 +48,13 @@ module.exports.createGateway = function (server) {
                 pendingRequests[uuid].res.status(502).json({ message: 'Bad Gateway' });
             });
 
-            innerLayerCounter--;
-            console.log('Inner Layer disconnected.');
+            innerLayers.delete(socket.id)
+            console.log(`Inner layer ${socket.id} disconnected.`);
         });
     });
 
     return function (event, req, res, outgoingData) {
-        if (innerLayerCounter > 0) {
+        if (innerLayers.size > 0) {
             const pendingRequest = {
                 uuid: uuid(),
                 start: new Date().getTime(),
@@ -63,10 +65,14 @@ module.exports.createGateway = function (server) {
             pendingRequests[pendingRequest.uuid] = pendingRequest;
 
             outgoingData.uuid = pendingRequest.uuid;
-            io.emit(event, outgoingData);
+
+            innerLayersArray = Array.from(innerLayers);
+            innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length; 
+            io.to(innerLayersArray[innerLayerScheduler]).emit(event, outgoingData);
 
             setInterval(() => {
                 if (pendingRequests[pendingRequest.uuid]) {
+                    delete pendingRequests[pendingRequest.uuid];
                     res.status(504).json({
                         message: 'Gateway Timeout'
                     });
