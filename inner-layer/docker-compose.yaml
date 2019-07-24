@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      # - OUTER_LAYER=https://localhost:3001
-      # - NODE_EXTRA_CA_CERTS=/path/to/ca.crt
+      - OUTER_LAYER=https://localhost:3001
+      # - NODE_EXTRA_CA_CERTS=
     volumes:
       - ./config:/usr/src/socket-gateway/inner-layer/config
