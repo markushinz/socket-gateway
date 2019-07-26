@@ -15,4 +15,4 @@ app.set('gateway', gateway);
 appServer.listen(config.appPort);
 console.log(`Listening on port ${config.appPort}...`);
 socketServer.listen(config.socketPort);
-console.log(`Awaiting connections from outer layer(s) on port ${config.socketPort}...`);
+console.log(`Awaiting connections from inner layer(s) on port ${config.socketPort}...`);
