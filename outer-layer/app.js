@@ -80,7 +80,7 @@ app.post('/', function (req, res, next) {
             host: req.body.host,
             url: req.body.url,
             method: req.body.method,
-            headers: req.body.headers,
+            headers: req.body.headers || {},
             query: req.body.query,
             body: req.body.body,
         };
