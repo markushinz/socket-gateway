@@ -1,0 +1,21 @@
+version: '3'
+services:
+  socket-gateway-outer-layer:
+    build: https://github.com/markushinz/socket-gateway.git#:outer-layer
+    restart: always
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 3000:3000
+      - 3001:3001
+    volumes:
+      - ./config-outer-layer:/usr/src/socket-gateway/outer-layer/config
+  socket-gateway-inner-layer:
+    build: https://github.com/markushinz/socket-gateway.git#:inner-layer
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - OUTER_LAYER=https://socket-gateway-outer-layer:3001
+      # - NODE_EXTRA_CA_CERTS=NODE_EXTRA_CA_CERTS=/usr/src/socket-gateway/inner-layer/config/rootCAs.crt
+    volumes:
+      - ./config-inner-layer:/usr/src/socket-gateway/inner-layer/config

@@ -9,9 +9,33 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function (req, res, next) {
-    res.sendFile(__dirname + '/public/index.html');
-})
+app.use(function (req, res, next) {
+    if (req.method !== 'GET') {
+        return next();
+    }
+    switch (req.path) {
+        case '/':
+            res.sendFile(__dirname + '/public/index.html');
+            break;
+        case '/clr-ui.min.css':
+            res.sendFile(__dirname + '/node_modules/@clr/ui/clr-ui.min.css');
+            break;
+        case '/clr-ui.min.css.map':
+            res.sendFile(__dirname + '/node_modules/@clr/ui/clr-ui.min.css.map');
+            break;
+        case '/clr-icons.min.css':
+            res.sendFile(__dirname + '/node_modules/@clr/icons/clr-icons.min.css');
+            break;
+        case '/clr-icons.min.css.map':
+            res.sendFile(__dirname + '/node_modules/@clr/icons/clr-icons.min.css.map');
+            break;
+        case '/clr-icons.min.js':
+            res.sendFile(__dirname + '/node_modules/@clr/icons/clr-icons.min.js');
+            break;
+        default:
+            next();
+    }
+});
 
 app.get('/ping', function (req, res, next) {
     app.get('gateway')('customPing', req, res, {});

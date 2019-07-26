@@ -16,38 +16,23 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 * Two certificates for mutual authentication of the two layers. Such certificates can be created with the following commands:
 
 ```
-innerLayer=dns.inner.layer
 outerLayer=dns.outer.layer
 
-echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v3_req\nprompt = no\n[req_distinguished_name]\nCN = $innerLayer\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = $innerLayer" > innerLayer.conf
+echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v3_req\nprompt = no\n[req_distinguished_name]\nCN = socket-gateway-inner-layer\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = socket-gateway-inner-layer" > innerLayer.conf
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout innerLayer.key -out innerLayer.crt -config innerLayer.conf -extensions "v3_req"
 
 echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v3_req\nprompt = no\n[req_distinguished_name]\nCN = $outerLayer\n[v3_req]\nsubjectAltName = @alt_names\n[alt_names]\nDNS.1 = $outerLayer" > outerLayer.conf
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out outerLayer.crt -config outerLayer.conf -extensions "v3_req"
 ```
 
-You may also use `./crypto.sh` to autogenerate all required files.
-
 * A sever certificate for the outer layer. Let's Encrypt is your friend 😉. Alternatively, you can also use the outer layer certificate you just created.
 
 
 ## Deployment
 
-The best way to go is using Docker. You find the corresponding `Dockerfile`s as well as `docker-compose.yaml` files in the two subfolders for the inner and outer layer.
-
-Even if you're not going to use docker-compose - Have a look at the `docker-compose.yaml` (example) files to get an idea how to configure both layers.
-
-If you want to deploy without Docker, make sure to run the following commands in `./outer-layer` to copy stylesheets and related files:
-
-```
-cp ./node_modules/@clr/ui/clr-ui.min.css ./public/clr-ui.min.css
-cp ./node_modules/@clr/ui/clr-ui.min.css.map ./public/clr-ui.min.css.map
-cp ./node_modules/@clr/icons/clr-icons.min.css ./public/clr-icons.min.css
-cp ./node_modules/@clr/icons/clr-icons.min.css.map ./public/clr-icons.min.css.map
-cp ./node_modules/@clr/icons/clr-icons.min.js ./public/clr-icons.min.js
-```
-
 ### Outer Layer
+
+The outer layer exposes the gateway functionality on port 3000 (environment variable "PORT") and accepts connections from (the) inner layer(s) on port 3001 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
 
@@ -66,6 +51,8 @@ Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `o
 Check `config.js` and `policy.js` on how to change further (environment) variables and how `policies.json` is parsed.
 
 ### Inner Layer
+
+The inner layer requires an environment variable "OUTER_LAYER"=dns.outer.layer:port. Certificate files must be placed in the `./config` directory.
 
 Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./config/`. The certificate is used for TLS connections from/to the outer layer.
 
@@ -108,4 +95,4 @@ Perform a `POST /`request with the following JSON body:
 }
 ```
 
-You may also use the provided form at `GET /` to perform the request. 
+You may also use the provided form at `GET /` to perform the request.

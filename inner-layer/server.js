@@ -5,6 +5,8 @@ const request = require('request');
 
 const io = socketio(config.outerLayer, config.tlsOptions);
 
+console.log(`Connecting to outer layer ${config.outerLayer}...`);
+
 const sanitizeHeaders = function (headers) {
     delete headers['host'];
     delete headers['accept'];
