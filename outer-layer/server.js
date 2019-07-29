@@ -17,7 +17,8 @@ console.log(`Listening on port ${config.appPort}...`);
 socketServer.listen(config.socketPort);
 console.log(`Awaiting connections from inner layer(s) on port ${config.socketPort}...`);
 
-if (config.appPort == 443) {
+// This will only work if ports 80 and 443 are used.
+if (config.appHTTPPort) {
     try {
         const http = require('http');
 
@@ -29,10 +30,10 @@ if (config.appPort == 443) {
         });
 
         const appHTTPServer = http.createServer(httpAPP);
-        appHTTPServer.listen(80);
-        console.log(`Listening on port 80 for redirection...`);
+        appHTTPServer.listen(config.appHTTPPort);
+        console.log(`Listening on port ${config.appHTTPPort} for redirection...`);
     }
     catch (error) {
-        // console.log(`Could not listen on port 80 for redirection.`);
+        // console.log(`Could not listen on port ${config.appHTTPPort} for redirection.`);
     }
 }

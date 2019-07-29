@@ -1,7 +1,8 @@
 const fs = require('fs');
 
 module.exports = {
-    appPort: process.env.PORT || 3000,
+    appPort: process.env.PORT || process.env.APP_PORT || 3000,
+    appHTTPPort: process.env.APP_HTTP_PORT,
     socketPort: process.env.SOCKET_PORT || 3001,
 
     appTlsOptions: {
