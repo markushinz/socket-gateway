@@ -13,6 +13,28 @@ const app = new Vue({
     computed: {
         url: function () {
             return this.scheme + '://' + this.host + ':' + this.port + this.path
+        },
+        headersIsValid: function () {
+            return this.isJSONValid(this.headers)
+        },
+        queryIsValid: function () {
+            return this.isJSONValid(this.query)
+        },
+        bodyIsValid: function () {
+            return this.isJSONValid(this.body)
+        }
+    },
+    methods: {
+        isJSONValid: function (data) {
+            try {
+                if (data === '') {
+                    return true;
+                }
+                JSON.parse(data);
+                return true;
+            } catch (error) {
+                return false;
+            }
         }
     }
 });
