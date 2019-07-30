@@ -2,39 +2,26 @@ const policy = require('./policy');
 
 const express = require('express');
 const app = express();
-
 app.disable('x-powered-by');
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(__dirname + '/public'));
 
+const staticFiles = new Map([
+    ['/', '/public/index.html'],
+    ['/stylesheet.css', '/public/stylesheet.css'],
+    ['/clr-ui.min.css', '/node_modules/@clr/ui/clr-ui.min.css'],
+    ['/clr-ui.min.css.map', '/node_modules/@clr/ui/clr-ui.min.css.map'],
+    ['/clr-icons.min.css', '/node_modules/@clr/icons/clr-icons.min.css'],
+    ['/clr-icons.min.css.map', '/node_modules/@clr/icons/clr-icons.min.css.map'],
+    ['/clr-icons.min.js', '/node_modules/@clr/icons/clr-icons.min.js']
+]);
+
+// Static files hosting.
 app.use(function (req, res, next) {
-    if (req.method !== 'GET') {
-        return next();
+    if (req.method === 'GET' && staticFiles.has(req.path)) {
+        return res.sendFile(__dirname + staticFiles.get(req.path));
     }
-    switch (req.path) {
-        case '/':
-            res.sendFile(__dirname + '/public/index.html');
-            break;
-        case '/clr-ui.min.css':
-            res.sendFile(__dirname + '/node_modules/@clr/ui/clr-ui.min.css');
-            break;
-        case '/clr-ui.min.css.map':
-            res.sendFile(__dirname + '/node_modules/@clr/ui/clr-ui.min.css.map');
-            break;
-        case '/clr-icons.min.css':
-            res.sendFile(__dirname + '/node_modules/@clr/icons/clr-icons.min.css');
-            break;
-        case '/clr-icons.min.css.map':
-            res.sendFile(__dirname + '/node_modules/@clr/icons/clr-icons.min.css.map');
-            break;
-        case '/clr-icons.min.js':
-            res.sendFile(__dirname + '/node_modules/@clr/icons/clr-icons.min.js');
-            break;
-        default:
-            next();
-    }
+    next();
 });
 
 app.get('/ping', function (req, res, next) {
@@ -42,6 +29,7 @@ app.get('/ping', function (req, res, next) {
 })
 
 app.post('/', function (req, res, next) {
+    // Delete empty keys and try to parse json strings for headers, query, and body.
     Object.keys(req.body).forEach(function (key) {
         if (req.body[key] == '') {
             delete req.body[key];
@@ -54,18 +42,22 @@ app.post('/', function (req, res, next) {
         }
     });
 
+    // Check for required input.
     if (!req.body.host) {
         res.status(400).json({ message: 'Bad Request' });
         return;
     }
 
+    // Set default values for optional parameters if not provided.
     req.body.port = req.body.port || 443;
     req.body.schema = req.body.schema || (req.body.port == 80) ? 'http' : 'https';
     req.body.path = req.body.path || '/';
     req.body.method = req.body.method || 'GET';
 
+    // Build url.
     req.body.url = req.body.schema + '://' + req.body.host + ':' + req.body.port + req.body.path;
 
+    // Validate input for schema, host, and method.
     if (
         !['http', 'https'].includes(req.body.schema) ||
         req.body.host.includes('/') ||
@@ -75,6 +67,7 @@ app.post('/', function (req, res, next) {
         return;
     }
 
+    // Check if request is allowed by policies.
     if (policy.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
         const outgoingData = {
             host: req.body.host,
@@ -96,9 +89,6 @@ app.use(function (req, res, next) {
         return next();
     }
     host = pathParts[1];
-    if (!policy.evaluateHost(host)) {
-        return next();
-    }
     path = '/' + pathParts.slice(2).join('/');
     url = 'https://' + host + ':443' + path;
     if (policy.evaluatePolicy(host, 443, path, req.method)) {
