@@ -104,8 +104,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <p v-if="host != ''">{{ method }} {{ url }}</p>
-                            <button type="submit" class="btn btn-primary btn-block"
+                            <p>{{ host == '' ? 'Host is required.' : method + ' ' + url }}</p>
+                            <button :disabled="host == ''" type="submit" class="btn btn-primary btn-block"
                                 style="margin-top: 20px;">Request</button>
                         </form>
                     </div>
