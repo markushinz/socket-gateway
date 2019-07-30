@@ -8,12 +8,15 @@ app.use(express.urlencoded({ extended: false }));
 
 const staticFiles = new Map([
     ['/', '/public/index.html'],
+    ['/script.js', '/public/script.js'],
     ['/stylesheet.css', '/public/stylesheet.css'],
+    ['/favicon.ico', '/public/favicon.ico'],
     ['/clr-ui.min.css', '/node_modules/@clr/ui/clr-ui.min.css'],
     ['/clr-ui.min.css.map', '/node_modules/@clr/ui/clr-ui.min.css.map'],
     ['/clr-icons.min.css', '/node_modules/@clr/icons/clr-icons.min.css'],
     ['/clr-icons.min.css.map', '/node_modules/@clr/icons/clr-icons.min.css.map'],
-    ['/clr-icons.min.js', '/node_modules/@clr/icons/clr-icons.min.js']
+    ['/clr-icons.min.js', '/node_modules/@clr/icons/clr-icons.min.js'],
+    ['/vue.js', `/node_modules/vue/dist/${process.env.NODE_ENV === 'production' ? 'vue.min.js' : 'vue.js'}`],
 ]);
 
 // Static files hosting.
