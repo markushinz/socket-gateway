@@ -15,7 +15,6 @@
 
 <body>
     <div id="app">
-
         <div class="main-container">
             <header class="header-2">
                 <div class="branding">
@@ -117,7 +116,7 @@
                                     <span v-if="!bodyIsValid" class="clr-subtext">Body must be a valid JSON.</span>
                                 </div>
                             </div>
-                            <button :disabled="host == '' || !headersIsValid || !queryIsValid || !bodyIsValid"
+                            <button v-bind:disabled="host == '' || !headersIsValid || !queryIsValid || !bodyIsValid"
                                 type="submit" class="btn btn-primary btn-block"
                                 style="margin-top: 20px; text-transform: none">{{ host == '' ? 'REQUEST' : method + ' ' + url }}</button>
                         </form>
