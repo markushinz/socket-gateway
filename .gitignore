@@ -63,8 +63,4 @@ typings/
 *.key
 *.crt
 policies.json
-clr-ui.min.css
-clr-ui.min.css.map
-clr-icons.min.css
-clr-icons.min.css.map
-clr-icons.min.js
+!example/config-outer-layer/policies.json

@@ -1,0 +1,9 @@
+{
+    "jsonplaceholder.typicode.com": {
+        "443": {
+            "*": [
+                "*"
+            ]
+        }
+    }
+}
