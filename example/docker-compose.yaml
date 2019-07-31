@@ -6,8 +6,8 @@ services:
     environment:
       - NODE_ENV=production
     ports:
-      - 3000:3000
-      # - 3001:3001
+      - 443:443
+      - 80:80
     volumes:
       - ./config-outer-layer:/usr/src/socket-gateway/outer-layer/config
   socket-gateway-inner-layer:
@@ -15,7 +15,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - OUTER_LAYER=https://socket-gateway-outer-layer:3001
+      - OUTER_LAYER=https://socket-gateway-outer-layer:3000
       # - NODE_EXTRA_CA_CERTS=NODE_EXTRA_CA_CERTS=/usr/src/socket-gateway/inner-layer/config/rootCAs.crt
     volumes:
       - ./config-inner-layer:/usr/src/socket-gateway/inner-layer/config

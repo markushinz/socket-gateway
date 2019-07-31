@@ -1,9 +1,9 @@
 const fs = require('fs');
 
 module.exports = {
-    appPort: process.env.PORT || process.env.APP_PORT || 3000,
-    appHTTPPort: process.env.APP_HTTP_PORT,
-    socketPort: process.env.SOCKET_PORT || 3001,
+    appPort: process.env.PORT || process.env.APP_PORT || 443,
+    appHTTPPort: process.env.APP_HTTP_PORT || 80,
+    socketPort: process.env.SOCKET_PORT || 3000,
 
     appTlsOptions: {
         cert: fs.readFileSync(__dirname + '/config/server.crt'),
@@ -20,5 +20,5 @@ module.exports = {
 
     policiesFile: __dirname + '/config/policies.json',
 
-    timeout: process.env.TIMEOUT || 5000 // ms
+    timeout: process.env.TIMEOUT || 10000 // ms
 };

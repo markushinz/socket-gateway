@@ -1,15 +1,19 @@
 # socket-gateway
 
-A gateway implementation based on websockets to expose endpoints not reachable from the Internet.
+An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
  ![](screenshot.png)
 
+```
+$ curl -H "Authorization: Bearer d6FSlf9szR" https://socket.gateway/my.private.api/helloworld
+```
+
 ## Prerequisites
 
 * **Outer Layer**: A machine/server that is reachable from the Internet (usually cloud hosted).
-* **Inner Layer(s)**: A machine/server that is able to reach the desired endpoint(s) (usually a machine/server located in the same LAN) that is able to reach the Internet. The other way round is not required. If you deploy multiple inner layers, the requests will be forwarded to the different inner layers using round robin scheduling.
+* **Inner Layer(s)**: A machine/server that is able to reach the desired endpoint(s) (usually a machine/server located in the same LAN) that is able to reach the Internet. The other way round is not required! If you deploy multiple inner layers, the requests will be forwarded to the different inner layers using round robin scheduling.
 
 ### Certificates
 
@@ -32,7 +36,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 ### Outer Layer
 
-The outer layer exposes the gateway functionality on port 3000 (environment variable "PORT") and accepts connections from (the) inner layer(s) on port 3001 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
+The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT") and redirects request on port 80 (environment variable APP_HTTP_PORT). The outer layer accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
 
@@ -40,7 +44,7 @@ Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `o
 {
     "my.private.api": {         // allowed host(s)
         "443": {                // allowed port(s), may be *
-            "/": [              // allowed path(s), may be *
+            "/helloworld": [              // allowed path(s), may be *
                 "GET", "POST"   // allowed method(s), may include *
             ]
         }
