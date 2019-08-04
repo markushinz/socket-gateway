@@ -2,7 +2,7 @@ This requires docker and docker-compose.
 
 Run `./start.sh` to generate all required certificates and to start both layers. After that, the gateway listens on https://localhost.
 
-`policies.json` allows all requests to https://jsonplaceholder.typicode.com:443.
+`config.json` allows all requests to https://jsonplaceholder.typicode.com:443.
 
 ```
 $ curl -k https://localhost/jsonplaceholder.typicode.com/todos/1

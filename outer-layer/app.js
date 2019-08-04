@@ -1,10 +1,35 @@
-const policy = require('./policy');
+const rewriter = require('./rewriter');
+const config = require('./config');
 
 const express = require('express');
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(function (req, res, next) {
+    const host = config.mapHost(req.host);
+    if (!host) {
+        return next();
+    }
+    const url = 'https://' + host + req.path;
+    if (config.evaluatePolicy(host, 443, req.path, req.method)) {
+        const rewriteHost = req.host;
+        const headers = rewriter.sanitizeHeaders(req.headers);
+
+        const outgoingData = {
+            host,
+            url,
+            method: req.method,
+            headers,
+            query: req.query,
+            body: req.body,
+        };
+        app.get('gateway')('request', rewriteHost, res, outgoingData);
+    } else {
+        res.status(403).json({ message: 'Forbidden', url });
+    }
+});
 
 const staticFiles = new Map([
     ['/', '/public/index.html'],
@@ -19,16 +44,15 @@ const staticFiles = new Map([
     ['/vue.js', `/node_modules/vue/dist/${process.env.NODE_ENV === 'production' ? 'vue.min.js' : 'vue.js'}`],
 ]);
 
-// Static files hosting.
-app.use(function (req, res, next) {
-    if (req.method === 'GET' && staticFiles.has(req.path)) {
+app.get('*', function (req, res, next) {
+    if (staticFiles.has(req.path)) {
         return res.sendFile(__dirname + staticFiles.get(req.path));
     }
     next();
 });
 
 app.get('/ping', function (req, res, next) {
-    app.get('gateway')('customPing', req, res, {});
+    app.get('gateway')('customPing', req.host, res, {});
 })
 
 app.post('/', function (req, res, next) {
@@ -58,7 +82,7 @@ app.post('/', function (req, res, next) {
     req.body.method = req.body.method || 'GET';
 
     // Build url.
-    req.body.url = req.body.schema + '://' + req.body.host + ':' + req.body.port + req.body.path;
+    const url = req.body.schema + '://' + req.body.host + ':' + req.body.port + req.body.path;
 
     // Validate input for schema, host, and method.
     if (
@@ -66,21 +90,23 @@ app.post('/', function (req, res, next) {
         req.body.host.includes('/') ||
         !['HEAD', 'GET', 'POST', 'PUT', 'DELETE'].includes(req.body.method)
     ) {
-        res.status(400).json({ message: 'Bad Request', url: req.body.url });
+        res.status(400).json({ message: 'Bad Request', url });
         return;
     }
 
     // Check if request is allowed by policies.
-    if (policy.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
+    if (config.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
+        const headers = rewriter.sanitizeHeaders(req.body.headers || {});
+
         const outgoingData = {
             host: req.body.host,
-            url: req.body.url,
+            url,
             method: req.body.method,
-            headers: req.body.headers || {},
+            headers,
             query: req.body.query,
             body: req.body.body,
         };
-        app.get('gateway')('request', req, res, outgoingData);
+        app.get('gateway')('request', null, res, outgoingData);
     } else {
         res.status(403).json({ message: 'Forbidden', url: req.body.url });
     }
@@ -93,19 +119,21 @@ app.use(function (req, res, next) {
     }
     host = pathParts[1];
     path = '/' + pathParts.slice(2).join('/');
-    url = 'https://' + host + ':443' + path;
-    if (policy.evaluatePolicy(host, 443, path, req.method)) {
+    const url = 'https://' + host + path;
+    if (config.evaluatePolicy(host, 443, path, req.method)) {
+        const headers = rewriter.sanitizeHeaders(req.headers);
+
         const outgoingData = {
-            host: host,
-            url: url,
+            host,
+            url,
             method: req.method,
-            headers: req.headers,
+            headers,
             query: req.query,
             body: req.body,
         };
-        app.get('gateway')('request', req, res, outgoingData);
+        app.get('gateway')('request', null, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', url: url });
+        res.status(403).json({ message: 'Forbidden', url });
     }
 });
 

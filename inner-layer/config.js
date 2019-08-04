@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = {
-    outerLayer: process.env.OUTER_LAYER || 'https://localhost:3001',
+    outerLayer: process.env.OUTER_LAYER || 'https://localhost:3000',
 
     tlsOptions: {
         cert: fs.readFileSync(__dirname + '/config/innerLayer.crt'),

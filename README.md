@@ -38,21 +38,24 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT") and redirects request on port 80 (environment variable APP_HTTP_PORT). The outer layer accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
 
-Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
+Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/config.json` to define which request should be allowed. Check the following example:
 
 ```
 {
-    "my.private.api": {         // allowed host(s)
-        "443": {                // allowed port(s), may be *
-            "/helloworld": [              // allowed path(s), may be *
-                "GET", "POST"   // allowed method(s), may include *
-            ]
+    "policies": {
+        "my.private.api": { // allowed host(s)
+            "443": { // allowed port(s), may be *
+                "/helloworld": [ // allowed path(s), may be *
+                    "GET",
+                    "POST" // allowed method(s), may include *
+                ]
+            }
         }
     }
 }
 ```
 
-Check `config.js` and `policy.js` on how to change further (environment) variables and how `policies.json` is parsed.
+Check `config.js` on how to change further (environment) variables and how `config.json` is parsed.
 
 ### Inner Layer
 

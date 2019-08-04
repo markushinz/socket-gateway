@@ -1,5 +1,7 @@
 const config = require('./config');
 
+const rewriter = require('./rewriter');
+
 const socketio = require('socket.io');
 const uuid = require('uuid/v1');
 
@@ -34,11 +36,20 @@ module.exports.createGateway = function (server) {
             const pendingRequest = pendingRequests.get(incomingData.uuid);
             if (pendingRequest) {
                 pendingRequests.delete(incomingData.uuid);
+
+                incomingData.headers = rewriter.sanitizeHeaders(incomingData.headers);
+                incomingData.headers = rewriter.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
-                if (typeof incomingData.body === 'object') {
-                    pendingRequest.res.json(incomingData.body);
+                if (incomingData.body) {
+                    if (typeof incomingData.body === 'object') {
+                        incomingData.body = rewriter.rewriteObject(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
+                        pendingRequest.res.json(incomingData.body);
+                    } else {
+                        incomingData.body = rewriter.rewriteString(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
+                        pendingRequest.res.send(incomingData.body);
+                    }
                 } else {
-                    pendingRequest.res.send(incomingData.body);
+                    pendingRequest.res.end();
                 }
             }
         });
@@ -55,12 +66,12 @@ module.exports.createGateway = function (server) {
         });
     });
 
-    return function (event, req, res, outgoingData) {
+    return function (event, rewriteHost, res, outgoingData) {
         if (innerLayers.size > 0) {
             const pendingRequest = {
                 uuid: uuid(),
                 start: new Date().getTime(),
-                req,
+                rewriteHost,
                 res
             };
 
