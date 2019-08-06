@@ -19,16 +19,16 @@ $ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "jsonplacehol
 }
 ```
 
-*Optional*: To also try the reverse proxy functionality, edit your `/etc/hosts` file on local machine and add the following line:
+*Optional*: To also try the reverse proxy functionality, edit your `/etc/hosts` file and add the following line:
 
 ```
-127.0.0.1 subdomain.localhost
+127.0.0.1 json.localhost
 ```
 
 Now, you can also do the following:
 
 ```
-$ curl -k https://subdomain.localhost/todos/1
+$ curl -k https://json.localhost/todos/1
 
 {"userId":1,"id":1,"title":"delectus aut autem","completed":false}
 ```
