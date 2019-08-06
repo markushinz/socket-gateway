@@ -89,7 +89,7 @@ app.post('/', function (req, res, next) {
         !['HEAD', 'GET', 'POST', 'PUT', 'DELETE'].includes(req.body.method) ||
         !['http', 'https'].includes(req.body.schema) ||
         req.body.host.includes('/') ||
-        req.body.port == NaN || port < 0
+        req.body.port == NaN || req.body.port < 0
     ) {
         res.status(400).json({ message: 'Bad Request', error: `Resulting url "${url}" is invalid.` });
         return;

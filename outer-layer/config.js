@@ -29,6 +29,9 @@ module.exports = {
     },
 
     get hosts() {
+        if (!fs.existsSync(__dirname + '/config/hosts.json')) {
+            return {};
+        }
         try {
             return JSON.parse(fs.readFileSync(__dirname + '/config/hosts.json'));
         } catch (error) {
