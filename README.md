@@ -4,7 +4,7 @@ An API Gateway based on websockets to expose endpoints not reachable from the In
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
-**TLDR?** Have a look at `./example` to have a fully working local setup using Docker and docker-compose.
+**TLDR?** Have a look at `./example/` to have a fully working local setup using Docker and docker-compose.
 
  ![](screenshot.png)
 
@@ -38,7 +38,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 ### Outer Layer
 
-The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT"). It accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
+The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT"). It accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config/` directory.
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer.
 
@@ -57,8 +57,6 @@ Create a file `./config/policies.json` to define which request should be allowed
 }
 ```
 
-Check `evaluate.js` on how to change further (environment) variables and how `policies.json` is parsed.
-
 *Optional*: Create a file `./config/hosts.json` to define host mappings between DNS names of the gateway and request targets. This allows you to use the gateway as a reverse proxy. Check the following example:
 
 ```
@@ -71,7 +69,7 @@ Now, all requests that are allowed by `policies.json` having the request header 
 
 ### Inner Layer
 
-The inner layer requires an environment variable "OUTER_LAYER"=dns.outer.layer:port. Certificate files must be placed in the `./config` directory.
+The inner layer requires an environment variable "OUTER_LAYER"=dns.outer.layer:port. Certificate files must be placed in the `./config/` directory.
 
 Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./config/`. The certificate is used for TLS connections from/to the outer layer.
 
@@ -91,9 +89,11 @@ Be aware that header values will be sanitized before forwarding them. The follow
 
 ### A) Map DNS names
 
-This is both the easiest and best way to use the gateway. Create a file `hosts.json` as described above to map dns names of the outer layer to the request targets.
+This is both the easiest and best way to use the gateway. Create a file `hosts.json` as described above to map DNS names of the outer layer to the request targets.
 
 Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳!
+
+The schema is fixed to "https" and the port is fixed to "443".
 
 ### B) Prepend host to path
 
