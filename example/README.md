@@ -19,7 +19,7 @@ $ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "jsonplacehol
 }
 ```
 
-*Optional*: To also try the reverse proxy functionality, edit your `/etc/hosts` file and add the following line:
+*Optional*: To use the reverse proxy functionality, edit your `/etc/hosts` file and add the following line:
 
 ```
 127.0.0.1 json.localhost
