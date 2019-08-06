@@ -4,6 +4,8 @@ An API Gateway based on websockets to expose endpoints not reachable from the In
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
+**TLDR? Have a look at `./example` to have a fully working local setup using Docker and docker-compose.**
+
  ![](screenshot.png)
 
 ```
@@ -36,26 +38,36 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 ### Outer Layer
 
-The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT") and redirects request on port 80 (environment variable APP_HTTP_PORT). The outer layer accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
+The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT"). It accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config` directory.
 
-Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer. Create a file `./config/config.json` to define which request should be allowed. Check the following example:
+Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer.
+
+Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
 
 ```
 {
-    "policies": {
-        "my.private.api": { // allowed host(s)
-            "443": { // allowed port(s), may be *
-                "/helloworld": [ // allowed path(s), may be *
-                    "GET",
-                    "POST" // allowed method(s), may include *
-                ]
-            }
+    "my.private.api": { // allowed host(s)
+        "443": { // allowed port(s), may be *
+            "/helloworld": [ // allowed path(s), may be *
+                "GET",
+                "POST" // allowed method(s), may include *
+            ]
         }
     }
 }
 ```
 
-Check `config.js` on how to change further (environment) variables and how `config.json` is parsed.
+Check `evaluate.js` on how to change further (environment) variables and how `policies.json` is parsed.
+
+*Optional*: Create a file `./config/hosts.json` to define host mappings between DNS names of the gateway and request targets. This allows you to use the gateway as a reverse proxy. Check the following example:
+
+```
+{
+    "api.socket.gateway": "my.private.api"
+}
+```
+
+Now, all requests that are allowed by `policies.json` having the request header "host" set to "api.socket.gateway" get proxied to "my.private.api".
 
 ### Inner Layer
 
@@ -65,8 +77,6 @@ Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./confi
 
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
-Check `config.js` on how to change further (environment) variables.
-
 Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`.
 
 ## Gateway
@@ -75,17 +85,23 @@ Use one of the following ways to use the gateway.
 
 Be aware that header values will be sanitized before forwarding them. The following headers will be removed:
 
-*host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-language, content-length, content-location, content-md5, content-range, content-type, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via*
+*host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-length, content-md5, content-range, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via*
 
-This gateway is **no** reverse proxy. Both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
+**Only option A) behaves like a reverse proxy rewriting both response headers and body.** For options B) and C), Both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
 
-### A) Prepend host to path
+### A) Map DNS names
+
+This is both the easiest and best way to use the gateway. Create a file `hosts.json` as described above to map dns names of the outer layer to the request targets.
+
+Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳!
+
+### B) Prepend host to path
 
 If you want to perform "GET https://my.private.api/router?key=value" through the gateway, simply perform "GET https://socket.gateway/my.private.api/router?key=value".
 
 The request path, method, headers, query and body will be forwarded, too. The schema is fixed to "https" and the port is fixed to "443".
 
-### B) Perform "POST /"
+### C) Perform "POST /"
 
 Perform a `POST /`request with the following JSON body:
 

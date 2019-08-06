@@ -58,10 +58,11 @@ module.exports.createGateway = function (server) {
             innerLayers.delete(socket.id)
 
             if (innerLayers.size == 0) {
-                Array.from(pendingRequests.values()).forEach(function (pendingRequest) {
+                pendingRequests.forEach(function (pendingRequest) {
                     pendingRequest.res.status(502).json({ message: 'Bad Gateway' });
                 });
             }
+            pendingRequests.clear();
             console.log(`Inner layer ${socket.id} disconnected.`);
         });
     });

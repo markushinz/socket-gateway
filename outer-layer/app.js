@@ -1,5 +1,5 @@
+const evaluator = require('./evaluator');
 const rewriter = require('./rewriter');
-const config = require('./config');
 
 const express = require('express');
 const app = express();
@@ -8,12 +8,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(function (req, res, next) {
-    const host = config.mapHost(req.host);
+    const host = evaluator.mapHost(req.host);
     if (!host) {
         return next();
     }
     const url = 'https://' + host + req.path;
-    if (config.evaluatePolicy(host, 443, req.path, req.method)) {
+    if (evaluator.evaluatePolicy(host, 443, req.path, req.method)) {
         const rewriteHost = req.host;
         const headers = rewriter.sanitizeHeaders(req.headers);
 
@@ -27,7 +27,7 @@ app.use(function (req, res, next) {
         };
         app.get('gateway')('request', rewriteHost, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', url });
+        res.status(403).json({ message: 'Forbidden', error: `" ${req.method} ${url}" is not allowed by policies.` });
     }
 });
 
@@ -64,19 +64,19 @@ app.post('/', function (req, res, next) {
             try {
                 req.body[key] = JSON.parse(req.body[key]);
             } catch (err) {
-                res.status(400).json({ message: 'Bad Request' });
+                res.status(400).json({ message: 'Bad Request', error: `"${key}" must be a valid JSON.` });
             }
         }
     });
 
-    // Check for required input.
+    // Check for required input (host).
     if (!req.body.host) {
-        res.status(400).json({ message: 'Bad Request' });
+        res.status(400).json({ message: 'Bad Request', error: '"host" must be provided.' });
         return;
     }
 
     // Set default values for optional parameters if not provided.
-    req.body.port = req.body.port || 443;
+    req.body.port = parseInt(req.body.port || 443);
     req.body.schema = req.body.schema || (req.body.port == 80) ? 'http' : 'https';
     req.body.path = req.body.path || '/';
     req.body.method = req.body.method || 'GET';
@@ -84,18 +84,19 @@ app.post('/', function (req, res, next) {
     // Build url.
     const url = req.body.schema + '://' + req.body.host + ':' + req.body.port + req.body.path;
 
-    // Validate input for schema, host, and method.
+    // Validate input for method, schema, host and port.
     if (
+        !['HEAD', 'GET', 'POST', 'PUT', 'DELETE'].includes(req.body.method) ||
         !['http', 'https'].includes(req.body.schema) ||
         req.body.host.includes('/') ||
-        !['HEAD', 'GET', 'POST', 'PUT', 'DELETE'].includes(req.body.method)
+        req.body.port == NaN || port < 0
     ) {
-        res.status(400).json({ message: 'Bad Request', url });
+        res.status(400).json({ message: 'Bad Request', error: `Resulting url "${url}" is invalid.` });
         return;
     }
 
     // Check if request is allowed by policies.
-    if (config.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
+    if (evaluator.evaluatePolicy(req.body.host, req.body.port, req.body.path, req.body.method)) {
         const headers = rewriter.sanitizeHeaders(req.body.headers || {});
 
         const outgoingData = {
@@ -108,7 +109,7 @@ app.post('/', function (req, res, next) {
         };
         app.get('gateway')('request', null, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', url: req.body.url });
+        res.status(403).json({ message: 'Forbidden', error: `" ${req.body.method} ${url}" is not allowed by policies.` });
     }
 });
 
@@ -120,7 +121,7 @@ app.use(function (req, res, next) {
     host = pathParts[1];
     path = '/' + pathParts.slice(2).join('/');
     const url = 'https://' + host + path;
-    if (config.evaluatePolicy(host, 443, path, req.method)) {
+    if (evaluator.evaluatePolicy(host, 443, path, req.method)) {
         const headers = rewriter.sanitizeHeaders(req.headers);
 
         const outgoingData = {
@@ -133,7 +134,7 @@ app.use(function (req, res, next) {
         };
         app.get('gateway')('request', null, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', url });
+        res.status(403).json({ message: 'Forbidden', error: `" ${req.method} ${url}" is not allowed by policies.` });
     }
 });
 

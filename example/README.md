@@ -1,4 +1,4 @@
-This requires docker and docker-compose.
+This requires Docker and docker-compose.
 
 Run `./start.sh` to generate all required certificates and to start both layers. After that, the gateway listens on https://localhost.
 
@@ -18,3 +18,18 @@ $ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "jsonplacehol
   "completed": false
 }
 ```
+
+*Optional*: To also try the reverse proxy functionality, edit your `/etc/hosts` file on local machine and add the following line:
+
+```
+127.0.0.1 subdomain.localhost
+```
+
+Now, you can also do the following:
+
+```
+$ curl -k https://subdomain.localhost/todos/1
+
+{"userId":1,"id":1,"title":"delectus aut autem","completed":false}
+```
+

@@ -2,7 +2,6 @@ const fs = require('fs');
 
 module.exports = {
     appPort: process.env.PORT || process.env.APP_PORT || 443,
-    appHTTPPort: process.env.APP_HTTP_PORT || 80,
     socketPort: process.env.SOCKET_PORT || 3000,
 
     appTlsOptions: {
@@ -18,31 +17,23 @@ module.exports = {
         rejectUnauthorized: true
     },
 
-    timeout: process.env.TIMEOUT || 10000 // ms
-};
+    timeout: process.env.TIMEOUT || 10000, // ms
 
-const configFile = __dirname + '/config/config.json';
+    get policies() {
+        try {
+            return JSON.parse(fs.readFileSync(__dirname + '/config/policies.json'));
+        } catch (error) {
+            console.error(error);
+            return {};
+        }
+    },
 
-module.exports.evaluatePolicy = function (host, port, path, method) {
-    if (fs.existsSync(configFile)) {
-        const policies = JSON.parse(fs.readFileSync(configFile)).policies;
-        if (policies && policies[host]) {
-            const paths = policies[host][port] || policies[host]['*'];
-            if (paths) {
-                const methods = paths[path] || paths['*'];
-                if (methods) {
-                    return methods.includes(method) || methods.includes('*');
-                }
-            }
+    get hosts() {
+        try {
+            return JSON.parse(fs.readFileSync(__dirname + '/config/hosts.json'));
+        } catch (error) {
+            console.error(error);
+            return {};
         }
     }
-    return false;
-}
-
-module.exports.mapHost = function (host) {
-    if (fs.existsSync(configFile)) {
-        const hosts = JSON.parse(fs.readFileSync(configFile)).hosts;
-        return hosts[host];
-    }
-    return undefined;
-}
+};
