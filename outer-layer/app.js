@@ -8,13 +8,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(function (req, res, next) {
-    const host = evaluator.mapHost(req.host);
+    const host = evaluator.mapHost(req.hostname);
     if (!host) {
         return next();
     }
     const url = 'https://' + host + req.path;
     if (evaluator.evaluatePolicy(host, 443, req.path, req.method)) {
-        const rewriteHost = req.host;
+        const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
 
         const outgoingData = {
@@ -52,7 +52,7 @@ app.get('*', function (req, res, next) {
 });
 
 app.get('/ping', function (req, res, next) {
-    app.get('gateway')('customPing', req.host, res, {});
+    app.get('gateway')('customPing', req.hostname, res, {});
 })
 
 app.post('/', function (req, res, next) {
