@@ -8,11 +8,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(function (req, res, next) {
-    const { host, port } = evaluator.mapHost(req.hostname);
-    if (!host) {
+    const mapping = evaluator.mapHost(req.hostname);
+    if (!mapping) {
         return next();
     }
-    port = port || 443;
+    const host = mapping.host;
+    const port = mapping.port || 443;
 
     const url = 'https://' + host + ":" + port + req.path;
     if (evaluator.evaluatePolicy(host, port, req.path, req.method)) {
