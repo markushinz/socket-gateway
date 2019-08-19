@@ -46,7 +46,7 @@ module.exports.createGateway = function (server) {
                         pendingRequest.res.json(incomingData.body);
                     } else {
                         incomingData.body = rewriter.rewriteString(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
-                        pendingRequest.res.send(incomingData.body);
+                        pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
                     }
                 } else {
                     pendingRequest.res.end();

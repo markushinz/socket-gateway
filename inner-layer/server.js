@@ -12,7 +12,11 @@ io.on('connect', function () {
 });
 
 io.on('request', function (incomingData) {
-    delete incomingData.headers['content-type'];
+    if (incomingData.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        incomingData.body = Object.keys(incomingData.body).map(function (key) {
+            return `${key}=${incomingData.body[key]}`;
+        }).join('&');
+    }
 
     request({
         method: incomingData.method,
@@ -22,8 +26,13 @@ io.on('request', function (incomingData) {
         body: incomingData.body,
         json: typeof incomingData.body === 'object',
         gzip: true,
-        followRedirect: false
+        followRedirect: false,
+        encoding: null
     }, function (error, response, body) {
+        if (body && Buffer.isBuffer(body)) {
+            body = body.toString('binary');
+        }
+
         const outgoingData = {
             uuid: incomingData.uuid,
             host: incomingData.host,

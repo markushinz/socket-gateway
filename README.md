@@ -9,7 +9,7 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
  ![](screenshot.png)
 
 ```
-$ curl -H "Authorization: Bearer d6FSlf9szR" https://socket.gateway/my.private.api/helloworld
+$ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "my.private.api", "path": "/helloworld"}' https://socket.gateway/
 ```
 
 ## Prerequisites
@@ -61,7 +61,11 @@ Create a file `./config/policies.json` to define which request should be allowed
 
 ```
 {
-    "api.socket.gateway": "my.private.api"
+    "api.socket.gateway":
+    {
+        "host": "my.private.api",
+        "port": "443"
+    }
 }
 ```
 
@@ -85,7 +89,7 @@ Be aware that header values will be sanitized before forwarding them. The follow
 
 *host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-length, content-md5, content-range, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via*
 
-**Only option A) behaves like a reverse proxy rewriting both response headers and body.** For options B) and C), Both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
+**Only option A) behaves like a reverse proxy rewriting both response headers and body.** For option B), both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
 
 ### A) Map DNS names
 
@@ -93,15 +97,9 @@ This is both the easiest and best way to use the gateway. Create a file `hosts.j
 
 Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳!
 
-The schema is fixed to "https" and the port is fixed to "443".
+The schema is fixed to "https"!
 
-### B) Prepend host to path
-
-If you want to perform "GET https://my.private.api/router?key=value" through the gateway, simply perform "GET https://socket.gateway/my.private.api/router?key=value".
-
-The request path, method, headers, query and body will be forwarded, too. The schema is fixed to "https" and the port is fixed to "443".
-
-### C) Perform "POST /"
+### B) Perform "POST /"
 
 Perform a `POST /`request with the following JSON body:
 

@@ -8,12 +8,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(function (req, res, next) {
-    const host = evaluator.mapHost(req.hostname);
+    const { host, port } = evaluator.mapHost(req.hostname);
     if (!host) {
         return next();
     }
-    const url = 'https://' + host + req.path;
-    if (evaluator.evaluatePolicy(host, 443, req.path, req.method)) {
+    port = port || 443;
+
+    const url = 'https://' + host + ":" + port + req.path;
+    if (evaluator.evaluatePolicy(host, port, req.path, req.method)) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
 
@@ -27,7 +29,7 @@ app.use(function (req, res, next) {
         };
         app.get('gateway')('request', rewriteHost, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', error: `" ${req.method} ${url}" is not allowed by policies.` });
+        res.status(403).json({ message: 'Forbidden', error: `"${req.method} ${url}" is not allowed by policies.` });
     }
 });
 
@@ -110,31 +112,6 @@ app.post('/', function (req, res, next) {
         app.get('gateway')('request', null, res, outgoingData);
     } else {
         res.status(403).json({ message: 'Forbidden', error: `" ${req.body.method} ${url}" is not allowed by policies.` });
-    }
-});
-
-app.use(function (req, res, next) {
-    const pathParts = req.path.split('/');
-    if (pathParts.length < 2) {
-        return next();
-    }
-    host = pathParts[1];
-    path = '/' + pathParts.slice(2).join('/');
-    const url = 'https://' + host + path;
-    if (evaluator.evaluatePolicy(host, 443, path, req.method)) {
-        const headers = rewriter.sanitizeHeaders(req.headers);
-
-        const outgoingData = {
-            host,
-            url,
-            method: req.method,
-            headers,
-            query: req.query,
-            body: req.body,
-        };
-        app.get('gateway')('request', null, res, outgoingData);
-    } else {
-        res.status(403).json({ message: 'Forbidden', error: `" ${req.method} ${url}" is not allowed by policies.` });
     }
 });
 

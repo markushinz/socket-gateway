@@ -1,3 +1,5 @@
 {
-    "json.localhost": "jsonplaceholder.typicode.com"
+    "json.localhost": {
+        "host": "jsonplaceholder.typicode.com"
+    }
 }
