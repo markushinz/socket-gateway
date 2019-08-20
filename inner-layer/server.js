@@ -12,11 +12,11 @@ io.on('connect', function () {
 });
 
 io.on('request', function (incomingData) {
-    if (incomingData.headers['content-type'] === 'application/x-www-form-urlencoded') {
-        incomingData.body = Object.keys(incomingData.body).map(function (key) {
-            return `${key}=${incomingData.body[key]}`;
-        }).join('&');
-    }
+    // if (incomingData.headers['content-type'] === 'application/x-www-form-urlencoded') {
+    //     incomingData.body = Object.keys(incomingData.body).map(function (key) {
+    //         return `${key}=${incomingData.body[key]}`;
+    //     }).join('&');
+    // }
 
     request({
         method: incomingData.method,
@@ -24,12 +24,12 @@ io.on('request', function (incomingData) {
         headers: incomingData.headers,
         qs: incomingData.query,
         body: incomingData.body,
-        json: typeof incomingData.body === 'object',
+        // json: typeof incomingData.body === 'object',
         gzip: true,
         followRedirect: false,
         encoding: null
     }, function (error, response, body) {
-        if (body && Buffer.isBuffer(body)) {
+        if (body) { // && Buffer.isBuffer(body)) {
             body = body.toString('binary');
         }
 
@@ -37,8 +37,8 @@ io.on('request', function (incomingData) {
             uuid: incomingData.uuid,
             host: incomingData.host,
             statusCode: error ? 500 : response.statusCode,
-            body: error ? { message: 'Internal Server Error' } : body,
-            headers: error ? {} : response.headers
+            body: error ? '{ "message": "Internal Server Error" }' : body,
+            headers: error ? { 'Content-Type': 'application/json' } : response.headers
         }
 
         if (error) { console.error(error) };

@@ -4,8 +4,7 @@ const rewriter = require('./rewriter');
 const express = require('express');
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.text({ type: '*/*' }));
 
 app.use(function (req, res, next) {
     const mapping = evaluator.mapHost(req.hostname);
@@ -19,6 +18,7 @@ app.use(function (req, res, next) {
     if (evaluator.evaluatePolicy(host, port, req.path, req.method)) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
+        const body = req.body === 'string' ? req.body : '';
 
         const outgoingData = {
             host,
@@ -26,7 +26,7 @@ app.use(function (req, res, next) {
             method: req.method,
             headers,
             query: req.query,
-            body: req.body,
+            body
         };
         app.get('gateway')('request', rewriteHost, res, outgoingData);
     } else {
@@ -56,9 +56,28 @@ app.get('*', function (req, res, next) {
 
 app.get('/ping', function (req, res, next) {
     app.get('gateway')('customPing', req.hostname, res, {});
-})
+});
 
 app.post('/', function (req, res, next) {
+    // Parse request body.
+    try {
+        switch (req.headers['content-type']) {
+            case 'application/json':
+                req.body = JSON.parse(req.body);
+                break;
+            case 'application/x-www-form-urlencoded':
+                const body = {}
+                req.body.split('&').forEach(function (splittedBody) {
+                    pair = splittedBody.split('=');
+                    body[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+                });
+                req.body = body;
+                break;
+        }
+    } catch (error) {
+        return res.status(400).json({ message: 'Bad Request', error: 'Could not parse request body.' });
+    }
+
     // Delete empty keys and try to parse json strings for headers, query, and body.
     Object.keys(req.body).forEach(function (key) {
         if (req.body[key] == '') {
@@ -108,7 +127,7 @@ app.post('/', function (req, res, next) {
             method: req.body.method,
             headers,
             query: req.body.query,
-            body: req.body.body,
+            body: JSON.stringify(req.body.body)
         };
         app.get('gateway')('request', null, res, outgoingData);
     } else {
