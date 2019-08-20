@@ -41,13 +41,8 @@ module.exports.createGateway = function (server) {
                 incomingData.headers = rewriter.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (incomingData.body) {
-                    // if (typeof incomingData.body === 'object') {
-                    //     incomingData.body = rewriter.rewriteObject(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
-                    //     pendingRequest.res.json(incomingData.body);
-                    // } else {
                     incomingData.body = rewriter.rewriteString(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
                     pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
-                    // }
                 } else {
                     pendingRequest.res.end();
                 }
