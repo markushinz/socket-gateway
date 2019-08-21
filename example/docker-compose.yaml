@@ -17,3 +17,10 @@ services:
       - OUTER_LAYER=https://socket-gateway-outer-layer:3000
     volumes:
       - ./config-inner-layer:/usr/src/socket-gateway/inner-layer/config
+  hello-world:
+    build: ./hello-world # https://github.com/markushinz/socket-gateway.git#:example/hello-world
+    restart: always
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 3000:3000

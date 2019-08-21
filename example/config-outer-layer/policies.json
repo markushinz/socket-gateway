@@ -1,8 +1,15 @@
 {
-    "jsonplaceholder.typicode.com": {
-        "443": {
+    "hello-world": {
+        "3000": {
             "*": [
                 "*"
+            ]
+        }
+    },
+    "jsonplaceholder.typicode.com": {
+        "443": {
+            "/todos/1": [
+                "GET"
             ]
         }
     }

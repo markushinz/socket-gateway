@@ -1,4 +1,9 @@
 {
+    "localhost": {
+        "protocol": "http",
+        "host": "hello-world",
+        "port": "3000"
+    },
     "json.localhost": {
         "host": "jsonplaceholder.typicode.com"
     }

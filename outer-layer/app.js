@@ -11,14 +11,16 @@ app.use(function (req, res, next) {
     if (!mapping) {
         return next();
     }
+    const protocol = mapping.protocol || 'https';
     const host = mapping.host;
     const port = mapping.port || 443;
 
-    const url = 'https://' + host + ":" + port + req.path;
+    const url = protocol + '://' + host + ":" + port + req.path;
+
     if (evaluator.evaluatePolicy(host, port, req.path, req.method)) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
-        const body = req.body === 'string' ? req.body : '';
+        const body = typeof req.body === 'string' ? req.body : undefined;
 
         const outgoingData = {
             host,
@@ -28,9 +30,10 @@ app.use(function (req, res, next) {
             query: req.query,
             body
         };
+
         app.get('gateway')('request', rewriteHost, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', error: `"${req.method} ${url}" is not allowed by policies.` });
+        res.status(403).json({ message: 'Forbidden', error: `${req.method} ${url} is not allowed by policies.` });
     }
 });
 

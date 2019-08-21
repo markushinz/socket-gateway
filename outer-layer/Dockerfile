@@ -1,6 +1,6 @@
 FROM node:12
 
-WORKDIR /usr/src/hello-world
+WORKDIR /usr/src/socket-gateway/outer-layer
 
 COPY package*.json ./
 

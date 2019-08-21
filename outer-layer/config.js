@@ -17,7 +17,7 @@ module.exports = {
         rejectUnauthorized: true
     },
 
-    timeout: process.env.TIMEOUT || 10000, // ms
+    timeout: process.env.TIMEOUT, // ms
 
     get policies() {
         try {

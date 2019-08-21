@@ -41,7 +41,7 @@ module.exports.createGateway = function (server) {
                 incomingData.headers = rewriter.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (incomingData.body) {
-                    incomingData.body = rewriter.rewriteString(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
+                    // incomingData.body = rewriter.rewriteString(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
                     pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
                 } else {
                     pendingRequest.res.end();
@@ -79,14 +79,16 @@ module.exports.createGateway = function (server) {
             innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length;
             io.to(innerLayersArray[innerLayerScheduler]).emit(event, outgoingData);
 
-            setInterval(() => {
-                if (pendingRequests.has(pendingRequest.uuid)) {
-                    pendingRequests.delete(pendingRequest.uuid);
-                    res.status(504).json({
-                        message: 'Gateway Timeout'
-                    });
-                }
-            }, config.timeout);
+            if (config.timeout) {
+                setInterval(() => {
+                    if (pendingRequests.has(pendingRequest.uuid)) {
+                        pendingRequests.delete(pendingRequest.uuid);
+                        res.status(504).json({
+                            message: 'Gateway Timeout'
+                        });
+                    }
+                }, config.timeout);
+            }
         } else {
             res.status(502).json({ message: 'Bad Gateway' });
         }
