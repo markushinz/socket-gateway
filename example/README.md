@@ -1,21 +1,35 @@
 This requires Docker and docker-compose.
 
-Run `./start.sh` to generate all required certificates and to start both layers. After that, the gateway listens on https://localhost.
+Run `./start.sh` to generate all required certificates and to start both layers as well as a simple web layer. After that, the gateway listens on https://localhost. 
 
-`config.json` allows all requests to https://jsonplaceholder.typicode.com:443.
+`config.json` allows all requests to http://localhost:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+`hosts.json` maps localhost to http://localhost:3000 and json.localhost to https://jsonplaceholder.typicode.com:443
 
+```shell
+$ curl -k https://localhost # Rather do this with your web browser. Ignore certificate warnings.
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Hello World!</title>
+</head>
+
+<body>
+    <h1>Hello World!</h1>
+
+    <!--truncated-->
+</body>
+
+</html>
+
+$ curl -k https://localhost/query?message=Hello%20World!
+
+{"message":"Hello World!"}
 ```
-$ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "jsonplaceholder.typicode.com", "path": "/todos/1"}' https://localhost/
 
-{
-  "userId": 1,
-  "id": 1,
-  "title": "delectus aut autem",
-  "completed": false
-}
-```
-
-*Optional*: To use the reverse proxy functionality, edit your `/etc/hosts` file and add the following line:
+*Optional*: Edit your `/etc/hosts` file and add the following line:
 
 ```
 127.0.0.1 json.localhost
@@ -23,8 +37,17 @@ $ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "jsonplacehol
 
 Now, you can also do the following:
 
-```
+```shell
 $ curl -k https://json.localhost/todos/1
 
-{"userId":1,"id":1,"title":"delectus aut autem","completed":false}
+{
+  "userId": 1,
+  "id": 1,
+  "title": "delectus aut autem",
+  "completed": false
+}
+
+$ curl -k https://json.localhost/posts/1 # This is not allowed
+
+{"message":"Forbidden","error":"GET https://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policies."}
 ```

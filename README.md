@@ -4,9 +4,20 @@ An API Gateway based on websockets to expose endpoints not reachable from the In
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
-**TLDR?** Have a look at `./example/` to have a fully working local setup using Docker and docker-compose.
+## TLDR?
 
-![](terminal.svg)
+Have a look at `./example/` to have a fully working local setup using Docker 🐳 and docker-compose.
+
+```shell
+$ cd example/
+$ ./start.sh # Keep running
+```
+
+```shell
+$ curl -k https://localhost/query?message=Hello%20World!
+
+{"message":"Hello World!"}
+```
 
 ## Prerequisites
 
