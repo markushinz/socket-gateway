@@ -6,11 +6,7 @@ The gateway allows you to reach endpoints not reachable due to NAT, ISP restrict
 
 **TLDR?** Have a look at `./example/` to have a fully working local setup using Docker and docker-compose.
 
- ![](screenshot.png)
-
-```
-$ curl -k -H "Content-Type: application/json" -X POST -d '{"host": "my.private.api", "path": "/helloworld"}' https://socket.gateway/
-```
+![](terminal.svg)
 
 ## Prerequisites
 
@@ -57,19 +53,20 @@ Create a file `./config/policies.json` to define which request should be allowed
 }
 ```
 
-*Optional*: Create a file `./config/hosts.json` to define host mappings between DNS names of the gateway and request targets. This allows you to use the gateway as a reverse proxy. Check the following example:
+Create a file `./config/hosts.json` to define host mappings between DNS names of the gateway (outer layer) and request targets. Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳! Check the following example:
 
 ```
 {
-    "api.socket.gateway":
+    "socket.gateway":
     {
+        "protocol": "https" // optional, defaults to "https"
         "host": "my.private.api",
-        "port": "443"
+        "port": "443" // optional, defaults to 443
     }
 }
 ```
 
-Now, all requests that are allowed by `policies.json` having the request header "host" set to "api.socket.gateway" get proxied to "my.private.api".
+Now, all requests that are allowed by `policies.json` having the request header "host" set to "socket.gateway" get proxied to "my.private.api".
 
 ### Inner Layer
 
@@ -83,37 +80,8 @@ Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`
 
 ## Gateway
 
-Use one of the following ways to use the gateway.
-
 Be aware that header values will be sanitized before forwarding them. The following headers will be removed:
 
 *host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-length, content-md5, content-range, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via*
 
-**Only option A) behaves like a reverse proxy rewriting both response headers and body.** For option B), both absolute and relative paths from subsequent requests (i.e. loading stylesheets) will likely result in an error.
-
-### A) Map DNS names
-
-This is both the easiest and best way to use the gateway. Create a file `hosts.json` as described above to map DNS names of the outer layer to the request targets.
-
-Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳!
-
-The schema is fixed to "https"!
-
-### B) Perform "POST /"
-
-Perform a `POST /`request with the following JSON body:
-
-```
-{
-	"schmea" : "https",        // optional, either http or https, defaults to https
-	"host": "my.private.api",  // required
-	"port": "443",             // optional, defaults to 80 if http else 443
-	"path": "/",               // optional, defaults to /
-	"method": "GET",           // either HEAD, GET, POST, PUT, DELETE, defaults to GET
-	"headers": {},             // optional
-	"query": {},               // optional
-	"body": {}                 // optional
-}
-```
-
-You may also use the provided form at `GET /` to perform the request.
+The gateway behaves like a reverse proxy rewriting ~~both~~ response headers ~~and body~~. 
