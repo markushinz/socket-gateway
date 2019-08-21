@@ -3,7 +3,7 @@ This requires Docker and docker-compose.
 Run `./start.sh` to generate all required certificates and to start both layers as well as a simple web layer. After that, the gateway listens on https://localhost. 
 
 `config.json` allows all requests to http://localhost:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
-`hosts.json` maps localhost to http://localhost:3000 and json.localhost to https://jsonplaceholder.typicode.com:443
+`hosts.json` maps localhost to http://localhost:3000 and json.localhost to https://jsonplaceholder.typicode.com:443
 
 ```shell
 $ curl -k https://localhost # Rather do this with your web browser. Ignore certificate warnings.
