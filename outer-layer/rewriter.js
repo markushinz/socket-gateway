@@ -24,6 +24,7 @@ const sanitizeHeaders = function (headers, ) {
     delete headers['transfer-encoding'];
     delete headers['user-agent'];
     delete headers['via'];
+    delete headers['x-socket-gateway-inner-layer-id'];
     return headers;
 }
 

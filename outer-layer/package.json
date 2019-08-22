@@ -6,11 +6,9 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@clr/icons": "^2.0.2",
-    "@clr/ui": "^2.0.2",
+    "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
     "socket.io": "^2.2.0",
-    "uuid": "^3.3.2",
-    "vue": "^2.6.10"
+    "uuid": "^3.3.2"
   }
 }

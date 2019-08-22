@@ -25,9 +25,12 @@ module.exports.createGateway = function (server) {
                 pendingRequests.delete(incomingData.uuid);
 
                 const outgoingData = {
+                    innerLayers: Array.from(innerLayers),
                     innerLayersCount: innerLayers.size,
-                    innerLayerID: socket.id,
-                    rtt: (end - pendingRequest.start) + "ms"
+                    ping: {
+                        innerLayerID: socket.id,
+                        rtt: (end - pendingRequest.start) + "ms"
+                    }
                 }
 
                 pendingRequest.res.json(outgoingData);
@@ -64,7 +67,7 @@ module.exports.createGateway = function (server) {
         });
     });
 
-    return function (event, rewriteHost, res, outgoingData) {
+    return function (event, rewriteHost, innerLayerID, res, outgoingData) {
         if (innerLayers.size > 0) {
             const pendingRequest = {
                 uuid: uuid(),
@@ -77,9 +80,13 @@ module.exports.createGateway = function (server) {
 
             outgoingData.uuid = pendingRequest.uuid;
 
-            innerLayersArray = Array.from(innerLayers);
-            innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length;
-            io.to(innerLayersArray[innerLayerScheduler]).emit(event, outgoingData);
+            if (!innerLayers.has(innerLayerID)) {
+                innerLayersArray = Array.from(innerLayers);
+                innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length;
+                innerLayerID = innerLayersArray[innerLayerScheduler];
+            }
+            res.cookie('x-socket-gateway-inner-layer-id', innerLayerID, { httpOnly: true, secure: true });
+            io.to(innerLayerID).emit(event, outgoingData);
 
             if (config.timeout) {
                 setInterval(() => {

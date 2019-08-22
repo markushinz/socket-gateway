@@ -2,9 +2,11 @@ const evaluator = require('./evaluator');
 const rewriter = require('./rewriter');
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 app.disable('x-powered-by');
 app.use(express.text({ type: '*/*' }));
+app.use(cookieParser());
 
 app.use(function (req, res, next) {
     const mapping = evaluator.mapHost(req.hostname);
@@ -31,14 +33,14 @@ app.use(function (req, res, next) {
             body
         };
 
-        app.get('gateway')('request', rewriteHost, res, outgoingData);
+        app.get('gateway')('request', rewriteHost, req.cookies['x-socket-gateway-inner-layer-id'], res, outgoingData);
     } else {
         res.status(403).json({ message: 'Forbidden', error: `${req.method} ${url} is not allowed by policies.` });
     }
 });
 
 app.get('/', function (req, res, next) {
-    app.get('gateway')('customPing', req.hostname, res, {});
+    app.get('gateway')('customPing', req.hostname, undefined, res, {});
 });
 
 app.use(function (req, res, next) {
