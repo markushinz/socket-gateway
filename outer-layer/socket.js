@@ -25,7 +25,9 @@ module.exports.createGateway = function (server) {
                 pendingRequests.delete(incomingData.uuid);
 
                 const outgoingData = {
-                    'rtt': (end - pendingRequest.start) + "ms"
+                    innerLayersCount: innerLayers.size,
+                    innerLayerID: socket.id,
+                    rtt: (end - pendingRequest.start) + "ms"
                 }
 
                 pendingRequest.res.json(outgoingData);
