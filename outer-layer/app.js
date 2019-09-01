@@ -9,17 +9,19 @@ app.use(express.text({ type: '*/*' }));
 app.use(cookieParser());
 
 app.use(function (req, res, next) {
-    const mapping = evaluator.mapHost(req.hostname);
-    if (!mapping) {
+    const target = evaluator.getTarget(req.hostname);
+    if (!target) {
         return next();
     }
-    const protocol = mapping.protocol || 'https';
-    const host = mapping.host;
-    const port = mapping.port || 443;
+    const protocol = target.protocol || 'https';
+    const host = target.host;
+    const port = target.port || 443;
 
     const url = protocol + '://' + host + ":" + port + req.path;
 
-    if (evaluator.evaluatePolicy(host, port, req.path, req.method)) {
+    const policy = target.policy || {'*': '*'};
+
+    if (evaluator.evaluatePolicy(policy, req.path, req.method)) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
         const body = typeof req.body === 'string' ? req.body : undefined;
@@ -35,7 +37,7 @@ app.use(function (req, res, next) {
 
         app.get('gateway')('request', rewriteHost, req.cookies['x-socket-gateway-inner-layer-id'], res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', error: `${req.method} ${url} is not allowed by policies.` });
+        res.status(403).json({ message: 'Forbidden', error: `${req.method} ${url} is not allowed by policy.` });
     }
 });
 

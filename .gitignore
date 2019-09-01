@@ -62,7 +62,5 @@ typings/
 
 *.key
 *.crt
-policies.json
-hosts.json
-!example/config-outer-layer/policies.json
-!example/config-outer-layer/hosts.json
+targets.yaml
+!example/config-outer-layer/targets.yaml

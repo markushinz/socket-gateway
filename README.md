@@ -49,35 +49,21 @@ The outer layer exposes the gateway functionality on port 443 (environment varia
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer.
 
-Create a file `./config/policies.json` to define which request should be allowed. Check the following example:
+Create a file `./config/targets.yaml` to define host mappings between DNS names of the gateway (outer layer) and request targets. Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳! Check the following example:
 
-```
-{
-    "my.private.api": { // allowed host(s)
-        "443": { // allowed port(s), may be *
-            "/helloworld": [ // allowed path(s), may be *
-                "GET",
-                "POST" // allowed method(s), may include *
-            ]
-        }
-    }
-}
-```
-
-Create a file `./config/hosts.json` to define host mappings between DNS names of the gateway (outer layer) and request targets. Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳! Check the following example:
-
-```
-{
-    "socket.gateway":
-    {
-        "protocol": "https" // optional, defaults to "https"
-        "host": "my.private.api",
-        "port": "443" // optional, defaults to 443
-    }
-}
+```yaml
+targets:
+  "socket.gateway": # DNS name of the outer layer
+    protocol: "https" # optional, target protocol, defaults to "https"
+    host: "my.private.api" # required, target host
+    port: 443 # optional, target port, defaults to 443
+    policy: # optional, defaults to {"*": ["*"]}
+      "/helloworld": # allowed path(s), may be *
+        - "GET"
+        - "POST" # allowed method(s), may include *
 ```
 
-Now, all requests that are allowed by `policies.json` having the request header "host" set to "socket.gateway" get proxied to "my.private.api".
+Now, all requests that are allowed by `targets.yaml` having the request header "host" set to "socket.gateway" get proxied to "my.private.api".
 
 ### Inner Layer
 

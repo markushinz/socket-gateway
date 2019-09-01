@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+const yaml = require('js-yaml');
+
 module.exports = {
     appPort: process.env.PORT || process.env.APP_PORT || 443,
     socketPort: process.env.SOCKET_PORT || 3000,
@@ -19,21 +21,9 @@ module.exports = {
 
     timeout: process.env.TIMEOUT, // ms
 
-    get policies() {
+    get targets() {
         try {
-            return JSON.parse(fs.readFileSync(__dirname + '/config/policies.json'));
-        } catch (error) {
-            console.error(error);
-            return {};
-        }
-    },
-
-    get hosts() {
-        if (!fs.existsSync(__dirname + '/config/hosts.json')) {
-            return {};
-        }
-        try {
-            return JSON.parse(fs.readFileSync(__dirname + '/config/hosts.json'));
+            return yaml.safeLoad(fs.readFileSync(__dirname + '/config/targets.yaml', 'utf8')).targets;
         } catch (error) {
             console.error(error);
             return {};

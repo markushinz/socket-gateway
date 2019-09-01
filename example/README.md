@@ -2,8 +2,7 @@ This requires Docker and docker-compose.
 
 Run `./start.sh` to generate all required certificates and to start both layers as well as a simple web layer. After that, the gateway listens on https://localhost. 
 
-`config.json` allows all requests to http://localhost:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
-`hosts.json` maps localhost to http://localhost:3000 and json.localhost to https://jsonplaceholder.typicode.com:443
+`targets.yaml` maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
 
 ```shell
 $ curl -k https://localhost # Rather do this with your web browser. Ignore certificate warnings.
@@ -49,5 +48,5 @@ $ curl -k https://json.localhost/todos/1
 
 $ curl -k https://json.localhost/posts/1 # This is not allowed
 
-{"message":"Forbidden","error":"GET https://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policies."}
+{"message":"Forbidden","error":"GET https://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy."}
 ```
