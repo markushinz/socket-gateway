@@ -19,11 +19,14 @@ app.use(function (req, res, next) {
 
     const url = protocol + '://' + host + ":" + port + req.path;
 
-    const policy = target.policy || {'*': '*'};
+    const policy = target.policy || { '*': '*' };
 
     if (evaluator.evaluatePolicy(policy, req.path, req.method)) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
+        headers['x-forwarded-for'] = req.ip;
+        headers['x-forwarded-host'] = host;
+        headers['x-forwarded-proto'] = 'https';
         const body = typeof req.body === 'string' ? req.body : undefined;
 
         const outgoingData = {
