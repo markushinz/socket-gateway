@@ -25,7 +25,7 @@ app.use(function (req, res, next) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
         headers['X-Forwarded-For'] = req.ip;
-        headers['X-Forwarded-Host'] = req.hostname;
+        headers['X-Forwarded-Host'] = rewriteHost;
         headers['X-forwarded-Proto'] = 'https';
         const body = typeof req.body === 'string' ? req.body : undefined;
 
