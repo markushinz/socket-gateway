@@ -24,9 +24,9 @@ app.use(function (req, res, next) {
     if (evaluator.evaluatePolicy(policy, req.path, req.method)) {
         const rewriteHost = req.hostname;
         const headers = rewriter.sanitizeHeaders(req.headers);
-        headers['X-Forwarded-For'] = req.ip;
-        headers['X-Forwarded-Host'] = rewriteHost;
-        headers['X-forwarded-Proto'] = 'https';
+        headers['x-forwarded-for'] = req.ip;
+        headers['x-forwarded-host'] = rewriteHost;
+        headers['x-forwarded-proto'] = 'https';
         const body = typeof req.body === 'string' ? req.body : undefined;
 
         const outgoingData = {
