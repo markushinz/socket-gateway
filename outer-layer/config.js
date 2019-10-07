@@ -19,7 +19,7 @@ module.exports = {
         rejectUnauthorized: true
     },
 
-    timeout: process.env.TIMEOUT, // ms
+    timeout: process.env.TIMEOUT || 60000, // ms
 
     get targets() {
         try {
