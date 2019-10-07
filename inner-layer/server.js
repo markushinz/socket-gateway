@@ -51,6 +51,10 @@ io.on('customPing', function (incomingData) {
     io.emit('customPing', outgoingData);
 });
 
+io.on('pong', function (latency) {
+    io.emit('latency', latency);
+});
+
 io.on('disconnect', function () {
     console.log('Outer Layer disconnected.');
 });

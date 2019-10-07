@@ -22,7 +22,7 @@ $ curl -k https://localhost/query?message=Hello%20World!
 ## Prerequisites
 
 * **Outer Layer**: A machine/server that is reachable from the Internet (usually cloud hosted).
-* **Inner Layer(s)**: A machine/server that is able to reach the desired endpoint(s) (usually a machine/server located in the same LAN) that is able to reach the Internet. The other way round is not required! If you deploy multiple inner layers, the requests will be forwarded to the different inner layers using round robin scheduling.
+* **Inner Layer(s)**: A machine/server that is able to reach the desired endpoint(s) (usually a machine/server located in the same LAN) that is able to reach the Internet. The other way round is not required! If you deploy multiple inner layers, the requests will be forwarded to the different inner layers using a custom scheduling technique.
 
 ### Certificates
 

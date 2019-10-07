@@ -38,14 +38,14 @@ app.use(function (req, res, next) {
             body
         };
 
-        app.get('gateway')('request', rewriteHost, req.cookies['x-socket-gateway-inner-layer-id'], res, outgoingData);
+        app.get('gateway')('request', rewriteHost, res, outgoingData);
     } else {
         res.status(403).json({ message: 'Forbidden', error: `${req.method} ${url} is not allowed by policy.` });
     }
 });
 
 app.get('/', function (req, res, next) {
-    app.get('gateway')('customPing', req.hostname, undefined, res, {});
+    app.get('gateway')('customPing', req.hostname, res, {});
 });
 
 app.use(function (req, res, next) {

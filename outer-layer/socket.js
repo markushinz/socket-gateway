@@ -8,7 +8,6 @@ const uuid = require('uuid/v1');
 const pendingRequests = new Map();
 
 const innerLayers = new Set();
-var innerLayerScheduler = 0;
 
 module.exports.createGateway = function (server) {
     const io = socketio(server);
@@ -35,6 +34,10 @@ module.exports.createGateway = function (server) {
 
                 pendingRequest.res.json(outgoingData);
             }
+        });
+
+        socket.on('latency', function (latency) {
+            console.log(`Latency for ${socket.id}: ${latency}`);
         });
 
         socket.on('request', function (incomingData) {
@@ -67,7 +70,7 @@ module.exports.createGateway = function (server) {
         });
     });
 
-    return function (event, rewriteHost, innerLayerID, res, outgoingData) {
+    return function (event, rewriteHost, res, outgoingData) {
         if (innerLayers.size > 0) {
             const pendingRequest = {
                 uuid: uuid(),
@@ -80,12 +83,13 @@ module.exports.createGateway = function (server) {
 
             outgoingData.uuid = pendingRequest.uuid;
 
-            if (!innerLayers.has(innerLayerID)) {
-                innerLayersArray = Array.from(innerLayers);
-                innerLayerScheduler = (innerLayerScheduler + 1) % innerLayersArray.length;
-                innerLayerID = innerLayersArray[innerLayerScheduler];
-            }
-            res.cookie('x-socket-gateway-inner-layer-id', innerLayerID, { httpOnly: true, secure: true });
+            // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
+            // of one TCP connection get routed to the same inner layer.
+            // This does not garantuee any fair scheduling.
+            const innerLayersArray = Array.from(innerLayers);
+            const innerLayerIndex = res.req.socket.remotePort % innerLayersArray.length;
+            const innerLayerID = innerLayersArray[innerLayerIndex];
+
             io.to(innerLayerID).emit(event, outgoingData);
 
             if (config.timeout) {
