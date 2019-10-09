@@ -44,13 +44,6 @@ io.on('request', function (incomingData) {
     });
 });
 
-io.on('customPing', function (incomingData) {
-    const outgoingData = {
-        uuid: incomingData.uuid,
-    };
-    io.emit('customPing', outgoingData);
-});
-
 io.on('pong', function (latency) {
     io.emit('latency', latency);
 });
