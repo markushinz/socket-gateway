@@ -6,6 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
     "js-yaml": "^3.13.1",
