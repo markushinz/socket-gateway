@@ -45,6 +45,8 @@ app.use(function (req, res, next) {
 });
 
 app.get('/', function (req, res, next) {
+    // res.status(401).setHeader('WWW-Authenticate', 'Basic realm="example"')
+    // return res.end()
     app.get('gateway')('customPing', req.hostname, res, {});
 });
 

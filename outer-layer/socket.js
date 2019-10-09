@@ -22,7 +22,7 @@ module.exports.createGateway = function (server) {
 
         socket.on('latency', function (latency) {
             const latencies = innerLayers.get(socket.id).latencies;
-            latencies.push(latency);
+            latencies.unshift(latency);
             if (latencies.length > 10) {
                 latencies.pop();
             }
