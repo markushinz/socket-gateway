@@ -48,7 +48,7 @@ app.use(function (req, res, next) {
     }
 });
 
-app.get('/', function (req, res, next) {
+app.get('/admin', function (req, res, next) {
     if (config.adminCredentials) {
         if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
             const innerLayers = app.get('gateway').innerLayers
