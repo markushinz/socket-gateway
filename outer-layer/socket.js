@@ -14,7 +14,7 @@ module.exports.createGateway = function (server) {
     io.on('connection', function (socket) {
         innerLayers.set(socket.id, {
             id: socket.id,
-            ip: socket.handshake.address,
+            // ip: socket.handshake.address,
             latencies: []
         });
 
