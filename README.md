@@ -55,7 +55,7 @@ Create a file `./config/targets.yaml` to define host mappings between DNS names 
 targets:
   "socket.gateway": # DNS name of the outer layer
     protocol: "https" # optional, target protocol, defaults to "https"
-    host: "my.private.api" # required, target host
+    hostname: "my.private.api" # required, target hostname
     port: 443 # optional, target port, defaults to 443
     policy: # optional, defaults to {"*": ["*"]}
       "/helloworld": # allowed path(s), may be *

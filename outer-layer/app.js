@@ -13,20 +13,20 @@ app.use(express.text({ type: '*/*' }));
 app.use(cookieParser());
 
 app.use(function (req, res, next) {
-    const target = evaluator.getTarget(req.hostname);
+    const target = evaluator.getTarget(req.headers['host']);
     if (!target) {
         return next();
     }
     const protocol = target.protocol || 'https';
-    const host = target.host;
+    const hostname = target.hostname;
     const port = target.port || 443;
 
-    const url = protocol + '://' + host + ":" + port + req.path;
+    const url = protocol + '://' + hostname + ":" + port + req.path;
 
     const policy = target.policy || { '*': '*' };
 
     if (evaluator.evaluatePolicy(policy, req.path, req.method)) {
-        const rewriteHost = req.hostname;
+        const rewriteHost = req.headers['host'];
         const headers = rewriter.sanitizeHeaders(req.headers);
         headers['x-forwarded-for'] = req.ip;
         headers['x-forwarded-host'] = rewriteHost;
@@ -34,7 +34,7 @@ app.use(function (req, res, next) {
         const body = typeof req.body === 'string' ? req.body : undefined;
 
         const outgoingData = {
-            host,
+            host: hostname + (port === 443 ? '' : `:${port}`),
             url,
             method: req.method,
             headers,
