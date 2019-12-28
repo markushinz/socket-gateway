@@ -10,7 +10,8 @@ Have a look at `./example/` to have a fully working local setup using Docker ğŸ
 
 ```shell
 $ cd example/
-$ ./start.sh # Keep running
+$ ./init.sh
+$ docker-compose up --build # Keep running
 ```
 
 ```shell

@@ -1,6 +1,6 @@
 This requires Docker and docker-compose.
 
-Run `./start.sh` to generate all required certificates and to start both layers as well as a simple web layer. After that, the gateway listens on https://localhost. 
+Run `./init.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web layer. After that, the gateway listens on https://localhost. 
 
 `targets.yaml` maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
 

@@ -18,5 +18,3 @@ cp outerLayer.key ./config-outer-layer/server.key
 mv outerLayer.crt ./config-outer-layer/outerLayer.crt
 mv outerLayer.key ./config-outer-layer/outerLayer.key
 mv innerLayer.crt ./config-outer-layer/innerLayer.crt
-
-docker-compose up --build
