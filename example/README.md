@@ -68,7 +68,7 @@ Finally, run `kubectl apply -f ./kubernetes` to create services and deployments 
 $ minikube tunnel # expose the LoadBalancer service, keep running
 $ serviceIP=$(kubectl get service outer-layer-load-balancer-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
-$ curl -k -H "Host: localhost" "https://$serviceIP/query\?message=Hello%20World!"
+$ curl -k -H "Host: localhost" "https://$serviceIP/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 
