@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: outer-layer-service
+spec:
+  selector:
+    app: outer-layer
+  ports:
+    - protocol: TCP
+      port: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: outer-layer-load-balancer-service
+spec:
+  selector:
+    app: outer-layer
+  ports:
+    - protocol: TCP
+      port: 443
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-service
+spec:
+  selector:
+    app: hello-world
+  ports:
+    - protocol: TCP
+      port: 3000
