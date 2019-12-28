@@ -15,7 +15,7 @@ $ docker-compose up --build # Keep running
 ```
 
 ```shell
-$ curl -k https://localhost/query?message=Hello%20World!
+$ curl -k "https://localhost/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 ```
