@@ -1,7 +1,7 @@
 targets:
   "localhost":
     protocol: "http"
-    hostname: "hello-world"
+    hostname: "hello-world-service"
     port: 3000
   "json.localhost":
     hostname: "jsonplaceholder.typicode.com"
