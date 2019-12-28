@@ -1,8 +1,10 @@
-This requires Docker and docker-compose.
+## Example
 
-Run `./init.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web layer. After that, the gateway listens on https://localhost. 
+Please have a look at the configuration files, first. `targets.yaml` maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
 
-`targets.yaml` maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+### Docker 🐳 and docker-compose
+
+Run `./init.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on https://localhost. 
 
 ```shell
 $ curl -k https://localhost # Rather do this with your web browser. Ignore certificate warnings.
@@ -23,7 +25,7 @@ $ curl -k https://localhost # Rather do this with your web browser. Ignore certi
 
 </html>
 
-$ curl -k https://localhost/query?message=Hello%20World!
+$ curl -k "https://localhost/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 ```
@@ -49,4 +51,32 @@ $ curl -k https://json.localhost/todos/1
 $ curl -k https://json.localhost/posts/1 # This is not allowed
 
 {"message":"Forbidden","error":"GET https://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy."}
+```
+
+### Kubernetes using Minikube
+
+Run `./init.sh` to generate all required certificates. Next, create ConfigMaps for the two layers (You probably should use secrets in a real production setup):
+
+```shell
+$ kubectl create configmap config-outer-layer --from-file=./config-outer-layer
+$ kubectl create configmap config-inner-layer --from-file=./config-inner-layer
+```
+
+Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers as well as for a simple web server and `minikube tunnel` to expose the LoadBalancer service.
+
+```shell
+$ serviceIP=$(kubectl get service outer-layer-load-balancer-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+
+$ curl -k -H "Host: localhost" "https://$serviceIP/query\?message=Hello%20World!"
+
+{"message":"Hello World!"}
+
+$ curl -k -H "Host: json.localhost" https://$serviceIP/todos/1
+
+{
+  "userId": 1,
+  "id": 1,
+  "title": "delectus aut autem",
+  "completed": false
+}
 ```
