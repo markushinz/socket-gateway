@@ -53,7 +53,7 @@ $ curl -k https://json.localhost/posts/1 # This is not allowed
 {"message":"Forbidden","error":"GET https://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy."}
 ```
 
-### Kubernetes using Minikube
+### Kubernetes (using Minikube)
 
 Run `./init.sh` to generate all required certificates. Next, create ConfigMaps for the two layers (You probably should use secrets in a real production setup):
 
@@ -62,9 +62,10 @@ $ kubectl create configmap config-outer-layer --from-file=./config-outer-layer
 $ kubectl create configmap config-inner-layer --from-file=./config-inner-layer
 ```
 
-Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers as well as for a simple web server and `minikube tunnel` to expose the LoadBalancer service.
+Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers as well as for a simple web server.
 
 ```shell
+$ minikube tunnel # expose the LoadBalancer service, keep running
 $ serviceIP=$(kubectl get service outer-layer-load-balancer-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
 $ curl -k -H "Host: localhost" "https://$serviceIP/query\?message=Hello%20World!"
