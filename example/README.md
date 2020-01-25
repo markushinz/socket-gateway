@@ -55,11 +55,11 @@ $ curl -k https://json.localhost/posts/1 # This is not allowed
 
 ### Kubernetes (using Minikube)
 
-Run `./init.sh` to generate all required certificates. Next, create ConfigMaps for the two layers (You probably should use secrets in a real production setup):
+Run `./init.sh` to generate all required certificates. Next, create secrets for the two layers:
 
 ```shell
-$ kubectl create configmap config-outer-layer --from-file=./config-outer-layer
-$ kubectl create configmap config-inner-layer --from-file=./config-inner-layer
+$ kubectl create secret generic config-outer-layer --from-file=./config-outer-layer
+$ kubectl create secret generic config-inner-layer --from-file=./config-inner-layer
 ```
 
 Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers as well as for a simple web server.

@@ -28,8 +28,8 @@ spec:
             mountPath: /usr/src/socket-gateway/inner-layer/config
       volumes:
       - name: config-inner-layer
-        configMap:
-          name: config-inner-layer
+        secret:
+          secretName: config-inner-layer
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -62,8 +62,8 @@ spec:
             mountPath: /usr/src/socket-gateway/outer-layer/config
       volumes:
       - name: config-outer-layer
-        configMap:
-          name: config-outer-layer
+        secret:
+          secretName: config-outer-layer
 ---
 apiVersion: apps/v1
 kind: Deployment
