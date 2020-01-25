@@ -6,7 +6,6 @@ const app = require('./app');
 const appServer = https.createServer(config.appTlsOptions, app);
 
 const socket = require('./socket');
-console.log(config.socketTlsOptions);
 const socketServer = https.createServer(config.socketTlsOptions);
 const gateway = socket.createGateway(socketServer);
 
