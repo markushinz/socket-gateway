@@ -10,7 +10,7 @@
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
     "js-yaml": "^3.13.1",
-    "socket.io": "^2.2.0",
-    "uuid": "^3.3.2"
+    "socket.io": "^2.3.0",
+    "uuid": "^3.4.0"
   }
 }

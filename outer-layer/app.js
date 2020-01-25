@@ -44,15 +44,15 @@ app.use(function (req, res, next) {
 
         app.get('gateway').request(rewriteHost, res, outgoingData);
     } else {
-        res.status(403).json({ message: 'Forbidden', error: `${req.method} ${url} is not allowed by policy.` });
+        res.status(403).send(`Forbidden: ${req.method} ${url} is not allowed by policy.`);
     }
 });
 
 app.get('/admin', function (req, res, next) {
     if (config.adminCredentials) {
         if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
-            const innerLayers = app.get('gateway').innerLayers
-            res.setHeader('content-type', 'text/html; charset=utf-8')
+            const innerLayers = app.get('gateway').innerLayers;
+            res.setHeader('content-type', 'text/html; charset=utf-8');
             res.send(`<!DOCTYPE html>
 <html lang="en">
 
@@ -72,8 +72,8 @@ app.get('/admin', function (req, res, next) {
 
 </html>`);
         } else {
-            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
-            res.status(401).json({ message: 'Unauthorized' });
+            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
+            res.sendStatus(401);
         }
     } else {
         next();
@@ -81,12 +81,12 @@ app.get('/admin', function (req, res, next) {
 });
 
 app.use(function (req, res, next) {
-    res.status(404).json({ message: 'Not Found' });
+    res.sendStatus(404);
 });
 
 app.use(function (err, req, res, next) {
     console.error(err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.sendStatus(500);
 });
 
 module.exports = app;

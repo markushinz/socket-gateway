@@ -50,7 +50,7 @@ module.exports.createGateway = function (server) {
 
             if (innerLayers.size == 0) {
                 pendingRequests.forEach(function (pendingRequest) {
-                    pendingRequest.res.status(502).json({ message: 'Bad Gateway' });
+                    pendingRequest.res.sendStatus(502);
                 });
             }
             pendingRequests.clear();
@@ -66,30 +66,28 @@ module.exports.createGateway = function (server) {
                     rewriteHost,
                     res
                 };
-    
+
                 pendingRequests.set(pendingRequest.uuid, pendingRequest);
-    
+
                 outgoingData.uuid = pendingRequest.uuid;
-    
+
                 // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
                 // of one TCP connection get routed to the same inner layer.
                 // This does not garantuee any fair scheduling.
                 const innerLayersArray = Array.from(innerLayers.keys());
                 const innerLayerIndex = res.req.socket.remotePort % innerLayersArray.length;
                 const innerLayerID = innerLayersArray[innerLayerIndex];
-    
+
                 io.to(innerLayerID).emit('request', outgoingData);
-    
+
                 setInterval(() => {
                     if (pendingRequests.has(pendingRequest.uuid)) {
                         pendingRequests.delete(pendingRequest.uuid);
-                        res.status(504).json({
-                            message: 'Gateway Timeout'
-                        });
+                        res.sendStatus(504);
                     }
                 }, config.timeout);
             } else {
-                res.status(502).json({ message: 'Bad Gateway' });
+                res.sendStatus(502);
             }
         },
         get innerLayers() {
