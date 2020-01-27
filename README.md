@@ -46,7 +46,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out 
 
 ### Outer Layer
 
-The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "SG_APP_PORT"). It accepts connections from (the) inner layer(s) on port 3000 (environment variable "SG_SOCKET_PORT"). Certificate and configuration files must be placed in the `./config/` directory.
+The outer layer exposes the gateway functionality on port 443 (environment variable `PORT` or `SG_APP_PORT`). It accepts connections from (the) inner layer(s) on port 3000 (environment variable `SG_SOCKET_PORT`). Certificate and configuration files must be placed in the `./config/` directory.
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer.
 
@@ -68,7 +68,7 @@ targets:
 
 Now, all requests that are allowed by `targets.yaml` having the request header "host" set to "socket.gateway" get proxied to "my.private.api".
 
-You can also specify the file contents or alternative file locations using environment variables such as "SG_INNER_LAYER_KEY",  "SG_SERVER_CERT", "SG_OUTER_LAYER_CERT_PATH", "SG_TARGETS_PATH", ....
+You can also specify the file contents or alternative file locations using environment variables such as `SG_INNER_LAYER_KEY`,  `SG_SERVER_CERT`, `SG_OUTER_LAYER_CERT_PATH`, `SG_TARGETS_PATH`, ....
 
 ### Inner Layer
 
@@ -78,7 +78,7 @@ Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./confi
 
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
-You can also specify the file contents or alternative file locations using environment variables such as "SG_INNER_LAYER_KEY",  "SG_SERVER_CERT", "SG_OUTER_LAYER_CERT_PATH", ....
+You can also specify the file contents or alternative file locations using environment variables such as `SG_INNER_LAYER_KEY`,  `SG_SERVER_CERT`, `SG_OUTER_LAYER_CERT_PATH`, ....
 
 ## Gateway
 
