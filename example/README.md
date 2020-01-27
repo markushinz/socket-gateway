@@ -41,7 +41,7 @@ $ curl -H "Host: json.localhost" http://localhost/todos/1
 
 $ curl http://json.localhost/posts/1 # This is not allowed
 
-{"message":"Forbidden","error":"GET http://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy."}
+GET http://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy.
 ```
 
 ### Kubernetes (using Minikube)
