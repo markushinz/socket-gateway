@@ -51,21 +51,20 @@ Run `./createCertificates.sh` to generate all required certificates. Next, creat
 ```shell
 $ kubectl create secret generic secrets-outer-layer --from-file=./config-outer-layer/outerLayer.key
 $ kubectl create secret generic secrets-inner-layer --from-file=./config-inner-layer/innerLayer.key
-$ kubectl create configmap config-outer-layer --from-file=./config-outer-layer/innerLayer.crt --from-file=./config-outer-layer/outerLayer.crt --from-file=./config-outer-layer/targets.yaml
-$ kubectl create configmap config-inner-layer --from-file=./config-inner-layer/innerLayer.crt --from-file=./config-inner-layer/outerLayer.crt
+$ kubectl create configmap config-outer-layer --from-file=./config-outer-layer/innerLayer.crt \
+  --from-file=./config-outer-layer/outerLayer.crt --from-file=./config-outer-layer/targets.yaml
+$ kubectl create configmap config-inner-layer --from-file=./config-inner-layer/innerLayer.crt \
+  --from-file=./config-inner-layer/outerLayer.crt
 ```
 
-Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers as well as for a simple web server.
+Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers, a simple web server and an ingress.
 
 ```shell
-$ minikube tunnel # expose the LoadBalancer service, keep running
-$ serviceIP=$(kubectl get service outer-layer-load-balancer-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
-
-$ curl -H "Host: localhost" "http://$serviceIP/query?message=Hello%20World!"
+$ curl -H "Host: localhost" "http://$(minikube ip)/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 
-$ curl -H "Host: json.localhost" "http://$serviceIP/todos/1"
+$ curl -H "Host: json.localhost" "http://$(minikube ip)/todos/1"
 
 {
   "userId": 1,
