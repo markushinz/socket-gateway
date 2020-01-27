@@ -46,18 +46,20 @@ $ curl http://json.localhost/posts/1 # This is not allowed
 
 ### Kubernetes (using Minikube)
 
-Run `./createCertificates.sh` to generate all required certificates. Next, create secrets and configMaps for the two layers:
+Run `./createCertificates.sh` to generate all required certificates. Next, create all required resources:
 
 ```shell
 $ kubectl create secret generic secrets-outer-layer --from-file=./config-outer-layer/outerLayer.key
 $ kubectl create secret generic secrets-inner-layer --from-file=./config-inner-layer/innerLayer.key
+
 $ kubectl create configmap config-outer-layer --from-file=./config-outer-layer/innerLayer.crt \
   --from-file=./config-outer-layer/outerLayer.crt --from-file=./config-outer-layer/targets.yaml
 $ kubectl create configmap config-inner-layer --from-file=./config-inner-layer/innerLayer.crt \
   --from-file=./config-inner-layer/outerLayer.crt
-```
 
-Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers, a simple web server and an ingress.
+$ # minikube addons enable ingress
+$ kubectl apply -f ./kubernetes
+```
 
 ```shell
 $ curl -H "Host: localhost" "http://$(minikube ip)/query?message=Hello%20World!"
