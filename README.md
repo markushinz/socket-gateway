@@ -15,7 +15,7 @@ $ docker-compose up --build # Keep running
 ```
 
 ```shell
-$ curl -k "https://localhost/query?message=Hello%20World!"
+$ curl "http://localhost/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 ```
@@ -39,16 +39,18 @@ echo -e "[req]\ndistinguished_name = req_distinguished_name\nx509_extensions = v
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout outerLayer.key -out outerLayer.crt -config outerLayer.conf -extensions "v3_req"
 ```
 
-* A sever certificate for the outer layer. Let's Encrypt is your friend 😉. Alternatively, you can also use the outer layer certificate you just created.
+* A sever certificate for the outer layer. Let's Encrypt is your friend 😉. Alternatively, you can also use the outer layer certificate you just created or serve the outer layer via HTTP.
 
 
 ## Deployment
 
 ### Outer Layer
 
-The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "APP_PORT"). It accepts connections from (the) inner layer(s) on port 3000 (environment variable "SOCKET_PORT"). Certificate and configuration files must be placed in the `./config/` directory.
+The outer layer exposes the gateway functionality on port 443 (environment variable "PORT" or "SG_APP_PORT"). It accepts connections from (the) inner layer(s) on port 3000 (environment variable "SG_SOCKET_PORT"). Certificate and configuration files must be placed in the `./config/` directory.
 
 Put files `server.crt`, `server.key`, `innerLayer.crt`, `outerLayer.crt`, and `outerLayer.key` into `./config/`. The certificates are used for TLS connections from/to clients as well as from/to the inner layer.
+
+If you deploy the gateway behind a reverse proxy such as Apache or Nginx, you can also serve the outer layer using HTTP. The default port will then be 80 and you do not have to provide `server.crt`, `server.key` or respective environment variables. The connection between the outer and inner layer always uses TLS.
 
 Create a file `./config/targets.yaml` to define host mappings between DNS names of the gateway (outer layer) and request targets. Keep in mind that multiple A or CNAME DNS records can point to the same outer layer 🥳! Check the following example:
 
@@ -66,15 +68,17 @@ targets:
 
 Now, all requests that are allowed by `targets.yaml` having the request header "host" set to "socket.gateway" get proxied to "my.private.api".
 
+You can also specify the file contents or alternative file locations using environment variables such as "SG_INNER_LAYER_KEY",  "SG_SERVER_CERT", "SG_OUTER_LAYER_CERT_PATH", "SG_TARGETS_PATH", ....
+
 ### Inner Layer
 
-The inner layer requires an environment variable "OUTER_LAYER"=dns.outer.layer:port. Certificate files must be placed in the `./config/` directory.
+The inner layer requires an environment variable "SG_OUTER_LAYER=dns.outer.layer:port". Certificate files must be placed in the `./config/` directory.
 
 Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./config/`. The certificate is used for TLS connections from/to the outer layer.
 
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
-Finally, set the URL of the outer layer as an environment variable `OUTER_LAYER`.
+You can also specify the file contents or alternative file locations using environment variables such as "SG_INNER_LAYER_KEY",  "SG_SERVER_CERT", "SG_OUTER_LAYER_CERT_PATH", ....
 
 ## Gateway
 
@@ -82,4 +86,4 @@ Be aware that header values will be sanitized before forwarding them. The follow
 
 *host, accept, accept-charset, accept-encoding, accept-language, accept-ranges, cache-control, content-encoding, content-length, content-md5, content-range, connection, date, expect, max-forwards, pragma, proxy-authorization, referer, te, transfer-encoding, user-agent, via*
 
-The gateway behaves like a reverse proxy rewriting ~~both~~ response headers ~~and body~~. 
+The gateway behaves like a reverse proxy rewriting response headers. 

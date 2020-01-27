@@ -2,7 +2,6 @@ const config = require('./config');
 
 const socketio = require('socket.io-client');
 const axios = require('axios');
-
 const io = socketio(config.outerLayer, config.tlsOptions);
 
 console.log(`Connecting to outer layer ${config.outerLayer}...`);
@@ -37,8 +36,8 @@ io.on('request', function (incomingData) {
             uuid: incomingData.uuid,
             host: incomingData.host,
             statusCode: 500,
-            body: '{ "message": "Internal Server Error" }',
-            headers: { 'Content-Type': 'application/json' }
+            body: 'Internal Server Error',
+            headers: { 'Content-Type': 'text/plain' }
         }
         io.emit('request', outgoingData);
     });

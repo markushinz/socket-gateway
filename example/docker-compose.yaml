@@ -1,24 +1,25 @@
 version: '3'
 services:
-  outer-layer-service:
-    build: ../outer-layer # https://github.com/markushinz/socket-gateway.git#:outer-layer
-    image: markushinz/socket-gateway-outer-layer
-    restart: always
-    environment:
-      - NODE_ENV=production
-    ports:
-      - 443:443
-    volumes:
-      - ./config-outer-layer:/usr/src/socket-gateway/outer-layer/config
   inner-layer-service:
     build: ../inner-layer # https://github.com/markushinz/socket-gateway.git#:inner-layer
     image: markushinz/socket-gateway-inner-layer
     restart: always
     environment:
       - NODE_ENV=production
-      - OUTER_LAYER=https://outer-layer-service:3000
+      - SG_OUTER_LAYER=wss://outer-layer-service:3000
     volumes:
       - ./config-inner-layer:/usr/src/socket-gateway/inner-layer/config
+  outer-layer-service:
+    build: ../outer-layer # https://github.com/markushinz/socket-gateway.git#:outer-layer
+    image: markushinz/socket-gateway-outer-layer
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - SG_HTTP=true
+    ports:
+      - 80:80
+    volumes:
+      - ./config-outer-layer:/usr/src/socket-gateway/outer-layer/config
   hello-world-service:
     build: ./hello-world # https://github.com/markushinz/socket-gateway.git#:example/hello-world
     image: markushinz/socket-gateway-hello-world

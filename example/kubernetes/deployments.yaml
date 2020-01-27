@@ -20,8 +20,8 @@ spec:
           env:
           - name: NODE_ENV
             value: "production"
-          - name: OUTER_LAYER
-            value: "https://outer-layer-service:3000"
+          - name: SG_OUTER_LAYER
+            value: "wss://outer-layer-service:3000"
           imagePullPolicy: Always
           volumeMounts:
           - name: config-inner-layer
@@ -53,8 +53,10 @@ spec:
           env:
           - name: NODE_ENV
             value: production
+          - name: SG_HTTP
+            value: "true"
           ports:
-            - containerPort: 443
+            - containerPort: 80
             - containerPort: 3000
           imagePullPolicy: Always
           volumeMounts:

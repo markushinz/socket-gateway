@@ -4,10 +4,10 @@ Please have a look at the configuration files, first. `targets.yaml` maps localh
 
 ### Docker 🐳 and docker-compose
 
-Run `./init.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on https://localhost. 
+Run `./init.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80). 
 
 ```shell
-$ curl -k https://localhost # Rather do this with your web browser. Ignore certificate warnings.
+$ curl http://localhost # Rather do this with your web browser.
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +25,7 @@ $ curl -k https://localhost # Rather do this with your web browser. Ignore certi
 
 </html>
 
-$ curl -k "https://localhost/query?message=Hello%20World!"
+$ curl "http://localhost/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 ```
@@ -39,7 +39,7 @@ $ curl -k "https://localhost/query?message=Hello%20World!"
 Now, you can also do the following:
 
 ```shell
-$ curl -k https://json.localhost/todos/1
+$ curl http://json.localhost/todos/1
 
 {
   "userId": 1,
@@ -48,9 +48,9 @@ $ curl -k https://json.localhost/todos/1
   "completed": false
 }
 
-$ curl -k https://json.localhost/posts/1 # This is not allowed
+$ curl http://json.localhost/posts/1 # This is not allowed
 
-{"message":"Forbidden","error":"GET https://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy."}
+{"message":"Forbidden","error":"GET http://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy."}
 ```
 
 ### Kubernetes (using Minikube)
@@ -68,11 +68,11 @@ Finally, run `kubectl apply -f ./kubernetes` to create services and deployments 
 $ minikube tunnel # expose the LoadBalancer service, keep running
 $ serviceIP=$(kubectl get service outer-layer-load-balancer-service -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
-$ curl -k -H "Host: localhost" "https://$serviceIP/query?message=Hello%20World!"
+$ curl -H "Host: localhost" "http://$serviceIP/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 
-$ curl -k -H "Host: json.localhost" https://$serviceIP/todos/1
+$ curl -H "Host: json.localhost" http://$serviceIP/todos/1
 
 {
   "userId": 1,

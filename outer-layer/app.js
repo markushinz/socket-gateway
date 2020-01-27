@@ -19,7 +19,7 @@ app.use(function (req, res, next) {
     }
     const protocol = target.protocol || 'https';
     const hostname = target.hostname;
-    const port = target.port || 443;
+    const port = target.port || protocol === 'http' ? 80 : 443;
 
     const url = protocol + '://' + hostname + ":" + port + req.path;
 
@@ -30,11 +30,11 @@ app.use(function (req, res, next) {
         const headers = rewriter.sanitizeHeaders(req.headers);
         headers['x-forwarded-for'] = req.ip;
         headers['x-forwarded-host'] = rewriteHost;
-        headers['x-forwarded-proto'] = 'https';
+        // headers['x-forwarded-proto'] = 'https'; // This is undecidable if also http is now possible.
         const body = typeof req.body === 'string' ? req.body : undefined;
 
         const outgoingData = {
-            host: hostname + (port === 443 ? '' : `:${port}`),
+            host: `${hostname}:${port}`,
             url,
             method: req.method,
             headers,
@@ -44,7 +44,7 @@ app.use(function (req, res, next) {
 
         app.get('gateway').request(rewriteHost, res, outgoingData);
     } else {
-        res.status(403).send(`Forbidden: ${req.method} ${url} is not allowed by policy.`);
+        res.status(403).type('text').send(`Forbidden: ${req.method} ${url} is not allowed by policy.`);
     }
 });
 
