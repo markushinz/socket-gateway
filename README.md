@@ -10,7 +10,7 @@ Have a look at `./example/` to have a fully working local setup using Docker ğŸ
 
 ```shell
 $ cd example/
-$ ./init.sh
+$ ./createCertificates.sh
 $ docker-compose up --build # Keep running
 ```
 

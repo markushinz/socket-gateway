@@ -10,7 +10,7 @@ const cache = {
 module.exports = {
     appPort: process.env.PORT ||
         process.env.SG_APP_PORT ||
-        process.env.SG_HTTP === 'true' ? 80 : 443,
+        (process.env.SG_HTTP === 'true' ? 80 : 443),
     socketPort: process.env.SG_SOCKET_PORT || 3000,
 
     appTlsOptions: process.env.SG_HTTP === 'true' ? null : {

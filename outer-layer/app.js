@@ -19,8 +19,7 @@ app.use(function (req, res, next) {
     }
     const protocol = target.protocol || 'https';
     const hostname = target.hostname;
-    const port = target.port || protocol === 'http' ? 80 : 443;
-
+    const port = target.port || (protocol === 'http' ? 80 : 443);
     const url = protocol + '://' + hostname + ":" + port + req.path;
 
     const policy = target.policy || { '*': '*' };

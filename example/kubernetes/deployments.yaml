@@ -22,14 +22,22 @@ spec:
             value: "production"
           - name: SG_OUTER_LAYER
             value: "wss://outer-layer-service:3000"
+          - name: SG_INNER_LAYER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: secrets-inner-layer
+                key: innerLayer.key
           imagePullPolicy: Always
           volumeMounts:
           - name: config-inner-layer
             mountPath: /usr/src/socket-gateway/inner-layer/config
       volumes:
-      - name: config-inner-layer
+      - name: secrets-inner-layer
         secret:
-          secretName: config-inner-layer
+          secretName: secrets-inner-layer
+      - name: config-inner-layer
+        configMap:
+          name: config-inner-layer
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,6 +63,11 @@ spec:
             value: production
           - name: SG_HTTP
             value: "true"
+          - name: SG_OUTER_LAYER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: secrets-outer-layer
+                key: outerLayer.key
           ports:
             - containerPort: 80
             - containerPort: 3000
@@ -63,9 +76,12 @@ spec:
           - name: config-outer-layer
             mountPath: /usr/src/socket-gateway/outer-layer/config
       volumes:
-      - name: config-outer-layer
+      - name: secrets-outer-layer
         secret:
-          secretName: config-outer-layer
+          secretName: secrets-outer-layer
+      - name: config-outer-layer
+        configMap:
+          name: config-outer-layer
 ---
 apiVersion: apps/v1
 kind: Deployment

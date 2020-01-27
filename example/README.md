@@ -4,7 +4,7 @@ Please have a look at the configuration files, first. `targets.yaml` maps localh
 
 ### Docker 🐳 and docker-compose
 
-Run `./init.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80). 
+Run `./createCertificates.sh` to generate all required certificates and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80). 
 
 ```shell
 $ curl http://localhost # Rather do this with your web browser.
@@ -28,18 +28,8 @@ $ curl http://localhost # Rather do this with your web browser.
 $ curl "http://localhost/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
-```
 
-*Optional*: Edit your `/etc/hosts` file and add the following line:
-
-```
-127.0.0.1 json.localhost
-```
-
-Now, you can also do the following:
-
-```shell
-$ curl http://json.localhost/todos/1
+$ curl -H "Host: json.localhost" http://localhost/todos/1
 
 {
   "userId": 1,
@@ -55,11 +45,13 @@ $ curl http://json.localhost/posts/1 # This is not allowed
 
 ### Kubernetes (using Minikube)
 
-Run `./init.sh` to generate all required certificates. Next, create secrets for the two layers:
+Run `./createCertificates.sh` to generate all required certificates. Next, create secrets and configMaps for the two layers:
 
 ```shell
-$ kubectl create secret generic config-outer-layer --from-file=./config-outer-layer
-$ kubectl create secret generic config-inner-layer --from-file=./config-inner-layer
+$ kubectl create secret generic secrets-outer-layer --from-file=./config-outer-layer/outerLayer.key
+$ kubectl create secret generic secrets-inner-layer --from-file=./config-inner-layer/innerLayer.key
+$ kubectl create configmap config-outer-layer --from-file=./config-outer-layer/innerLayer.crt --from-file=./config-outer-layer/outerLayer.crt --from-file=./config-outer-layer/targets.yaml
+$ kubectl create configmap config-inner-layer --from-file=./config-inner-layer/innerLayer.crt --from-file=./config-inner-layer/outerLayer.crt
 ```
 
 Finally, run `kubectl apply -f ./kubernetes` to create services and deployments for both layers as well as for a simple web server.
@@ -72,7 +64,7 @@ $ curl -H "Host: localhost" "http://$serviceIP/query?message=Hello%20World!"
 
 {"message":"Hello World!"}
 
-$ curl -H "Host: json.localhost" http://$serviceIP/todos/1
+$ curl -H "Host: json.localhost" "http://$serviceIP/todos/1"
 
 {
   "userId": 1,
