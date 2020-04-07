@@ -68,7 +68,7 @@ targets:
 
 Now, all requests that are allowed by `targets.yaml` having the request header "host" set to "socket.gateway" get proxied to "my.private.api".
 
-You can also specify the file contents or alternative file locations using environment variables such as `SG_INNER_LAYER_KEY`,  `SG_SERVER_CERT`, `SG_OUTER_LAYER_CERT_PATH`, `SG_TARGETS_PATH`, ....
+You can also specify the file contents or alternative file locations using environment variables such as `SG_INNER_LAYER_KEY`,  `SG_SERVER_CERT`, `SG_OUTER_LAYER_CERT_FILE`, `SG_TARGETS_FILE`, ....
 
 ### Inner Layer
 
@@ -78,7 +78,7 @@ Put files `innerLayer.crt`, `innerLayer.key`, and `outerLayer.crt` into `./confi
 
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
 
-You can also specify the file contents or alternative file locations using environment variables such as `SG_INNER_LAYER_KEY`,  `SG_SERVER_CERT`, `SG_OUTER_LAYER_CERT_PATH`, ....
+You can also specify the file contents or alternative file locations using environment variables such as `SG_INNER_LAYER_KEY`,  `SG_SERVER_CERT`, `SG_OUTER_LAYER_CERT_FILE`, ....
 
 ## Gateway
 
