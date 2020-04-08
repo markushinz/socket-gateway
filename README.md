@@ -1,4 +1,6 @@
-# socket-gateway
+# WIP: socket-gateway 2.0
+
+> Version 2.0 is still under development!
 
 An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 

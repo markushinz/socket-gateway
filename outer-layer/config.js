@@ -10,26 +10,8 @@ const cache = {
 module.exports = {
     appPort: process.env.PORT ||
         process.env.SG_APP_PORT ||
-        (process.env.SG_HTTP === 'true' ? 80 : 443),
+        80,
     socketPort: process.env.SG_SOCKET_PORT || 3000,
-
-    appTlsOptions: process.env.SG_HTTP === 'true' ? null : {
-        cert: process.env.SG_SERVER_CERT ||
-            fs.readFileSync(process.env.SG_SERVER_CERT_FILE || __dirname + '/config/server.crt'),
-        key: process.env.SG_SERVER_KEY ||
-            fs.readFileSync(process.env.SG_SERVER_KEY_FILE || __dirname + '/config/server.key'),
-    },
-
-    socketTlsOptions: {
-        cert: process.env.SG_OUTER_LAYER_CERT ||
-            fs.readFileSync(process.env.SG_OUTER_LAYER_CERT_FILE || __dirname + '/config/outerLayer.crt'),
-        key: process.env.SG_OUTER_LAYER_KEY ||
-            fs.readFileSync(process.env.SG_OUTER_LAYER_KEY_FILE || __dirname + '/config/outerLayer.key'),
-        ca: process.env.SG_INNER_LAYER_CERT ||
-            fs.readFileSync(process.env.SG_INNER_LAYER_CERT_FILE || __dirname + '/config/innerLayer.crt'),
-        requestCert: true,
-        rejectUnauthorized: true
-    },
 
     timeout: process.env.SG_TIMEOUT || 60000, // ms
 

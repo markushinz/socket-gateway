@@ -1,13 +1,12 @@
 const config = require('./config');
 
 const http = require('http');
-const https = require('https');
 
 const app = require('./app');
-const appServer = config.appTlsOptions ? https.createServer(config.appTlsOptions, app) : http.createServer(app);
+const appServer = http.createServer(app);
 
 const socket = require('./socket');
-const socketServer = https.createServer(config.socketTlsOptions);
+const socketServer = http.createServer();
 const gateway = socket.createGateway(socketServer);
 
 app.set('port', config.appPort);

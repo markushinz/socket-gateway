@@ -63,4 +63,4 @@ typings/
 *.key
 *.crt
 targets.yaml
-!example/config-outer-layer/targets.yaml
+!./targets.yaml
