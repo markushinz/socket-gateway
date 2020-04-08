@@ -62,5 +62,4 @@ typings/
 
 *.key
 *.crt
-targets.yaml
-!./targets.yaml
+*/targets.yaml

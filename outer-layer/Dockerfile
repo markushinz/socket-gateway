@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm ci
 
-COPY . .
+COPY *.js ./
 
 EXPOSE 80
 EXPOSE 3000

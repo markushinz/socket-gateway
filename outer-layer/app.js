@@ -8,6 +8,7 @@ const rewriter = require('./rewriter');
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 app.use(compression());
 app.use(express.text({ type: '*/*' }));
 app.use(cookieParser());
