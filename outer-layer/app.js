@@ -8,13 +8,13 @@ const rewriter = require('./rewriter');
 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+app.set('trust proxy', config.trustProxy);
 app.use(compression());
 app.use(express.text({ type: '*/*' }));
 app.use(cookieParser());
 
 app.use(function (req, res, next) {
-    const target = evaluator.getTarget(req.headers['host']);
+    const target = evaluator.getTarget(req.hostname.split(':')[0]);
     if (!target) {
         return next();
     }
@@ -26,11 +26,18 @@ app.use(function (req, res, next) {
     const policy = target.policy || { '*': '*' };
 
     if (evaluator.evaluatePolicy(policy, req.path, req.method)) {
-        const rewriteHost = req.headers['host'];
-        const headers = rewriter.sanitizeHeaders(req.headers);
-        headers['x-forwarded-for'] = req.ip;
+        const rewriteHost = req.hostname;
+        const headers = rewriter.sanitizeHeaders({ ...req.headers }); // shallow copy
+        headers['x-real-ip'] = req.ip;
+        headers['x-forwarded-for'] = config.trustProxy ? req.ips.join(', ') : req.ip;
         headers['x-forwarded-host'] = rewriteHost;
-        // headers['x-forwarded-proto'] = 'https'; // This is undecidable if also http is now possible.
+        if (config.trustProxy && req.headers['x-forwarded-port']) {
+            headers['x-forwarded-port'] = req.headers['x-forwarded-port'];
+        } else if (!config.trustProxy) {
+            headers['x-forwarded-port'] = app.get('port');
+        }
+        headers['x-forwarded-proto'] = req.protocol;
+
         const body = typeof req.body === 'string' ? req.body : undefined;
 
         const outgoingData = {

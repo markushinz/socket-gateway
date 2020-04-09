@@ -1,4 +1,5 @@
-const sanitizeHeaders = function (headers, ) {
+const sanitizeHeaders = function (headers) {
+    headers = { ...headers } // shallow copy, just in case
     delete headers['host'];
     delete headers['accept'];
     delete headers['accept-charset'];
@@ -24,6 +25,11 @@ const sanitizeHeaders = function (headers, ) {
     delete headers['transfer-encoding'];
     delete headers['user-agent'];
     delete headers['via'];
+    delete headers['x-real-ip'];
+    delete headers['x-forwarded-for'];
+    delete headers['x-forwarded-host'];
+    delete headers['x-forwarded-port'];
+    delete headers['x-forwarded-proto'];
     return headers;
 }
 

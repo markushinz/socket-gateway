@@ -13,6 +13,8 @@ module.exports = {
     appPort: process.env.PORT || process.env.SG_APP_PORT || 80,
     socketPort: process.env.SG_SOCKET_PORT || 3000,
 
+    trustProxy: process.env.SG_TRUST_PROXY || 'loopback, linklocal, uniquelocal',
+
     timeout: process.env.SG_TIMEOUT || 60000, // ms
 
     get targets() {
