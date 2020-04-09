@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY *.js ./
+COPY admin ./admin
 
 EXPOSE 80
 EXPOSE 3000

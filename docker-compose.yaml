@@ -16,7 +16,7 @@ services:
     build: ./outer-layer
     restart: always
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - SG_TARGETS_FILE=/mnt/targets.yaml
     volumes:
       - ./targets.yaml:/mnt/targets.yaml
@@ -24,7 +24,7 @@ services:
     build: ./inner-layer
     restart: always
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - SG_OUTER_LAYER=https://nginx-service:3000
       - SG_OUTER_LAYER_CERT_FILE=/mnt/server.crt
     volumes:
@@ -33,4 +33,4 @@ services:
     build: ./example/hello-world
     restart: always
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
