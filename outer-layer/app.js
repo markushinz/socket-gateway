@@ -57,7 +57,18 @@ app.use(function (req, res, next) {
     }
 });
 
-app.use('/admin', adminRouter);
+app.use('/admin', function (req, res, next) {
+    if (config.adminCredentials) {
+        if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
+            next();
+        } else {
+            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
+            res.sendStatus(401);
+        }
+    } else {
+        res.sendStatus(404);
+    }
+}, adminRouter);
 
 app.use(function (req, res, next) {
     res.sendStatus(404);
