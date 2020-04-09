@@ -1,4 +1,4 @@
-const config = require('./config');
+const config = require('../config');
 
 module.exports.evaluatePolicy = function (policy, path, method) {
     const methods = policy[path] || policy['*'];

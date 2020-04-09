@@ -7,7 +7,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY *.js ./
-COPY admin ./admin
+COPY routers ./routers
+COPY tools ./tools
 
 EXPOSE 80
 EXPOSE 3000

@@ -1,18 +1,17 @@
-const config = require('./config');
-
 const http = require('http');
 
+const config = require('./config');
 const app = require('./app');
-const appServer = http.createServer(app);
-
 const socket = require('./socket');
-const socketServer = http.createServer(socket.app);
+const socketApp = require('./socketApp');
+
+const appServer = http.createServer(app);
+const socketServer = http.createServer(socketApp);
 const gateway = socket.createGateway(socketServer);
 
 app.set('port', config.appPort);
 app.set('gateway', gateway);
-
-socket.app.set('port', config.socketPort);
+socketApp.set('port', config.socketPort);
 
 appServer.listen(config.appPort);
 console.log(`Listening on port ${config.appPort}...`);

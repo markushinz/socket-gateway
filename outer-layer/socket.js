@@ -1,83 +1,24 @@
-const crypto = require('crypto');
-
-const express = require('express');
-const compression = require('compression');
 const socketio = require('socket.io');
-const uuid = require('uuid/v1');
+const uuid = require('uuid').v1;
 
 const config = require('./config');
-const adminRouter = require('./admin/router');
-const rewriter = require('./rewriter');
-
-const pendingChallenges = new Map();
+const rewriteTool = require('./tools/rewrite');
+const challengeTool = require('./tools/challenge');
 
 const pendingRequests = new Map();
 const innerLayers = new Map();
-
-const app = express();
-app.disable('x-powered-by');
-app.use(compression());
-
-app.get('/challenge', function (req, res) {
-    setTimeout(() => {
-        crypto.randomBytes(256, (error, buffer) => {
-            if (error) {
-                console.error(error);
-                res.sendStatus(500);
-            } else {
-                const challenge = buffer.toString('hex');
-                pendingChallenges.set(challenge, Date.now());
-                setTimeout(() => {
-                    if (pendingChallenges.has(challenge)) {
-                        pendingChallenges.delete(challenge);
-                    }
-                }, 5000);
-                res.send(challenge);
-            }
-        })
-    }, 1000);
-});
-
-app.use('/admin',  (req, res, next) =>{
-    if (config.adminCredentials) {
-        if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
-            res.locals.innerLayers = Array.from(innerLayers.values());
-            next();
-        } else {
-            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
-            res.sendStatus(401);
-        }
-    } else {
-        res.sendStatus(404);
-    }
-}, adminRouter);
-
-app.use(function (req, res, next) {
-    res.sendStatus(404);
-});
-
-app.use(function (err, req, res, next) {
-    console.error(err);
-    res.sendStatus(500);
-});
 
 const createGateway = function (server) {
     const io = socketio(server);
 
     io.use(function (socket, next) {
         const challenge = socket.request.headers['challenge'];
-        const challengeResponse = Buffer.from(socket.request.headers['challenge-response'], 'hex');
-        if (pendingChallenges.has(challenge)) {
-            pendingChallenges.delete(challenge);
-            const verify = crypto.createVerify('SHA256');
-            verify.update(challenge);
-            verify.end();
-            const ok = verify.verify(config.innerLayerPublicKey, challengeResponse);
-            if (ok) {
-                return next();
-            }
+        const challengeResponse = socket.request.headers['challenge-response'];
+        if (challengeTool.verifyChallengeResponse(challenge, challengeResponse)) {
+            next();
+        } else {
+            next(new Error('Authentication error'));
         }
-        next(new Error('Authentication error'));
     });
 
     io.on('connection', function (socket) {
@@ -102,11 +43,10 @@ const createGateway = function (server) {
             if (pendingRequest) {
                 pendingRequests.delete(incomingData.uuid);
 
-                incomingData.headers = rewriter.sanitizeHeaders(incomingData.headers);
-                incomingData.headers = rewriter.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
+                incomingData.headers = rewriteTool.sanitizeHeaders(incomingData.headers);
+                incomingData.headers = rewriteTool.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (incomingData.body) {
-                    // incomingData.body = rewriter.rewriteString(incomingData.body, incomingData.host, pendingRequest.rewriteHost);
                     pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
                 } else {
                     pendingRequest.res.end();
@@ -166,6 +106,8 @@ const createGateway = function (server) {
 }
 
 module.exports = {
-    app,
-    createGateway
+    createGateway,
+    get innerLayers() {
+        return Array.from(innerLayers.values());
+    }
 };
