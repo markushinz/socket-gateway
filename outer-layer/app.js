@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const evaluateTool = require('./tools/evaluate');
 const rewriteTool = require('./tools/rewrite');
+const defaultRouter = require('./routers/default');
 
 const app = express();
 app.disable('x-powered-by');
@@ -55,13 +56,6 @@ app.use(function (req, res, next) {
     }
 });
 
-app.use(function (req, res, next) {
-    res.sendStatus(404);
-});
-
-app.use(function (err, req, res, next) {
-    console.error(err);
-    res.sendStatus(500);
-});
+app.use(defaultRouter);
 
 module.exports = app;
