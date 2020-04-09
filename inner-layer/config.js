@@ -21,6 +21,11 @@ module.exports = {
         process.exit(1);
     },
 
+    get innerLayerPrivateKey() {
+        return process.env.SG_INNER_LAYER_PRIVATE_KEY ||
+        fs.readFileSync(process.env.SG_INNER_LAYER_PRIVATE_KEY_FILE);
+    },
+
     get tlsOptions() {
         if (developmentMode) {
             return { rejectUnauthorized: false };

@@ -6,7 +6,7 @@ const app = require('./app');
 const appServer = http.createServer(app);
 
 const socket = require('./socket');
-const socketServer = http.createServer();
+const socketServer = http.createServer(socket.challengeCreator);
 const gateway = socket.createGateway(socketServer);
 
 app.set('port', config.appPort);

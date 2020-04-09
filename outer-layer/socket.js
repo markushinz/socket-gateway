@@ -1,3 +1,6 @@
+const crypto = require('crypto');
+const url = require('url');
+
 const config = require('./config');
 
 const rewriter = require('./rewriter');
@@ -5,11 +8,58 @@ const rewriter = require('./rewriter');
 const socketio = require('socket.io');
 const uuid = require('uuid/v1');
 
+const pendingChallenges = new Map();
+
 const pendingRequests = new Map();
 const innerLayers = new Map();
 
-module.exports.createGateway = function (server) {
+const challengeCreator = function (req, res) {
+    res.setHeader('content-Type', 'text/plain');
+    if (req.method === 'GET' && url.parse(req.url).pathname === '/challenge') {
+        setTimeout(() => {
+            crypto.randomBytes(256, (error, buffer) => {
+                if (error) {
+                    console.error(error);
+                    res.statusCode = 500;
+                    res.setHeader('content-Type', 'text/plain');
+                    res.end('Internal Server Error');
+                } else {
+                    const challenge = buffer.toString('hex');
+                    pendingChallenges.set(challenge, Date.now());
+                    setTimeout(() => {
+                        if (pendingChallenges.has(challenge)) {
+                            pendingChallenges.delete(challenge);
+                        }
+                    }, 5000);
+                    res.statusCode = 200;
+                    res.end(challenge);
+                }
+            })
+        }, 1000);
+    } else {
+        res.statusCode = 404;
+        return res.end('Not Found');
+    }
+}
+
+const createGateway = function (server) {
     const io = socketio(server);
+
+    io.use(function (socket, next) {
+        const challenge = socket.request.headers['challenge'];
+        const challengeResponse = Buffer.from(socket.request.headers['challenge-response'], 'hex');
+        if (pendingChallenges.has(challenge)) {
+            pendingChallenges.delete(challenge);
+            const verify = crypto.createVerify('SHA256');
+            verify.update(challenge);
+            verify.end();
+            const ok = verify.verify(config.innerLayerPublicKey, challengeResponse);
+            if (ok) {
+                return next();
+            }
+        }
+        next(new Error('Authentication error'));
+    });
 
     io.on('connection', function (socket) {
         innerLayers.set(socket.id, {
@@ -80,7 +130,7 @@ module.exports.createGateway = function (server) {
 
                 io.to(innerLayerID).emit('request', outgoingData);
 
-                setInterval(() => {
+                setTimeout(() => {
                     if (pendingRequests.has(pendingRequest.uuid)) {
                         pendingRequests.delete(pendingRequest.uuid);
                         res.sendStatus(504);
@@ -95,3 +145,8 @@ module.exports.createGateway = function (server) {
         }
     }
 }
+
+module.exports = {
+    challengeCreator,
+    createGateway
+};
