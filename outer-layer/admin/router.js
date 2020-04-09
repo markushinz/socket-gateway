@@ -7,7 +7,6 @@ const config = require('../config');
 router.use(express.static(path.join(__dirname, 'static')));
 
 router.get('/', function (req, res, next) {
-    const innerLayers = req.app.get('gateway').innerLayers;
     res.setHeader('content-type', 'text/html; charset=utf-8');
     res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -23,7 +22,7 @@ router.get('/', function (req, res, next) {
     <div id="container">
         <h1>Socket Gateway</h1>
         <h3>Inner Layers</h3>
-        <pre>${JSON.stringify(innerLayers, null, 4)}</pre>
+        <pre>${JSON.stringify(res.locals.innerLayers, null, 4)}</pre>
         <h3>Targets</h3>
         <pre>${JSON.stringify(config.targets, null, 4)}</pre>
     </div>

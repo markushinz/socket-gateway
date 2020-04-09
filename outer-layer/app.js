@@ -6,8 +6,6 @@ const config = require('./config');
 const evaluator = require('./evaluator');
 const rewriter = require('./rewriter');
 
-const adminRouter = require('./admin/router');
-
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', config.trustProxy);
@@ -56,19 +54,6 @@ app.use(function (req, res, next) {
         res.status(403).type('text').send(`Forbidden: ${req.method} ${url} is not allowed by policy.`);
     }
 });
-
-app.use('/admin', function (req, res, next) {
-    if (config.adminCredentials) {
-        if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
-            next();
-        } else {
-            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
-            res.sendStatus(401);
-        }
-    } else {
-        res.sendStatus(404);
-    }
-}, adminRouter);
 
 app.use(function (req, res, next) {
     res.sendStatus(404);

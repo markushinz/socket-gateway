@@ -1,46 +1,65 @@
 const crypto = require('crypto');
-const url = require('url');
 
-const config = require('./config');
-
-const rewriter = require('./rewriter');
-
+const express = require('express');
+const compression = require('compression');
 const socketio = require('socket.io');
 const uuid = require('uuid/v1');
+
+const config = require('./config');
+const adminRouter = require('./admin/router');
+const rewriter = require('./rewriter');
 
 const pendingChallenges = new Map();
 
 const pendingRequests = new Map();
 const innerLayers = new Map();
 
-const challengeCreator = function (req, res) {
-    res.setHeader('content-Type', 'text/plain');
-    if (req.method === 'GET' && url.parse(req.url).pathname === '/challenge') {
-        setTimeout(() => {
-            crypto.randomBytes(256, (error, buffer) => {
-                if (error) {
-                    console.error(error);
-                    res.statusCode = 500;
-                    res.setHeader('content-Type', 'text/plain');
-                    res.end('Internal Server Error');
-                } else {
-                    const challenge = buffer.toString('hex');
-                    pendingChallenges.set(challenge, Date.now());
-                    setTimeout(() => {
-                        if (pendingChallenges.has(challenge)) {
-                            pendingChallenges.delete(challenge);
-                        }
-                    }, 5000);
-                    res.statusCode = 200;
-                    res.end(challenge);
-                }
-            })
-        }, 1000);
+const app = express();
+app.disable('x-powered-by');
+app.use(compression());
+
+app.get('/challenge', function (req, res) {
+    setTimeout(() => {
+        crypto.randomBytes(256, (error, buffer) => {
+            if (error) {
+                console.error(error);
+                res.sendStatus(500);
+            } else {
+                const challenge = buffer.toString('hex');
+                pendingChallenges.set(challenge, Date.now());
+                setTimeout(() => {
+                    if (pendingChallenges.has(challenge)) {
+                        pendingChallenges.delete(challenge);
+                    }
+                }, 5000);
+                res.send(challenge);
+            }
+        })
+    }, 1000);
+});
+
+app.use('/admin',  (req, res, next) =>{
+    if (config.adminCredentials) {
+        if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
+            res.locals.innerLayers = Array.from(innerLayers.values());
+            next();
+        } else {
+            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
+            res.sendStatus(401);
+        }
     } else {
-        res.statusCode = 404;
-        return res.end('Not Found');
+        res.sendStatus(404);
     }
-}
+}, adminRouter);
+
+app.use(function (req, res, next) {
+    res.sendStatus(404);
+});
+
+app.use(function (err, req, res, next) {
+    console.error(err);
+    res.sendStatus(500);
+});
 
 const createGateway = function (server) {
     const io = socketio(server);
@@ -147,6 +166,6 @@ const createGateway = function (server) {
 }
 
 module.exports = {
-    challengeCreator,
+    app,
     createGateway
 };
