@@ -2,6 +2,8 @@
 
 set -e
 
+cd config ..
+
 echo "[req]
 distinguished_name = req_distinguished_name
 x509_extensions = v3_req
@@ -16,3 +18,10 @@ DNS.2 = nginx-service" > server.conf
 
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout server.key -out server.crt -config server.conf -extensions "v3_req"
 rm -f server.conf
+
+openssl genrsa -out innerLayer.pem 4096
+openssl rsa -in innerLayer.pem -pubout -out innerLayer.crt
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in innerLayer.pem -out innerLayer.key
+rm -f innerLayer.pem
+
+cd ..

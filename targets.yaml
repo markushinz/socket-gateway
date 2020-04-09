@@ -1,5 +1,0 @@
-targets:
-  "localhost":
-    protocol: "http"
-    hostname: "hello-world-service"
-    port: 3000
