@@ -64,7 +64,7 @@ Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps 
 
 ### Docker 🐳 and docker-compose
 
-Run `./createCertificates.sh` to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
+Run [`./createCertificates.sh`](createCertificates.sh) to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
 
 ```shell
 $ curl http://localhost # Rather do this with your web browser.
@@ -101,4 +101,61 @@ $ curl -H "Host: json.localhost" http://localhost/todos/1 # Different host
 $ curl http://json.localhost/posts/1 # This is not allowed
 
 GET http://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy.
+```
+
+### Kubernetes
+
+```shell
+./createCertificates.sh
+kubectl create ns socket-gateway
+kubectl create cm outer-layer-config -n socket-gateway \
+  --from-file=config/targets.yaml \
+  --from-file=config/innerLayer.crt \
+  --from-literal=adminPassword="$(openssl rand -base64 12)"
+kubectl apply -f k8s.yaml
+echo "Use the following private key when connecting to the outer layer"
+cat config/innerLayer.crt
+```
+
+To expose the outer layer to the Internet, create an Ingress such as follows.
+
+```yaml
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: socket-gateway-outer-layer-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: cluster-issuer
+    nginx.ingress.kubernetes.io/proxy-send-timeout: 3600
+    nginx.ingress.kubernetes.io/proxy-read-timeout: 3600
+spec:
+  rules:
+    - host: "*.gateway.example.com"
+      http:
+        paths:
+          - backend:
+              serviceName: outer-layer-service
+              servicePort: 80
+    - host: gateway.example.com
+      http:
+        paths:
+          - backend:
+              serviceName: outer-layer-service
+              servicePort: 3000
+  tls:
+    - hosts:
+        - "*.gateway.example.com"
+        - gateway.example.com
+      secretName: secret
+```
+
+Finally, you can run an inner layer from within the desired target network.
+
+```shell
+docker run --rm \
+  -v $(pwd)/config/innerLayer.key:/mnt/innerLayer.key \
+  -e "NODE_ENV=production" \
+  -e "SG_OUTER_LAYER=https://gateway.example.com" \
+  -e "SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key" \
+  markushinz/socket-gateway-inner-layer:2.0.1
 ```
