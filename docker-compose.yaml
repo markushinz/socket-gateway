@@ -4,7 +4,7 @@ services:
     image: nginx
     restart: always
     ports:
-      - 80:80
+      # - 80:80
       - 443:443
       - 3000:3000
     volumes:
@@ -18,9 +18,11 @@ services:
     image: markushinz/socket-gateway-outer-layer:2.0.0
     restart: always
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
       - SG_TARGETS_FILE=/mnt/targets.yaml
       - SG_INNER_LAYER_PUBLIC_KEY_FILE=/mnt/innerLayer.crt
+    ports:
+      - 80:80
     volumes:
       - ./config/targets.yaml:/mnt/targets.yaml
       - ./config/innerLayer.crt:/mnt/innerLayer.crt
@@ -29,8 +31,8 @@ services:
     image: markushinz/socket-gateway-inner-layer:2.0.0
     restart: always
     environment:
-      - NODE_ENV=production
-      - SG_OUTER_LAYER=https://nginx-service:3000
+      - NODE_ENV=${NODE_ENV:-production}
+      - SG_OUTER_LAYER=${SG_OUTER_LAYER:-https://nginx-service:3000}
       - SG_OUTER_LAYER_CERT_FILE=/mnt/server.crt
       - SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key
     volumes:
