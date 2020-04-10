@@ -127,7 +127,7 @@ kubectl create cm outer-layer-config -n socket-gateway \
 kubectl apply -f k8s.yaml
 ```
 
-To expose the outer layer to the Internet, create an Ingress such as follows.
+To expose the outer layer to the Internet, create an Ingress such as follows:
 
 ```yaml
 apiVersion: networking.k8s.io/v1beta1
