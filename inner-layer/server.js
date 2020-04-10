@@ -1,28 +1,25 @@
 const crypto = require('crypto');
 
 const socketio = require('socket.io-client');
-const axios = require('axios');
+const axios = require('axios').default;
 
 const config = require('./config');
 
-const getChallenge = function (attempt = 0) {
+const getChallenge = async function (attempt = 0) {
     const challengeURL = new URL('/challenge', config.outerLayer).href
-    return new Promise(function (resolve) {
-        axios.get(challengeURL).then(function (response) {
-            const challenge = response.data;
-            console.log(`Got challenge "${challenge}" from ${challengeURL}.`);
-            resolve(challenge);
-        }).catch(function (error) {
-            attempt = attempt ? attempt + 1 : 1
-            if (attempt > 5) {
-                console.error(`Could not get challenge from ${challengeURL}. Retrying in ${attempt} seconds...`);
-                console.error(error);
-            }
-            setTimeout(function () {
-                resolve(getChallenge(attempt));
-            }, attempt * 1000);
-        });
-    });
+    try {
+        const response = await axios.get(challengeURL);
+        const challenge = response.data
+        console.log(`Got challenge "${challenge}" from ${challengeURL}.`);
+        return challenge;
+    } catch (error) {
+        console.error(`Could not get challenge from ${challengeURL}. Retrying in 1 second...`);
+        if (attempt > 5) {
+            console.error(error);
+        }
+        await new Promise(function (resolve) { setTimeout(resolve, attempt * 1000) });
+        return getChallenge(attempt ? attempt + 1 : 1);
+    }
 }
 
 const solveChallenge = function (challenge) {
@@ -34,39 +31,43 @@ const solveChallenge = function (challenge) {
     return challengeResponse;
 }
 
-getChallenge().then(function (challenge) {
-    const challengeResponse = solveChallenge(challenge);
+const getHeaders = async function () {
+    const challenge = await getChallenge();
+    return {
+        'x-challenge': challenge,
+        'x-challenge-response': solveChallenge(challenge)
+    }
+};
 
+const connect = async function () {
     const io = socketio(config.outerLayer, {
-        ...config.tlsOptions,
         transportOptions: {
             polling: {
-                extraHeaders: {
-                    'x-challenge': challenge,
-                    'x-challenge-response': challengeResponse
-                }
+                extraHeaders: await getHeaders()
             }
-        }
+        },
+        reconnection: false
     });
 
     console.log(`Connecting to outer layer ${config.outerLayer}...`);
 
     io.on('connect', function () {
-        console.log('Outer Layer connected.');
+        console.log(`Outer Layer ${config.outerLayer} connected.`);
     });
 
-    io.on('request', function (incomingData) {
-        axios({
-            method: incomingData.method,
-            url: incomingData.url,
-            headers: incomingData.headers,
-            params: incomingData.query,
-            data: incomingData.body,
-            maxRedirects: 0,
-            responseType: 'arraybuffer',
-            responseEncoding: null,
-            validateStatus: null,
-        }).then(function (response) {
+    io.on('request', async function (incomingData) {
+        try {
+            const response = await axios({
+                method: incomingData.method,
+                url: incomingData.url,
+                headers: incomingData.headers,
+                params: incomingData.query,
+                data: incomingData.body,
+                maxRedirects: 0,
+                responseType: 'arraybuffer',
+                responseEncoding: null,
+                validateStatus: null,
+            });
             const outgoingData = {
                 uuid: incomingData.uuid,
                 host: incomingData.host,
@@ -75,7 +76,7 @@ getChallenge().then(function (challenge) {
                 headers: response.headers
             }
             io.emit('request', outgoingData);
-        }).catch(function (error) {
+        } catch (error) {
             console.error(error);
             const outgoingData = {
                 uuid: incomingData.uuid,
@@ -85,7 +86,7 @@ getChallenge().then(function (challenge) {
                 headers: { 'content-type': 'text/plain' }
             }
             io.emit('request', outgoingData);
-        });
+        }
     });
 
     io.on('pong', function (latency) {
@@ -93,6 +94,9 @@ getChallenge().then(function (challenge) {
     });
 
     io.on('disconnect', function () {
-        console.log('Outer Layer disconnected.');
+        console.log(`Outer Layer ${config.outerLayer} disconnected.`);
+        connect(); // reconnect
     });
-});
+};
+
+connect();
