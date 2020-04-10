@@ -58,11 +58,11 @@ You have to specify the inner layer private key either via the environment varia
 
 ## Example
 
-Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
-
 ### Docker 🐳 and docker-compose
 
-This is how you get a fully working local setup. Run [`./createCertificates.sh`](createCertificates.sh) to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
+This is how you get a fully working local setup. Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+
+Run [`./createCertificates.sh`](createCertificates.sh) to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
 
 ```shell
 $ curl http://localhost # Rather do this with your web browser.
@@ -159,7 +159,7 @@ spec:
       secretName: secret
 ```
 
-Finally, you can run an inner layer from within the desired target network.
+Finally, you can run an inner layer from within the desired target network:
 
 ```shell
 docker run --rm \
