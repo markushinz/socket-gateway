@@ -15,7 +15,7 @@ services:
       driver: none
   outer-layer-service:
     build: ./outer-layer
-    image: markushinz/socket-gateway-outer-layer:2.0.0
+    image: markushinz/socket-gateway-outer-layer:2.0.1
     restart: always
     environment:
       - NODE_ENV=${NODE_ENV:-production}
@@ -28,7 +28,7 @@ services:
       - ./config/innerLayer.crt:/mnt/innerLayer.crt
   inner-layer-service:
     build: ./inner-layer
-    image: markushinz/socket-gateway-inner-layer:2.0.0
+    image: markushinz/socket-gateway-inner-layer:2.0.1
     restart: always
     environment:
       - NODE_ENV=${NODE_ENV:-production}
