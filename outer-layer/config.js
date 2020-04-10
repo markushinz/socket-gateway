@@ -17,6 +17,8 @@ module.exports = {
 
     timeout: process.env.SG_TIMEOUT || 60000, // ms
 
+    challengeValidity: process.env.SG_CHALLENGE_VALIDITY || 50000, // ms
+
     get innerLayerPublicKey() {
         return process.env.SG_INNER_LAYER_PUBLIC_KEY ||
         fs.readFileSync(process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE);

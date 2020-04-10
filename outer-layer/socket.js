@@ -2,8 +2,8 @@ const socketio = require('socket.io');
 const uuid = require('uuid').v1;
 
 const config = require('./config');
-const rewriteTool = require('./tools/rewrite');
 const challengeTool = require('./tools/challenge');
+const rewriteTool = require('./tools/rewrite');
 
 const pendingRequests = new Map();
 const innerLayers = new Map();
@@ -12,12 +12,15 @@ const createGateway = function (server) {
     const io = socketio(server);
 
     io.use(function (socket, next) {
-        const challenge = socket.request.headers['challenge'];
-        const challengeResponse = socket.request.headers['challenge-response'];
-        if (challengeTool.verifyChallengeResponse(challenge, challengeResponse)) {
+        const challenge = socket.request.headers['x-challenge'];
+        const challengeResponse = socket.request.headers['x-challenge-response'];
+
+        if (!!challenge &&
+            !!challengeResponse &&
+            challengeTool.verifyChallengeResponse(challenge, challengeResponse)) {
             next();
         } else {
-            next(new Error('Authentication error'));
+            next(new Error('Inner Layer did not present a valid challenge / challenge reponse pair.'));
         }
     });
 
@@ -25,6 +28,9 @@ const createGateway = function (server) {
         innerLayers.set(socket.id, {
             id: socket.id,
             ip: socket.handshake.address,
+            timestamp: new Date().toUTCString(),
+            challenge: socket.request.headers['x-challenge'],
+            challengeResponse: socket.request.headers['x-challenge-response'],
             latencies: []
         });
 
@@ -44,7 +50,7 @@ const createGateway = function (server) {
                 pendingRequests.delete(incomingData.uuid);
 
                 incomingData.headers = rewriteTool.sanitizeHeaders(incomingData.headers);
-                incomingData.headers = rewriteTool.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
+                incomingData.headers = rewriteTool.rewriteObject({ ...incomingData.headers }, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (incomingData.body) {
                     pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
@@ -61,8 +67,8 @@ const createGateway = function (server) {
                 pendingRequests.forEach(function (pendingRequest) {
                     pendingRequest.res.sendStatus(502);
                 });
+                pendingRequests.clear();
             }
-            pendingRequests.clear();
             console.log(`Inner layer ${socket.id} disconnected.`);
         });
     });

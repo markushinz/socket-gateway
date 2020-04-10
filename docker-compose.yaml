@@ -35,7 +35,7 @@ services:
       - ./config/server.crt:/mnt/server.crt
       - ./config/innerLayer.key:/mnt/innerLayer.key
   hello-world-service:
-    build: ./example/hello-world
+    build: ./legacy/hello-world
     restart: always
     environment:
       - NODE_ENV=development

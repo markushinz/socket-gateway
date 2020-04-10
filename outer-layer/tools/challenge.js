@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 const config = require('../config');
 
-const pendingChallenges = new Map();
+const pendingChallenges = new Set();
 
 const createChallenge = function () {
     return new Promise(function (resolve, reject) {
@@ -11,12 +11,14 @@ const createChallenge = function () {
                 reject(error);
             } else {
                 const challenge = buffer.toString('hex');
-                pendingChallenges.set(challenge, Date.now());
+                pendingChallenges.add(challenge);
+                console.log(`Created challege "${challenge}".`)
                 setTimeout(() => {
                     if (pendingChallenges.has(challenge)) {
                         pendingChallenges.delete(challenge);
+                        console.log(`Deleted challege "${challenge}".`)
                     }
-                }, 5000);
+                }, config.challengeValidity);
                 resolve(challenge);
             }
         })
@@ -29,7 +31,12 @@ const verifyChallengeResponse = function (challenge, challengeResponse) {
         const verify = crypto.createVerify('SHA256');
         verify.update(challenge);
         verify.end();
-        return verify.verify(config.innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'));
+        if (verify.verify(config.innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'))) {
+            console.log(`Challege "${challenge}" and challenge response "${challengeResponse}" sucessfully verified.`);
+            return true;
+        }
+    } else {
+        console.error(`Challege "${challenge}" is no pending challenge.`);
     }
     return false;
 }

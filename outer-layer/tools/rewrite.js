@@ -34,6 +34,7 @@ const sanitizeHeaders = function (headers) {
 }
 
 const rewriteObject = function (obj, fromHost, toHost) {
+    obj = { ...obj } // shallow copy, just in case
     Object.keys(obj).forEach(function (key) {
         if (typeof obj[key] === 'object') {
             obj[key] = rewriteObject(obj[key], fromHost, toHost);

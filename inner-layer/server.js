@@ -42,8 +42,8 @@ getChallenge().then(function (challenge) {
         transportOptions: {
             polling: {
                 extraHeaders: {
-                    'challenge': challenge,
-                    'challenge-response': challengeResponse
+                    'x-challenge': challenge,
+                    'x-challenge-response': challengeResponse
                 }
             }
         }
