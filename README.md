@@ -60,7 +60,7 @@ You have to specify the inner layer private key either via the environment varia
 
 This is how you get a fully working local setup using Docker 🐳 and docker-compose.
 
-Please have a look `config/targets.yaml`, first. It maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
 
 ### Docker 🐳 and docker-compose
 
