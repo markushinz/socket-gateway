@@ -14,7 +14,9 @@ CN = localhost
 subjectAltName = @alt_names
 [alt_names]
 DNS.1 = localhost
-DNS.2 = nginx-service" > server.conf
+DNS.2 = gateway.localhost
+DNS.3 = *.gateway.localhost
+DNS.4 = nginx-service" > server.conf
 
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout server.key -out server.crt -config server.conf -extensions "v3_req"
 rm -f server.conf

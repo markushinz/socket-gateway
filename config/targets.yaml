@@ -3,7 +3,7 @@ targets:
     protocol: "http"
     hostname: "example-server-service"
     port: 3000
-  "json.localhost":
+  "json.gateway.localhost":
     hostname: "jsonplaceholder.typicode.com"
     policy:
       "/todos/1":
