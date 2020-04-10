@@ -1,23 +1,10 @@
-# WIP: socket-gateway 2.0
+# socket-gateway
 
 An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
-## TLDR?
-
-Run the following commands to get a fully working local setup using Docker 🐳 and docker-compose.
-
-```shell
-$ ./createCertificates.sh
-$ docker-compose up --build # Keep running
-```
-
-```shell
-$ curl 'http://localhost/query?message=Hello%20World!'
-
-{"message":"Hello World!"}
-```
+[TLDR? Get me to an example](##example)
 
 ## Prerequisites
 
@@ -68,3 +55,50 @@ You have to specify the inner layer private key either via the environment varia
 *Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs. This is also required if the outer layer uses a self-signed certificate.
 
 *Optional*: Set the environment variable `NODE_ENV=development` to allow connections to the outer layer using the insecure http and ws protocols. Do not use in production!
+
+## Example
+
+This is how you get a fully working local setup using Docker 🐳 and docker-compose.
+
+Please have a look `config/targets.yaml`, first. It maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+
+### Docker 🐳 and docker-compose
+
+Run `./createCertificates.sh` to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
+
+```shell
+$ curl http://localhost # Rather do this with your web browser.
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Hello World!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h1>Hello World!</h1>
+
+    <!--truncated-->
+</body>
+
+</html>
+
+$ curl -k "https://localhost/query?message=Hello%20World!" # Using https
+
+{"message":"Hello World!"}
+
+$ curl -H "Host: json.localhost" http://localhost/todos/1 # Different host
+
+{
+  "userId": 1,
+  "id": 1,
+  "title": "delectus aut autem",
+  "completed": false
+}
+
+$ curl http://json.localhost/posts/1 # This is not allowed
+
+GET http://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy.
+```
