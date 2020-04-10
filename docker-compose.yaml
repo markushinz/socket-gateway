@@ -17,7 +17,7 @@ services:
     build: ./outer-layer
     restart: always
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - SG_TARGETS_FILE=/mnt/targets.yaml
       - SG_INNER_LAYER_PUBLIC_KEY_FILE=/mnt/innerLayer.crt
     volumes:
@@ -27,15 +27,13 @@ services:
     build: ./inner-layer
     restart: always
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - SG_OUTER_LAYER=https://nginx-service:3000
       - SG_OUTER_LAYER_CERT_FILE=/mnt/server.crt
       - SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key
     volumes:
       - ./config/server.crt:/mnt/server.crt
       - ./config/innerLayer.key:/mnt/innerLayer.key
-  hello-world-service:
-    build: ./legacy/hello-world
+  example-server-service:
+    build: ./config/example-server
     restart: always
-    environment:
-      - NODE_ENV=development
