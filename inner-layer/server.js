@@ -9,9 +9,9 @@ const config = require('./config');
 const getChallenge = function (attempt = 0) {
     const challengeURL = new URL('/challenge', config.outerLayer).href
     return new Promise(function (resolve) {
-        axios.create({
+        axios.get(challengeURL, {
             httpsAgent: new https.Agent(config.tlsOptions)
-        }).get(challengeURL).then(function (response) {
+        }).then(function (response) {
             const challenge = response.data;
             console.log(`Got challenge "${challenge}" from ${challengeURL}.`);
             resolve(challenge);
