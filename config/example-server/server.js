@@ -1,3 +1,5 @@
+const path = require('path');
+
 const express = require('express');
 
 const port = process.env.PORT || 3000;
@@ -8,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', function (req, res, next) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/redirect', function (req, res, next) {
