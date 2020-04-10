@@ -20,7 +20,7 @@ const sanitizeHeaders = function (headers) {
     delete headers['max-forwards'];
     delete headers['pragma'];
     delete headers['proxy-authorization'];
-    delete headers['referer'];
+    // delete headers['referer'];
     delete headers['te'];
     delete headers['transfer-encoding'];
     delete headers['user-agent'];

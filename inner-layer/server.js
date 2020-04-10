@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const https = require('https');
 
 const socketio = require('socket.io-client');
 const axios = require('axios');
@@ -9,9 +8,7 @@ const config = require('./config');
 const getChallenge = function (attempt = 0) {
     const challengeURL = new URL('/challenge', config.outerLayer).href
     return new Promise(function (resolve) {
-        axios.get(challengeURL, {
-            httpsAgent: new https.Agent(config.tlsOptions)
-        }).then(function (response) {
+        axios.get(challengeURL).then(function (response) {
             const challenge = response.data;
             console.log(`Got challenge "${challenge}" from ${challengeURL}.`);
             resolve(challenge);

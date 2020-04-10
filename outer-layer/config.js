@@ -1,4 +1,5 @@
 const fs = require('fs');
+const process = require('process');
 
 const yaml = require('js-yaml');
 
@@ -20,8 +21,16 @@ module.exports = {
     challengeValidity: process.env.SG_CHALLENGE_VALIDITY || 50000, // ms
 
     get innerLayerPublicKey() {
-        return process.env.SG_INNER_LAYER_PUBLIC_KEY ||
-        fs.readFileSync(process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE);
+        if (!!process.env.SG_INNER_LAYER_PUBLIC_KEY) {
+            return process.env.SG_INNER_LAYER_PUBLIC_KEY
+        }
+        if (!!process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE) {
+            return fs.readFileSync(process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE);
+        }
+        console.error('You have to specify the inner layer public key either via the environment variable ' +
+            'process.env.SG_INNER_LAYER_PUBLIC_KEY or provide an absolute path to a file using the environment variable ' +
+            'process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE');
+        process.exit(1);
     },
 
     get targets() {
