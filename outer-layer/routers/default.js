@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
+router.get('/healthz', function (req, res, next) {
+    res.sendStatus(200);
+});
+
 router.use(function (req, res, next) {
     res.sendStatus(404);
 });

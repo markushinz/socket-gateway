@@ -122,7 +122,8 @@ EOF
 kubectl create ns socket-gateway
 kubectl create cm outer-layer-config -n socket-gateway \
   --from-file=k8s/targets.yaml \
-  --from-file=k8s/innerLayer.crt \
+  --from-file=k8s/innerLayer.crt
+kubectl create secret generic outer-layer-secret -n socket-gateway \
   --from-literal=adminPassword="$(openssl rand -base64 12)"
 kubectl apply -f k8s.yaml
 ```
@@ -133,30 +134,29 @@ To expose the outer layer to the Internet, create an Ingress such as follows:
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: socket-gateway-outer-layer-ingress
+  name: outer-layer-ingress
+  namespace: socket-gateway
   annotations:
     cert-manager.io/cluster-issuer: cluster-issuer
-    nginx.ingress.kubernetes.io/proxy-send-timeout: 3600
-    nginx.ingress.kubernetes.io/proxy-read-timeout: 3600
 spec:
   rules:
-    - host: "*.gateway.example.com"
-      http:
-        paths:
-          - backend:
-              serviceName: outer-layer-service
-              servicePort: 80
     - host: gateway.example.com
       http:
         paths:
           - backend:
               serviceName: outer-layer-service
               servicePort: 3000
+    - host: "*.gateway.example.com"
+      http:
+        paths:
+          - backend:
+              serviceName: outer-layer-service
+              servicePort: 80
   tls:
     - hosts:
         - "*.gateway.example.com"
         - gateway.example.com
-      secretName: secret
+      secretName: outer-layer-ingress-tls-secret
 ```
 
 Finally, you can run an inner layer from within the desired target network:
