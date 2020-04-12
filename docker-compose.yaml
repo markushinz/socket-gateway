@@ -40,5 +40,5 @@ services:
       - ./config/innerLayer.key:/mnt/innerLayer.key
   example-server-service:
     build: ./config/example-server
-    image: markushinz/example-server:2.1.0
+    image: markushinz/example-server:2.1.1
     restart: always
