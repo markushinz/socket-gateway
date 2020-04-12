@@ -15,10 +15,10 @@ services:
       driver: none
   outer-layer-service:
     build: ./outer-layer
-    image: markushinz/socket-gateway-outer-layer:2.0.1
+    image: markushinz/socket-gateway-outer-layer:2.1.0
     restart: always
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV:-development}
       - SG_TARGETS_FILE=/mnt/targets.yaml
       - SG_INNER_LAYER_PUBLIC_KEY_FILE=/mnt/innerLayer.crt
     ports:
@@ -28,10 +28,10 @@ services:
       - ./config/innerLayer.crt:/mnt/innerLayer.crt
   inner-layer-service:
     build: ./inner-layer
-    image: markushinz/socket-gateway-inner-layer:2.0.1
+    image: markushinz/socket-gateway-inner-layer:2.1.0
     restart: always
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV:-development}
       - NODE_EXTRA_CA_CERTS=/mnt/server.crt
       - SG_OUTER_LAYER=${SG_OUTER_LAYER:-https://nginx-service:3000}
       - SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key

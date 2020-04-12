@@ -3,15 +3,9 @@ const router = express.Router();
 
 const challengeTool = require('../tools/challenge');
 
-router.get('/', function (req, res, next) {
-    setTimeout(function () {
-        challengeTool.createChallenge().then(function (challenge) {
-            res.send(challenge);
-        }).catch(function (error) {
-            console.error(error);
-            res.sendStatus(500);
-        });
-    }, 1000);
+router.get('/', async function (req, res, next) {
+    const challenge = await challengeTool.createChallenge();
+    res.send(challenge);
 });
 
 module.exports = router;

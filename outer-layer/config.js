@@ -16,9 +16,9 @@ module.exports = {
 
     trustProxy: process.env.SG_TRUST_PROXY || 'loopback, linklocal, uniquelocal',
 
-    timeout: process.env.SG_TIMEOUT || 60000, // ms
+    get timeout() { return process.env.SG_TIMEOUT || 60000},  // ms
 
-    challengeValidity: process.env.SG_CHALLENGE_VALIDITY || 50000, // ms
+    get challengeValidity() { return process.env.SG_CHALLENGE_VALIDITY || 50000 }, // ms
 
     get innerLayerPublicKey() {
         if (!!process.env.SG_INNER_LAYER_PUBLIC_KEY) {

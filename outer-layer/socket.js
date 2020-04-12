@@ -12,8 +12,8 @@ const createGateway = function (server) {
     const io = socketio(server);
 
     io.use(function (socket, next) {
-        const challenge = socket.request.headers['x-challenge'];
-        const challengeResponse = socket.request.headers['x-challenge-response'];
+        const challenge = socket.handshake.headers['x-challenge'];
+        const challengeResponse = socket.handshake.headers['x-challenge-response'];
 
         if (!!challenge &&
             !!challengeResponse &&
@@ -29,8 +29,7 @@ const createGateway = function (server) {
             id: socket.id,
             ip: socket.handshake.address,
             timestamp: new Date().toUTCString(),
-            challenge: socket.request.headers['x-challenge'],
-            challengeResponse: socket.request.headers['x-challenge-response'],
+            headers: socket.handshake.headers,
             latencies: []
         });
 
@@ -50,7 +49,7 @@ const createGateway = function (server) {
                 pendingRequests.delete(incomingData.uuid);
 
                 incomingData.headers = rewriteTool.sanitizeHeaders(incomingData.headers);
-                incomingData.headers = rewriteTool.rewriteObject({ ...incomingData.headers }, incomingData.host, pendingRequest.rewriteHost);
+                rewriteTool.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (incomingData.body) {
                     pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));

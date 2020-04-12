@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: outer-layer
-          image: markushinz/socket-gateway-outer-layer:2.0.1
+          image: markushinz/socket-gateway-outer-layer:2.1.0
           env:
             - name: NODE_ENV
               value: production
@@ -39,6 +39,10 @@ spec:
           ports:
             - containerPort: 80
             - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /healthz
 ---
 apiVersion: v1
 kind: Service

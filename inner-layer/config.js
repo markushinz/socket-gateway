@@ -1,5 +1,6 @@
 const fs = require('fs');
 const process = require('process');
+const os = require('os');
 
 const developmentMode = process.env.NODE_ENV === 'development';
 
@@ -27,5 +28,9 @@ module.exports = {
             'process.env.SG_INNER_LAYER_PRIVATE_KEY or provide an absolute path to a file using the environment variable ' +
             'process.env.SG_INNER_LAYER_PRIVATE_KEY_FILE');
         process.exit(1);
+    },
+
+    get innerLayerIdentifier() {
+        return process.env.SG_INNER_LAYER_IDENTIFIER || os.hostname();
     }
 };

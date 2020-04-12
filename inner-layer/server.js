@@ -34,6 +34,7 @@ const solveChallenge = function (challenge) {
 const getHeaders = async function () {
     const challenge = await getChallenge();
     return {
+        'x-inner-layer-identifier': config.innerLayerIdentifier,
         'x-challenge': challenge,
         'x-challenge-response': solveChallenge(challenge)
     }

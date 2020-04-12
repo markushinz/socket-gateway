@@ -60,7 +60,7 @@ You have to specify the inner layer private key either via the environment varia
 
 ### Docker 🐳 and docker-compose
 
-This is how you get a fully working local setup. Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost to http://hello-world:3000 and json.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+This is how you get a fully working local setup. Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost and json.gateway.localhost to http://hello-world:3000 and json.gateway.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
 
 Run [`./createCertificates.sh`](createCertificates.sh) to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
 
@@ -87,7 +87,7 @@ $ curl -k "https://localhost/query?message=Hello%20World!" # Using https
 
 {"message":"Hello World!"}
 
-$ curl -H "Host: json.localhost" http://localhost/todos/1 # Different host
+$ curl -H "Host: json.gateway.localhost" http://localhost/todos/1 # Different host
 
 {
   "userId": 1,
@@ -96,7 +96,7 @@ $ curl -H "Host: json.localhost" http://localhost/todos/1 # Different host
   "completed": false
 }
 
-$ curl http://json.localhost/posts/1 # This is not allowed
+$ curl http://json.gateway.localhost/posts/1 # This is not allowed
 
 GET http://jsonplaceholder.typicode.com:443/posts/1 is not allowed by policy.
 ```
@@ -113,7 +113,7 @@ openssl rsa -in k8s/innerLayer.pem -pubout -out k8s/innerLayer.crt
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in k8s/innerLayer.pem -out k8s/innerLayer.key
 rm -f k8s/innerLayer.pem
 
-cat <<EOF > k8s/targets.yaml
+cat << EOF > k8s/targets.yaml
 targets:
   "json.gateway.example.com":
     hostname: "jsonplaceholder.typicode.com"
@@ -167,5 +167,5 @@ docker run --rm \
   -e "NODE_ENV=production" \
   -e "SG_OUTER_LAYER=https://gateway.example.com" \
   -e "SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key" \
-  markushinz/socket-gateway-inner-layer:2.0.1
+  markushinz/socket-gateway-inner-layer:2.1.0
 ```

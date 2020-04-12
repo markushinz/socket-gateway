@@ -1,6 +1,5 @@
 const express = require('express');
 const compression = require('compression');
-const cookieParser = require('cookie-parser');
 
 const config = require('./config');
 const evaluateTool = require('./tools/evaluate');
@@ -12,7 +11,6 @@ app.disable('x-powered-by');
 app.set('trust proxy', config.trustProxy);
 app.use(compression());
 app.use(express.text({ type: '*/*' }));
-app.use(cookieParser());
 
 app.use(function (req, res, next) {
     const target = evaluateTool.getTarget(req.hostname.split(':')[0]);
@@ -28,7 +26,7 @@ app.use(function (req, res, next) {
 
     if (evaluateTool.evaluatePolicy(policy, req.path, req.method)) {
         const rewriteHost = req.hostname;
-        const headers = rewriteTool.sanitizeHeaders({ ...req.headers }); // shallow copy
+        const headers = rewriteTool.sanitizeHeaders(req.headers);
         headers['x-real-ip'] = req.ip;
         headers['x-forwarded-for'] = config.trustProxy ? req.ips.join(', ') : req.ip;
         headers['x-forwarded-host'] = rewriteHost;

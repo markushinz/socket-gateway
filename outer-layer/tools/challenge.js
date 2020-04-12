@@ -12,11 +12,11 @@ const createChallenge = function () {
             } else {
                 const challenge = buffer.toString('hex');
                 pendingChallenges.add(challenge);
-                console.log(`Created challege "${challenge}".`)
+                console.log(`Created challege "${challenge}".`);
                 setTimeout(() => {
                     if (pendingChallenges.has(challenge)) {
                         pendingChallenges.delete(challenge);
-                        console.log(`Deleted challege "${challenge}".`)
+                        console.log(`Deleted challege "${challenge}".`);
                     }
                 }, config.challengeValidity);
                 resolve(challenge);
