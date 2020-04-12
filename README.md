@@ -167,5 +167,6 @@ docker run --rm \
   -e "NODE_ENV=production" \
   -e "SG_OUTER_LAYER=https://gateway.example.com" \
   -e "SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key" \
+  -e "SG_INNER_LAYER_IDENTIFIER=$(hostname)" \
   markushinz/socket-gateway-inner-layer:2.1.0
 ```
