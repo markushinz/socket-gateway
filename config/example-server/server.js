@@ -34,7 +34,7 @@ app.post('/cookie', function (req, res, next) {
     res.sendStatus(200);
 });
 
-router.get('/healthz', function (req, res, next) {
+app.get('/healthz', function (req, res, next) {
     res.sendStatus(200);
 });
 
