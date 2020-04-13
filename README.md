@@ -1,5 +1,8 @@
 # socket-gateway
 
+`markushinz/socket-gateway-outer-layer:2.1.0`
+`markushinz/socket-gateway-inner-layer:2.1.0`
+
 An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
