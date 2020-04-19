@@ -15,7 +15,7 @@ services:
       driver: none
   outer-layer-service:
     build: ./outer-layer
-    image: markushinz/socket-gateway-outer-layer:2.1.0
+    # image: docker.pkg.github.com/markushinz/socket-gateway/outer-layer:latest
     restart: always
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -28,7 +28,7 @@ services:
       - ./config/innerLayer.crt:/mnt/innerLayer.crt
   inner-layer-service:
     build: ./inner-layer
-    image: markushinz/socket-gateway-inner-layer:2.1.0
+    # image: docker.pkg.github.com/markushinz/socket-gateway/inner-layer:latest
     restart: always
     environment:
       - NODE_ENV=${NODE_ENV:-development}
@@ -40,5 +40,4 @@ services:
       - ./config/innerLayer.key:/mnt/innerLayer.key
   example-server-service:
     build: ./config/example-server
-    image: markushinz/example-server:2.1.1
     restart: always

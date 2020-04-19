@@ -2,7 +2,7 @@
 
 set -e
 
-cd config ..
+cd config
 
 cat << EOF > server.conf
 [req]
