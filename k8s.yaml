@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: outer-layer
-          image: docker.pkg.github.com/markushinz/socket-gateway/outer-layer:2.1.0
+          image: markushinz/socket-gateway-outer-layer:2.1.0
           env:
             - name: NODE_ENV
               value: production

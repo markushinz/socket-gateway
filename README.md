@@ -1,8 +1,8 @@
 # socket-gateway
 
-[`docker.pkg.github.com/markushinz/socket-gateway/outer-layer:2.1.0`](https://github.com/markushinz/socket-gateway/packages/191007?version=2.1.0)
+[`markushinz/socket-gateway-outer-layer:2.1.0`](https://hub.docker.com/r/markushinz/socket-gateway-outer-layer/tags)
 
-[`docker.pkg.github.com/markushinz/socket-gateway/inner-layer:2.1.0`](https://github.com/markushinz/socket-gateway/packages/191015?version=2.1.0)
+[`markushinz/socket-gateway-inner-layer:2.1.0`](https://hub.docker.com/r/markushinz/socket-gateway-inner-layer/tags)
 
 An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 
@@ -172,5 +172,5 @@ docker run --rm \
   -e "SG_OUTER_LAYER=https://gateway.example.com" \
   -e "SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key" \
   -e "SG_INNER_LAYER_IDENTIFIER=$(hostname)" \
-  docker.pkg.github.com/markushinz/socket-gateway/inner-layer:2.1.0
+  markushinz/socket-gateway-inner-layer:2.1.0
 ```
