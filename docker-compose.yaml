@@ -22,7 +22,7 @@ services:
       - SG_TARGETS_FILE=/mnt/targets.yaml
       - SG_INNER_LAYER_PUBLIC_KEY_FILE=/mnt/innerLayer.crt
     ports:
-      - 3000:3000
+      - 80:3000
     volumes:
       - ./config/targets.yaml:/mnt/targets.yaml
       - ./config/innerLayer.crt:/mnt/innerLayer.crt

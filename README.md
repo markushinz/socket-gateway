@@ -1,6 +1,6 @@
 # socket-gateway
 
-[`markushinz/socket-gateway:3.0.0`](https://hub.docker.com/r/markushinz/socket-gateway/tags)
+[`markushinz/socket-gateway`](https://hub.docker.com/r/markushinz/socket-gateway/tags)
 
 An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 
@@ -28,6 +28,8 @@ If you deploy multiple inner layers, the requests will be forwarded to the diffe
 
 ### Outer Layer
 
+Set the environment variable `SG_MODE` to `outer-layer`.
+
 The outer layer exposes the gateway functionality on port 80 (environment variable `PORT` or `SG_APP_PORT`). It accepts connections from (the) inner layer(s) on port 3000 (environment variable `SG_SOCKET_PORT`).
 
 You have to specify the inner layer public key either via the environment variable `SG_INNER_LAYER_PUBLIC_KEY` or provide an absolute path to a file using the environment variable `SG_INNER_LAYER_PUBLIC_KEY_FILE`.
@@ -49,6 +51,8 @@ targets:
 Now, all requests that are allowed py the specified policy that have the request header "host" set to "socket.gateway" get proxied to "my.private.api".
 
 ### Inner Layer
+
+Set the environment variable `SG_MODE` to `inner-layer`.
 
 The inner layer requires an environment variable `SG_OUTER_LAYER=protocol://host<:port>` pointing to the outer layer. 
 
@@ -147,13 +151,13 @@ spec:
         paths:
           - backend:
               serviceName: outer-layer-service
-              servicePort: 3000
+              servicePort: 3001
     - host: "*.gateway.example.com"
       http:
         paths:
           - backend:
               serviceName: outer-layer-service
-              servicePort: 80
+              servicePort: 3000
   tls:
     - hosts:
         - "*.gateway.example.com"
@@ -167,8 +171,9 @@ Finally, you can run an inner layer from within the desired target network:
 docker run --rm \
   -v "$(pwd)/k8s/innerLayer.key:/mnt/innerLayer.key" \
   -e "NODE_ENV=production" \
+  -e "SG_MODE=inner-layer" \
   -e "SG_OUTER_LAYER=https://gateway.example.com" \
   -e "SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key" \
   -e "SG_INNER_LAYER_IDENTIFIER=$(hostname)" \
-  markushinz/socket-gateway-inner-layer:2.1.0
+  markushinz/socket-gateway:latest
 ```

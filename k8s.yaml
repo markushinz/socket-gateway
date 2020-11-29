@@ -17,10 +17,12 @@ spec:
     spec:
       containers:
         - name: outer-layer
-          image: markushinz/socket-gateway-outer-layer:2.1.0
+          image: markushinz/socket-gateway:latest
           env:
             - name: NODE_ENV
               value: production
+            - name: SG_MODE
+              value: outer-layer
             - name: SG_TARGETS
               valueFrom:
                 configMapKeyRef:
@@ -37,11 +39,11 @@ spec:
                   name: outer-layer-secret
                   key: adminPassword
           ports:
-            - containerPort: 80
             - containerPort: 3000
+            - containerPort: 3001
           readinessProbe:
             httpGet:
-              port: 3000
+              port: 3001
               path: /healthz
 ---
 apiVersion: v1
@@ -53,7 +55,7 @@ spec:
   selector:
     app: outer-layer
   ports:
-    - port: 80
-      name: app
     - port: 3000
+      name: app
+    - port: 3001
       name: socket

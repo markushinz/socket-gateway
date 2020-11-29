@@ -7,7 +7,7 @@ COPY .eslint* ./
 COPY jest.config.js .
 COPY src ./src
 RUN npm run lint
-# RUN npm run test
+RUN npm run test
 RUN npm run build
 
 FROM node:12 as runner
