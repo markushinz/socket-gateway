@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const socket = require('../socket');
-const config = require('../config');
+import { getInnerLayers } from '../socket';
+import { adminCredentials, innerLayerPublicKey, getTargets } from '../config';
 
 router.use(function (req, res, next) {
-    if (config.adminCredentials) {
-        if (req.headers.authorization === `Basic ${config.adminCredentials}`) {
+    if (adminCredentials) {
+        if (req.headers.authorization === `Basic ${adminCredentials}`) {
             next();
         } else {
             res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
@@ -17,7 +17,7 @@ router.use(function (req, res, next) {
     }
 });
 
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
     res.setHeader('content-type', 'text/html; charset=utf-8');
     res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -33,11 +33,11 @@ router.get('/', function (req, res, next) {
     <div id="container">
         <h1>Socket Gateway</h1>
         <h3>Inner Layers</h3>
-        <pre>${JSON.stringify(socket.innerLayers, null, 4)}</pre>
+        <pre>${JSON.stringify(getInnerLayers(), null, 4)}</pre>
         <h3>Inner Layer Public Key</h3>
-        <pre>${config.innerLayerPublicKey}</pre>
+        <pre>${innerLayerPublicKey}</pre>
         <h3>Targets</h3>
-        <pre>${JSON.stringify(config.targets, null, 4)}</pre>
+        <pre>${JSON.stringify(getTargets(), null, 4)}</pre>
     </div>
 </body>
 
@@ -45,7 +45,7 @@ router.get('/', function (req, res, next) {
 `);
 });
 
-router.get('/stylesheet.css', function (req, res, next) {
+router.get('/stylesheet.css', function (req, res) {
     res.setHeader('content-type', 'text/css; charset=utf-8');
     res.send(`html {
     font-family: monospace, monospace;
@@ -95,4 +95,4 @@ pre {
 `);
 });
 
-module.exports = router;
+export default router;

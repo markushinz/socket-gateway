@@ -1,15 +1,15 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-const socketio = require('socket.io-client');
-const axios = require('axios').default;
+import socketio from 'socket.io-client';
+import { default as axios, AxiosRequestConfig } from 'axios';
 
-const config = require('./config');
+import { getInnerLayerIdentifier, getInnerLayerPrivateKey, getOuterLayer } from './config';
 
-const getChallenge = async function (attempt = 0) {
-    const challengeURL = new URL('/challenge', config.outerLayer).href
+const getChallenge = async function (attempt = 0): Promise<string> {
+    const challengeURL = new URL('/challenge', getOuterLayer()).href;
     try {
         const response = await axios.get(challengeURL);
-        const challenge = response.data
+        const challenge = response.data;
         console.log(`Got challenge "${challenge}" from ${challengeURL}.`);
         return challenge;
     } catch (error) {
@@ -17,31 +17,43 @@ const getChallenge = async function (attempt = 0) {
         if (attempt > 5) {
             console.error(error);
         }
-        await new Promise(function (resolve) { setTimeout(resolve, attempt * 1000) });
+        await new Promise(function (resolve) { setTimeout(resolve, attempt * 1000); });
         return getChallenge(attempt ? attempt + 1 : 1);
     }
-}
+};
 
-const solveChallenge = function (challenge) {
+const solveChallenge = function (challenge: string) {
     const sign = crypto.createSign('SHA256');
     sign.update(challenge);
     sign.end();
-    const challengeResponse = sign.sign(config.innerLayerPrivateKey).toString('hex');
+    const challengeResponse = sign.sign(getInnerLayerPrivateKey()).toString('hex');
     console.log(`Computed challenge response "${challengeResponse}".`);
     return challengeResponse;
-}
+};
 
 const getHeaders = async function () {
     const challenge = await getChallenge();
     return {
-        'x-inner-layer-identifier': config.innerLayerIdentifier,
+        'x-inner-layer-identifier': getInnerLayerIdentifier(),
         'x-challenge': challenge,
         'x-challenge-response': solveChallenge(challenge)
-    }
+    };
 };
 
+interface IncomingData {
+    method: AxiosRequestConfig["method"],
+    url: AxiosRequestConfig["url"],
+    headers: AxiosRequestConfig["headers"],
+    query: AxiosRequestConfig["params"],
+    body: AxiosRequestConfig["data"],
+    uuid: string,
+    host: string
+}
+
+
 const connect = async function () {
-    const io = socketio(config.outerLayer, {
+    const outerLayer = getOuterLayer();
+    const io = socketio(outerLayer, {
         transportOptions: {
             polling: {
                 extraHeaders: await getHeaders()
@@ -50,13 +62,13 @@ const connect = async function () {
         reconnection: false
     });
 
-    console.log(`Connecting to outer layer ${config.outerLayer}...`);
+    console.log(`Connecting to outer layer ${outerLayer}...`);
 
     io.on('connect', function () {
-        console.log(`Outer Layer ${config.outerLayer} connected.`);
+        console.log(`Outer Layer ${outerLayer} connected.`);
     });
 
-    io.on('request', async function (incomingData) {
+    io.on('request', async function (incomingData: IncomingData) {
         try {
             const response = await axios({
                 method: incomingData.method,
@@ -65,8 +77,8 @@ const connect = async function () {
                 params: incomingData.query,
                 data: incomingData.body,
                 maxRedirects: 0,
-                responseType: 'arraybuffer',
-                responseEncoding: null,
+                responseType: 'arraybuffer', // as AxiosRequestConfig["responseType"]
+                // responseEncoding: null,
                 validateStatus: null,
             });
             const outgoingData = {
@@ -75,7 +87,7 @@ const connect = async function () {
                 statusCode: response.status,
                 body: response.data.toString('binary'),
                 headers: response.headers
-            }
+            };
             io.emit('request', outgoingData);
         } catch (error) {
             console.error(error);
@@ -85,17 +97,17 @@ const connect = async function () {
                 statusCode: 500,
                 body: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain' }
-            }
+            };
             io.emit('request', outgoingData);
         }
     });
 
-    io.on('pong', function (latency) {
+    io.on('pong', function (latency: number) {
         io.emit('latency', latency);
     });
 
     io.on('disconnect', function () {
-        console.log(`Outer Layer ${config.outerLayer} disconnected.`);
+        console.log(`Outer Layer ${outerLayer} disconnected.`);
         connect(); // reconnect
     });
 };

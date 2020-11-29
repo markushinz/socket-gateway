@@ -1,10 +1,10 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-const config = require('../config');
+import { challengeValidity, innerLayerPublicKey } from '../config';
 
 const pendingChallenges = new Set();
 
-const createChallenge = function () {
+export function createChallenge(): Promise<string> {
     return new Promise(function (resolve, reject) {
         crypto.randomBytes(256, (error, buffer) => {
             if (error) {
@@ -18,20 +18,20 @@ const createChallenge = function () {
                         pendingChallenges.delete(challenge);
                         console.log(`Deleted challege "${challenge}".`);
                     }
-                }, config.challengeValidity);
+                }, challengeValidity);
                 resolve(challenge);
             }
-        })
+        });
     });
 }
 
-const verifyChallengeResponse = function (challenge, challengeResponse) {
+export function verifyChallengeResponse(challenge: string, challengeResponse: string): boolean {
     if (pendingChallenges.has(challenge)) {
         pendingChallenges.delete(challenge);
         const verify = crypto.createVerify('SHA256');
         verify.update(challenge);
         verify.end();
-        if (verify.verify(config.innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'))) {
+        if (verify.verify(innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'))) {
             console.log(`Challege "${challenge}" and challenge response "${challengeResponse}" sucessfully verified.`);
             return true;
         }
@@ -39,9 +39,4 @@ const verifyChallengeResponse = function (challenge, challengeResponse) {
         console.error(`Challege "${challenge}" is no pending challenge.`);
     }
     return false;
-}
-
-module.exports = {
-    createChallenge,
-    verifyChallengeResponse
 }

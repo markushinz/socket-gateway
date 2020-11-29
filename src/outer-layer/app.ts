@@ -1,19 +1,19 @@
-const express = require('express');
-const compression = require('compression');
+import express from 'express';
+import compression from 'compression';
 
-const config = require('./config');
-const evaluateTool = require('./tools/evaluate');
-const rewriteTool = require('./tools/rewrite');
-const defaultRouter = require('./routers/default');
+import { trustProxy } from './config';
+import { getTarget, evaluatePolicy } from './tools/evaluate';
+import { sanitizeHeaders, Headers } from './tools/rewrite';
+import defaultRouter from './routers/default';
 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', config.trustProxy);
+app.set('trust proxy', trustProxy);
 app.use(compression());
 app.use(express.text({ type: '*/*' }));
 
 app.use(function (req, res, next) {
-    const target = evaluateTool.getTarget(req.hostname.split(':')[0]);
+    const target = getTarget(req.hostname.split(':')[0]);
     if (!target) {
         return next();
     }
@@ -22,17 +22,17 @@ app.use(function (req, res, next) {
     const port = target.port || (protocol === 'http' ? 80 : 443);
     const url = protocol + '://' + hostname + ":" + port + req.path;
 
-    const policy = target.policy || { '*': '*' };
+    const policy = target.policy || { '*': ['*'] };
 
-    if (evaluateTool.evaluatePolicy(policy, req.path, req.method)) {
+    if (evaluatePolicy(policy, req.path, req.method)) {
         const rewriteHost = req.hostname;
-        const headers = rewriteTool.sanitizeHeaders(req.headers);
+        const headers = sanitizeHeaders(req.headers as Headers);
         headers['x-real-ip'] = req.ip;
-        headers['x-forwarded-for'] = config.trustProxy ? req.ips.join(', ') : req.ip;
+        headers['x-forwarded-for'] = trustProxy ? req.ips.join(', ') : req.ip;
         headers['x-forwarded-host'] = rewriteHost;
-        if (config.trustProxy && req.headers['x-forwarded-port']) {
+        if (trustProxy && req.headers['x-forwarded-port']) {
             headers['x-forwarded-port'] = req.headers['x-forwarded-port'];
-        } else if (!config.trustProxy) {
+        } else if (!trustProxy) {
             headers['x-forwarded-port'] = app.get('port');
         }
         headers['x-forwarded-proto'] = req.protocol;
@@ -56,4 +56,4 @@ app.use(function (req, res, next) {
 
 app.use(defaultRouter);
 
-module.exports = app;
+export default app;

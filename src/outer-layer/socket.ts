@@ -1,14 +1,29 @@
-const socketio = require('socket.io');
-const uuid = require('uuid').v1;
+import socketio from 'socket.io';
+import { v1 as uuid } from 'uuid';
 
-const config = require('./config');
-const challengeTool = require('./tools/challenge');
-const rewriteTool = require('./tools/rewrite');
+import { timeout } from './config';
+import { verifyChallengeResponse } from './tools/challenge';
+import { sanitizeHeaders, rewriteObject } from './tools/rewrite';
+
+import { Server } from 'http';
+import { Response } from 'express';
 
 const pendingRequests = new Map();
 const innerLayers = new Map();
 
-const createGateway = function (server) {
+type GatewayReturn = {
+    request: (rewriteHost: string, res: Response<unknown>, outgoingData: Record<string, unknown>) => void,
+};
+
+interface InnerLayer {
+    id: string,
+    ip: string,
+    timestamp: string,
+    headers: unknown,
+    latencies: number[]
+}
+
+export function createGateway(server: Server): GatewayReturn {
     const io = socketio(server);
 
     io.use(function (socket, next) {
@@ -17,7 +32,7 @@ const createGateway = function (server) {
 
         if (!!challenge &&
             !!challengeResponse &&
-            challengeTool.verifyChallengeResponse(challenge, challengeResponse)) {
+            verifyChallengeResponse(challenge, challengeResponse)) {
             next();
         } else {
             next(new Error('Inner Layer did not present a valid challenge / challenge reponse pair.'));
@@ -25,13 +40,14 @@ const createGateway = function (server) {
     });
 
     io.on('connection', function (socket) {
-        innerLayers.set(socket.id, {
+        const innerLayer: InnerLayer = {
             id: socket.id,
             ip: socket.handshake.address,
             timestamp: new Date().toUTCString(),
             headers: socket.handshake.headers,
             latencies: []
-        });
+        };
+        innerLayers.set(socket.id, innerLayer);
 
         console.log(`Inner layer ${socket.id} connected.`);
 
@@ -48,8 +64,8 @@ const createGateway = function (server) {
             if (pendingRequest) {
                 pendingRequests.delete(incomingData.uuid);
 
-                incomingData.headers = rewriteTool.sanitizeHeaders(incomingData.headers);
-                rewriteTool.rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
+                incomingData.headers = sanitizeHeaders(incomingData.headers);
+                rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                 pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                 if (incomingData.body) {
                     pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
@@ -60,7 +76,7 @@ const createGateway = function (server) {
         });
 
         socket.on('disconnect', function () {
-            innerLayers.delete(socket.id)
+            innerLayers.delete(socket.id);
 
             if (innerLayers.size == 0) {
                 pendingRequests.forEach(function (pendingRequest) {
@@ -73,7 +89,7 @@ const createGateway = function (server) {
     });
 
     return {
-        request: function (rewriteHost, res, outgoingData) {
+        request: function (rewriteHost: string, res: Response<unknown>, outgoingData: Record<string, unknown>) {
             if (innerLayers.size > 0) {
                 const pendingRequest = {
                     uuid: uuid(),
@@ -89,7 +105,7 @@ const createGateway = function (server) {
                 // of one TCP connection get routed to the same inner layer.
                 // This does not garantuee any fair scheduling.
                 const innerLayersArray = Array.from(innerLayers.keys());
-                const innerLayerIndex = res.req.socket.remotePort % innerLayersArray.length;
+                const innerLayerIndex = (res.req?.socket.remotePort ?? 0) % innerLayersArray.length;
                 const innerLayerID = innerLayersArray[innerLayerIndex];
 
                 io.to(innerLayerID).emit('request', outgoingData);
@@ -99,20 +115,14 @@ const createGateway = function (server) {
                         pendingRequests.delete(pendingRequest.uuid);
                         res.sendStatus(504);
                     }
-                }, config.timeout);
+                }, timeout);
             } else {
                 res.sendStatus(502);
             }
-        },
-        get innerLayers() {
-            return Array.from(innerLayers.values());
         }
-    }
+    };
 }
 
-module.exports = {
-    createGateway,
-    get innerLayers() {
-        return Array.from(innerLayers.values());
-    }
-};
+export function getInnerLayers(): InnerLayer[] {
+    return Array.from(innerLayers.values());
+}
