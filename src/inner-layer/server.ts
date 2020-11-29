@@ -106,10 +106,14 @@ const connect = async function () {
         io.emit('latency', latency);
     });
 
-    io.on('disconnect', function () {
+    io.on('disconnect', function (reason: string) {
         console.log(`Outer Layer ${outerLayer} disconnected.`);
-        connect(); // reconnect
+        if (reason !== 'io client disconnect') {
+            connect(); // reconnect
+        }
     });
+
+    return io;
 };
 
-connect();
+export const handler = connect();

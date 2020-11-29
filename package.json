@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "lint": "eslint . --ext .ts,.tsx",
-        "test": "jest --collect-coverage --passWithNoTests",
+        "test": "jest --collect-coverage --detectOpenHandles",
         "build": "rm -rf ./dist && tsc",
         "start": "node dist/${SG_MODE:-\"outer-layer\"}/server.js",
         "serve": "npm run build && ./dev.sh"
@@ -29,7 +29,9 @@
         "@types/compression": "^1.7.0",
         "@types/express": "^4.17.9",
         "@types/js-yaml": "^3.12.5",
+        "@types/node-forge": "^0.9.5",
         "@types/socket.io": "^2.1.11",
-        "@types/uuid": "^8.3.0"
+        "@types/uuid": "^8.3.0",
+        "node-forge": "^0.10.0"
     }
 }

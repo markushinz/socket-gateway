@@ -5,8 +5,8 @@ import app from './app';
 import { createGateway } from './socket';
 import socketApp from './socketApp';
 
-const appServer = http.createServer(app);
-const socketServer = http.createServer(socketApp);
+export const appServer = http.createServer(app);
+export const socketServer = http.createServer(socketApp);
 const gateway = createGateway(socketServer);
 
 app.set('port', appPort);
