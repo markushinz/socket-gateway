@@ -2,6 +2,8 @@
 
 set -e
 
+./createCertificates.sh
+
 export NODE_ENV=development
 # export DEBUG="engine,socket.io*"
 export SG_INNER_LAYER_PUBLIC_KEY_FILE=./config/innerLayer.crt

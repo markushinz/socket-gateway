@@ -18,16 +18,12 @@ version=${1:-"${major}.${minor}.${patch}"}
 
 echo "${version}"
 
-docker build -t "markushinz/socket-gateway-outer-layer:$version" \
-  -t "markushinz/socket-gateway-outer-layer:latest" ./outer-layer
-docker build -t "markushinz/socket-gateway-inner-layer:$version" \
-  -t "markushinz/socket-gateway-inner-layer:latest" ./inner-layer
+docker build -t "markushinz/socket-gateway:$version" \
+  -t "markushinz/socket-gateway:latest" .
 
 git tag "v$version" -m "v$version"
 
-docker push "markushinz/socket-gateway-outer-layer:$version"
-docker push "markushinz/socket-gateway-outer-layer:latest"
-docker push "markushinz/socket-gateway-inner-layer:$version"
-docker push "markushinz/socket-gateway-inner-layer:latest"
+docker push "markushinz/socket-gateway:$version"
+docker push "markushinz/socket-gateway:latest"
 
 git push origin "v$version"

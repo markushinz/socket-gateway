@@ -1,8 +1,6 @@
 # socket-gateway
 
-[`markushinz/socket-gateway-outer-layer:2.1.0`](https://hub.docker.com/r/markushinz/socket-gateway-outer-layer/tags)
-
-[`markushinz/socket-gateway-inner-layer:2.1.0`](https://hub.docker.com/r/markushinz/socket-gateway-inner-layer/tags)
+[`markushinz/socket-gateway:3.0.0`](https://hub.docker.com/r/markushinz/socket-gateway/tags)
 
 An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
 
