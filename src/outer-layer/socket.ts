@@ -1,34 +1,44 @@
-import socketio from 'socket.io';
+import { Server } from 'socket.io';
 import { v1 as uuid } from 'uuid';
 
 import Config from '../config';
 import { verifyChallengeResponse } from './tools/challenge';
 import { sanitizeHeaders, rewriteObject } from './tools/rewrite';
 
-import { Server } from 'http';
+import { Server as HTTPServer } from 'http';
 import { Response } from 'express';
 
 const pendingRequests = new Map();
 const innerLayers = new Map();
 
-type GatewayReturn = {
+type Gateway = {
     request: (rewriteHost: string, res: Response<unknown>, outgoingData: Record<string, unknown>) => void,
 };
 
-interface InnerLayer {
+type InnerLayer = {
     id: string,
     ip: string,
     timestamp: string,
     headers: unknown,
     latencies: number[]
-}
+};
 
-export function createGateway(server: Server): GatewayReturn {
-    const io = socketio(server);
+type IncomingData = {
+    uuid: string,
+    headers: Record<string, string | string[]>,
+    host: string,
+    statusCode: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body: any
+};
+
+export function createGateway(server: HTTPServer): Gateway {
+    const io = new Server(server);
 
     io.use(function (socket, next) {
-        const challenge = socket.handshake.headers['x-challenge'];
-        const challengeResponse = socket.handshake.headers['x-challenge-response'];
+        const headers = socket.handshake.headers as Record<string, string>;
+        const challenge = headers['x-challenge'];
+        const challengeResponse = headers['x-challenge-response'];
 
         if (!!challenge &&
             !!challengeResponse &&
@@ -51,7 +61,7 @@ export function createGateway(server: Server): GatewayReturn {
 
         console.log(`Inner layer ${socket.id} connected.`);
 
-        socket.on('latency', function (latency) {
+        socket.on('latency', function (latency: number) {
             const latencies = innerLayers.get(socket.id).latencies;
             latencies.unshift(`${latency} ms`);
             if (latencies.length > 10) {
@@ -59,7 +69,7 @@ export function createGateway(server: Server): GatewayReturn {
             }
         });
 
-        socket.on('request', function (incomingData) {
+        socket.on('request', function (incomingData: IncomingData) {
             const pendingRequest = pendingRequests.get(incomingData.uuid);
             if (pendingRequest) {
                 pendingRequests.delete(incomingData.uuid);

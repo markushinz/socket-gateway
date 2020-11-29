@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import socketio from 'socket.io-client';
+import { io as socketio } from 'socket.io-client';
 import { default as axios, AxiosRequestConfig } from 'axios';
 
 import Config from '../config';
