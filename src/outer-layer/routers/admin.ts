@@ -1,7 +1,6 @@
 import { Router } from 'express';
 const router = Router();
 
-import { getInnerLayers } from '../socket';
 import Config from '../../config';
 
 router.use(function (req, res, next) {
@@ -33,7 +32,7 @@ router.get('/', function (req, res) {
     <div id="container">
         <h1>Socket Gateway</h1>
         <h3>Inner Layers</h3>
-        <pre>${JSON.stringify(getInnerLayers(), null, 4)}</pre>
+        <pre>${JSON.stringify(req.app.get('gateway').innerLayers, null, 4)}</pre>
         <h3>Inner Layer Public Key</h3>
         <pre>${Config.publicKey}</pre>
         <h3>Targets</h3>
