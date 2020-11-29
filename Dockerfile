@@ -11,7 +11,7 @@ RUN npm run test
 RUN npm run build
 
 FROM node:12 as runner
-ENV SG_MODE outer-kayer
+ENV SG_MODE outer-layer
 WORKDIR /usr/src/socket-gateway
 COPY package.json .
 COPY --from=builder /usr/src/socket-gateway/dist ./dist
