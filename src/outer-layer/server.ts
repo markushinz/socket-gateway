@@ -2,7 +2,7 @@ import http from 'http';
 
 import Config from '../config';
 import app from './app';
-import { Gateway } from './socket';
+import { Gateway } from './gateway';
 import socketApp from './socketApp';
 
 export const appServer = http.createServer(app);
