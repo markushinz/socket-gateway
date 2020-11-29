@@ -1,5 +1,5 @@
-import express, { ErrorRequestHandler } from 'express';
-const router = express.Router();
+import { Router, ErrorRequestHandler } from 'express';
+const router = Router();
 
 router.get('/healthz', function (req, res) {
     res.sendStatus(200);

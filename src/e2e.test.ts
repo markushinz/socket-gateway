@@ -28,7 +28,6 @@ process.env.SG_TARGETS = `targets:
     hostname: localhost
     port: ${ports.testServer}
 `;
-process.env.SG_OUTER_LAYER = `http://localhost:${ports.socketServer}`;
 
 import { appServer, socketServer } from './outer-layer/server';
 import { handler } from './inner-layer/server';

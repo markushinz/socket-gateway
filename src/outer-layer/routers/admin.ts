@@ -1,5 +1,5 @@
-import express from 'express';
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 import { getInnerLayers } from '../socket';
 import Config from '../../config';
