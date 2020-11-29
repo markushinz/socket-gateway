@@ -1,8 +1,6 @@
 targets:
   "localhost":
-    protocol: "http"
-    hostname: "example-server-service"
-    port: 3000
+    hostname: "jsonplaceholder.typicode.com"
   "example.gateway.localhost":
     protocol: "http"
     hostname: "example-server-service"
