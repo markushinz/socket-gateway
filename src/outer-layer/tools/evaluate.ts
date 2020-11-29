@@ -1,4 +1,6 @@
-import { getTargets, Target, Policy } from '../config';
+import Config from '../../config';
+
+import { Policy, Target } from '../../models';
 
 export function evaluatePolicy(policy: Policy, path: string, method: string): boolean {
     const methods = policy[path] || policy['*'];
@@ -10,7 +12,7 @@ export function evaluatePolicy(policy: Policy, path: string, method: string): bo
 
 export function getTarget(host: string): Target | undefined {
     try {
-        return getTargets()[host];
+        return Config.targets[host];
     } catch (error) {
         return undefined;
     }

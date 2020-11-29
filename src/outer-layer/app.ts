@@ -1,14 +1,14 @@
 import express from 'express';
 import compression from 'compression';
 
-import { trustProxy } from './config';
+import Config from '../config';
 import { getTarget, evaluatePolicy } from './tools/evaluate';
 import { sanitizeHeaders, Headers } from './tools/rewrite';
 import defaultRouter from './routers/default';
 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', trustProxy);
+app.set('trust proxy', Config.trustProxy);
 app.use(compression());
 app.use(express.text({ type: '*/*' }));
 
@@ -28,11 +28,11 @@ app.use(function (req, res, next) {
         const rewriteHost = req.hostname;
         const headers = sanitizeHeaders(req.headers as Headers);
         headers['x-real-ip'] = req.ip;
-        headers['x-forwarded-for'] = trustProxy ? req.ips.join(', ') : req.ip;
+        headers['x-forwarded-for'] = Config.trustProxy ? req.ips.join(', ') : req.ip;
         headers['x-forwarded-host'] = rewriteHost;
-        if (trustProxy && req.headers['x-forwarded-port']) {
+        if (Config.trustProxy && req.headers['x-forwarded-port']) {
             headers['x-forwarded-port'] = req.headers['x-forwarded-port'];
-        } else if (!trustProxy) {
+        } else if (!Config.trustProxy) {
             headers['x-forwarded-port'] = app.get('port');
         }
         headers['x-forwarded-proto'] = req.protocol;

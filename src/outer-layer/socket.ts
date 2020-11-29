@@ -1,7 +1,7 @@
 import socketio from 'socket.io';
 import { v1 as uuid } from 'uuid';
 
-import { timeout } from './config';
+import Config from '../config';
 import { verifyChallengeResponse } from './tools/challenge';
 import { sanitizeHeaders, rewriteObject } from './tools/rewrite';
 
@@ -115,7 +115,7 @@ export function createGateway(server: Server): GatewayReturn {
                         pendingRequests.delete(pendingRequest.uuid);
                         res.sendStatus(504);
                     }
-                }, timeout);
+                }, Config.timeout);
             } else {
                 res.sendStatus(502);
             }

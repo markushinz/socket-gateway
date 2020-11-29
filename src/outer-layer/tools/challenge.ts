@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { challengeValidity, innerLayerPublicKey } from '../config';
+import Config from '../../config';
 
 const pendingChallenges = new Set();
 
@@ -18,7 +18,7 @@ export function createChallenge(): Promise<string> {
                         pendingChallenges.delete(challenge);
                         console.log(`Deleted challege "${challenge}".`);
                     }
-                }, challengeValidity);
+                }, Config.challengeValidity);
                 resolve(challenge);
             }
         });
@@ -31,7 +31,7 @@ export function verifyChallengeResponse(challenge: string, challengeResponse: st
         const verify = crypto.createVerify('SHA256');
         verify.update(challenge);
         verify.end();
-        if (verify.verify(innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'))) {
+        if (verify.verify(Config.publicKey, Buffer.from(challengeResponse, 'hex'))) {
             console.log(`Challege "${challenge}" and challenge response "${challengeResponse}" sucessfully verified.`);
             return true;
         }

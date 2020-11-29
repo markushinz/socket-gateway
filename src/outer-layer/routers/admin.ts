@@ -2,11 +2,11 @@ import express from 'express';
 const router = express.Router();
 
 import { getInnerLayers } from '../socket';
-import { adminCredentials, innerLayerPublicKey, getTargets } from '../config';
+import Config from '../../config';
 
 router.use(function (req, res, next) {
-    if (adminCredentials) {
-        if (req.headers.authorization === `Basic ${adminCredentials}`) {
+    if (Config.adminCredentials) {
+        if (req.headers.authorization === `Basic ${Config.adminCredentials}`) {
             next();
         } else {
             res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
@@ -35,9 +35,9 @@ router.get('/', function (req, res) {
         <h3>Inner Layers</h3>
         <pre>${JSON.stringify(getInnerLayers(), null, 4)}</pre>
         <h3>Inner Layer Public Key</h3>
-        <pre>${innerLayerPublicKey}</pre>
+        <pre>${Config.publicKey}</pre>
         <h3>Targets</h3>
-        <pre>${JSON.stringify(getTargets(), null, 4)}</pre>
+        <pre>${JSON.stringify(Config.targets, null, 4)}</pre>
     </div>
 </body>
 

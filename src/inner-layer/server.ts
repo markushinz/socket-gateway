@@ -3,10 +3,10 @@ import crypto from 'crypto';
 import socketio from 'socket.io-client';
 import { default as axios, AxiosRequestConfig } from 'axios';
 
-import { getInnerLayerIdentifier, getInnerLayerPrivateKey, getOuterLayer } from './config';
+import Config from '../config';
 
 const getChallenge = async function (attempt = 0): Promise<string> {
-    const challengeURL = new URL('/challenge', getOuterLayer()).href;
+    const challengeURL = new URL('/challenge', Config.outerLayer).href;
     try {
         const response = await axios.get(challengeURL);
         const challenge = response.data;
@@ -26,7 +26,7 @@ const solveChallenge = function (challenge: string) {
     const sign = crypto.createSign('SHA256');
     sign.update(challenge);
     sign.end();
-    const challengeResponse = sign.sign(getInnerLayerPrivateKey()).toString('hex');
+    const challengeResponse = sign.sign(Config.privateKey).toString('hex');
     console.log(`Computed challenge response "${challengeResponse}".`);
     return challengeResponse;
 };
@@ -34,7 +34,7 @@ const solveChallenge = function (challenge: string) {
 const getHeaders = async function () {
     const challenge = await getChallenge();
     return {
-        'x-inner-layer-identifier': getInnerLayerIdentifier(),
+        'x-inner-layer-identifier': Config.innerLayerIdentifier,
         'x-challenge': challenge,
         'x-challenge-response': solveChallenge(challenge)
     };
@@ -52,7 +52,7 @@ interface IncomingData {
 
 
 const connect = async function () {
-    const outerLayer = getOuterLayer();
+    const outerLayer = Config.outerLayer;
     const io = socketio(outerLayer, {
         transportOptions: {
             polling: {
