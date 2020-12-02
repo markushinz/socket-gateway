@@ -7,7 +7,7 @@
         "test": "jest --detectOpenHandles --silent=true",
         "build": "rm -rf ./dist && tsc",
         "start": "node dist/${SG_MODE:-\"outer-layer\"}/server.js",
-        "serve": "npm run build && ./dev.sh"
+        "serve": "npm run build && SG_TARGETS='{\"targets\":{\"localhost\":{\"hostname\":\"jsonplaceholder.typicode.com\"}}}' node dist/server.js"
     },
     "dependencies": {
         "axios": "^0.21.0",

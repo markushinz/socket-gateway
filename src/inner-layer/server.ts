@@ -1,11 +1,12 @@
 import crypto from 'crypto';
 
 import { io as socketio } from 'socket.io-client';
-import { default as axios, AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
-import Config from '../config';
+import { IncomingData } from '../models';
+import Config from './config';
 
-const getChallenge = async function (attempt = 0): Promise<string> {
+async function getChallenge(attempt = 0): Promise<string> {
     const challengeURL = new URL('/challenge', Config.outerLayer).href;
     try {
         const response = await axios.get(challengeURL);
@@ -20,38 +21,27 @@ const getChallenge = async function (attempt = 0): Promise<string> {
         await new Promise(function (resolve) { setTimeout(resolve, attempt * 1000); });
         return getChallenge(attempt ? attempt + 1 : 1);
     }
-};
+}
 
-const solveChallenge = function (challenge: string) {
+function solveChallenge(challenge: string) {
     const sign = crypto.createSign('SHA256');
     sign.update(challenge);
     sign.end();
     const challengeResponse = sign.sign(Config.privateKey).toString('hex');
     console.log(`Computed challenge response "${challengeResponse}".`);
     return challengeResponse;
-};
+}
 
-const getHeaders = async function () {
+async function getHeaders() {
     const challenge = await getChallenge();
     return {
         'x-inner-layer-identifier': Config.innerLayerIdentifier,
         'x-challenge': challenge,
         'x-challenge-response': solveChallenge(challenge)
     };
-};
-
-interface IncomingData {
-    method: AxiosRequestConfig["method"],
-    url: AxiosRequestConfig["url"],
-    headers: AxiosRequestConfig["headers"],
-    query: AxiosRequestConfig["params"],
-    body: AxiosRequestConfig["data"],
-    uuid: string,
-    host: string
 }
 
-
-const connect = async function () {
+async function connect() {
     const outerLayer = Config.outerLayer;
     const io = socketio(outerLayer, {
         transportOptions: {
@@ -77,8 +67,7 @@ const connect = async function () {
                 params: incomingData.query,
                 data: incomingData.body,
                 maxRedirects: 0,
-                responseType: 'arraybuffer', // as AxiosRequestConfig["responseType"]
-                // responseEncoding: null,
+                responseType: 'arraybuffer',
                 validateStatus: null,
             });
             const outgoingData = {
@@ -114,6 +103,6 @@ const connect = async function () {
     });
 
     return io;
-};
+}
 
-export const handler = connect();
+export const client = connect();

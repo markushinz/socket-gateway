@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { v1 as uuid } from 'uuid';
 
-import Config from '../config';
+import Config from './config';
 import { verifyChallengeResponse } from './tools/challenge';
 import { sanitizeHeaders, rewriteObject } from './tools/rewrite';
 

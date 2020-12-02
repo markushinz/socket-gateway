@@ -1,6 +1,6 @@
 import http from 'http';
 
-import Config from '../config';
+import Config from './config';
 import app from './app';
 import { Gateway } from './gateway';
 import socketApp from './socketApp';

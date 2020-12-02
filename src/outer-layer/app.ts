@@ -1,7 +1,7 @@
 import express from 'express';
 import compression from 'compression';
 
-import Config from '../config';
+import Config from './config';
 import { getTarget, evaluatePolicy } from './tools/evaluate';
 import { sanitizeHeaders, Headers } from './tools/rewrite';
 import defaultRouter from './routers/default';

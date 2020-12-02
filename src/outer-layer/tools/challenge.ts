@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import Config from '../../config';
+import Config from '../config';
 
 const pendingChallenges = new Set();
 
@@ -31,7 +31,7 @@ export function verifyChallengeResponse(challenge: string, challengeResponse: st
         const verify = crypto.createVerify('SHA256');
         verify.update(challenge);
         verify.end();
-        if (verify.verify(Config.publicKey, Buffer.from(challengeResponse, 'hex'))) {
+        if (verify.verify(Config.innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'))) {
             console.log(`Challege "${challenge}" and challenge response "${challengeResponse}" sucessfully verified.`);
             return true;
         }

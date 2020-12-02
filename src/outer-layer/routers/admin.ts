@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 
-import Config from '../../config';
+import Config from '../config';
 
 router.use(function (req, res, next) {
     if (Config.adminCredentials) {
@@ -34,7 +34,7 @@ router.get('/', function (req, res) {
         <h3>Inner Layers</h3>
         <pre>${JSON.stringify(req.app.get('gateway').innerLayers, null, 4)}</pre>
         <h3>Inner Layer Public Key</h3>
-        <pre>${Config.publicKey}</pre>
+        <pre>${Config.innerLayerPublicKey}</pre>
         <h3>Targets</h3>
         <pre>${JSON.stringify(Config.targets, null, 4)}</pre>
     </div>
