@@ -1,13 +1,8 @@
-import fs from 'fs';
+import { readFileSync } from 'fs';
 
-import yaml from 'js-yaml';
+import { safeLoad } from 'js-yaml';
 
-import { Target } from '../models';
-
-type Cache = {
-    timestamp?: number
-    targets: Record<string, Target>,
-};
+import { Cache, Target } from '../models';
 
 class Config {
     private cache: Cache;
@@ -30,7 +25,7 @@ class Config {
             return process.env.SG_INNER_LAYER_PUBLIC_KEY;
         }
         if (process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE) {
-            return fs.readFileSync(process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE);
+            return readFileSync(process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE);
         }
         console.error('You have to specify the inner layer public key either via the environment variable ' +
             'process.env.SG_INNER_LAYER_PUBLIC_KEY or provide an absolute path to a file using the environment variable ' +
@@ -42,8 +37,8 @@ class Config {
         try {
             const now = Date.now();
             if (!this.cache.timestamp || now - this.cache.timestamp > 60000) {
-                const config = yaml.safeLoad(process.env.SG_TARGETS ||
-                    fs.readFileSync(process.env.SG_TARGETS_FILE as string, 'utf8')) as {
+                const config = safeLoad(process.env.SG_TARGETS ||
+                    readFileSync(process.env.SG_TARGETS_FILE as string, 'utf8')) as {
                         targets: Record<string, Target>
                     };
                 this.cache.targets = config.targets;

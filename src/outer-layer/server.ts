@@ -1,13 +1,15 @@
-import http from 'http';
+import { createServer } from 'http';
+
+import app from './app';
+import socketApp from './socketApp';
+import { Gateway } from './gateway';
+import { ChallengeTool } from './tools/challenge';
 
 import Config from './config';
-import app from './app';
-import { Gateway } from './gateway';
-import socketApp from './socketApp';
 
-export const appServer = http.createServer(app);
-export const socketServer = http.createServer(socketApp);
-const gateway = new Gateway(socketServer);
+export const appServer = createServer(app);
+export const socketServer = createServer(socketApp);
+const gateway = new Gateway(socketServer, new ChallengeTool(Config.challengeValidity, Config.innerLayerPublicKey), Config.timeout);
 
 app.set('port', Config.appPort);
 app.set('gateway', gateway);

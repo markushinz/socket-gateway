@@ -1,4 +1,4 @@
-export type Headers = Record<string, string | string[]>;
+import { Headers } from '../../models';
 
 export function sanitizeHeaders(headers: Headers): Headers {
     const sanitizedHeaders: Headers = {};
@@ -21,14 +21,8 @@ export function sanitizeHeaders(headers: Headers): Headers {
     return sanitizedHeaders;
 }
 
-export function rewriteObject(obj: Record<string, unknown>, fromHost: string, toHost: string): void {
-    Object.keys(obj).forEach(function (key) {
-        if (typeof obj[key] === 'object') {
-            rewriteObject(obj[key] as Record<string, unknown>, fromHost, toHost);
-        } else if (typeof obj[key] === 'string') {
-            obj[key] = rewriteString(obj[key] as string, fromHost, toHost);
-        }
-    });
+export function rewriteHeaders(headers: Headers, fromHost: string, toHost: string): Headers {
+    return JSON.parse(rewriteString(JSON.stringify(headers), fromHost, toHost));
 }
 
 function rewriteString(str: string, fromHost: string, toHost: string) {

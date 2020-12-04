@@ -3,7 +3,7 @@ import Config from '../config';
 import { Policy, Target } from '../../models';
 
 export function evaluatePolicy(policy: Policy, path: string, method: string): boolean {
-    const methods = policy[path] || policy['*'];
+    const methods: string[] = policy[path] || policy['*'];
     if (methods) {
         return methods.includes(method) || methods.includes('*');
     }

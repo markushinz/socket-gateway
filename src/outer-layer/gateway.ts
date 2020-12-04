@@ -1,37 +1,22 @@
+import { Server as HTTPServer } from 'http';
+
+import { Response } from 'express';
 import { Server } from 'socket.io';
 import { v1 as uuid } from 'uuid';
 
-import Config from './config';
-import { verifyChallengeResponse } from './tools/challenge';
-import { sanitizeHeaders, rewriteObject } from './tools/rewrite';
+import { ChallengeTool } from './tools/challenge';
+import { sanitizeHeaders, rewriteHeaders } from './tools/rewrite';
 
-import { Server as HTTPServer } from 'http';
-import { Response } from 'express';
-
-type InnerLayer = {
-    id: string,
-    ip: string,
-    timestamp: string,
-    headers: unknown,
-    latencies: number[]
-};
-
-type IncomingData = {
-    uuid: string,
-    headers: Record<string, string | string[]>,
-    host: string,
-    statusCode: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body: any
-};
+import { Data, InnerLayer } from '../models';
 
 export class Gateway {
     io: Server;
     pendingRequests = new Map();
     innerLayersMap = new Map();
 
-    constructor(server: HTTPServer) {
+    constructor(server: HTTPServer, public challengeTool: ChallengeTool, public timeout: number) {
         this.io = new Server(server);
+        this.timeout = timeout;
 
         this.io.use(function (socket, next) {
             const headers = socket.handshake.headers as Record<string, string>;
@@ -40,7 +25,7 @@ export class Gateway {
 
             if (!!challenge &&
                 !!challengeResponse &&
-                verifyChallengeResponse(challenge, challengeResponse)) {
+                challengeTool.verifyChallengeResponse(challenge, challengeResponse)) {
                 next();
             } else {
                 next(new Error('Inner Layer did not present a valid challenge / challenge reponse pair.'));
@@ -67,13 +52,13 @@ export class Gateway {
                 }
             });
 
-            socket.on('request', (incomingData: IncomingData) => {
+            socket.on('request', (incomingData: Data) => {
                 const pendingRequest = this.pendingRequests.get(incomingData.uuid);
                 if (pendingRequest) {
                     this.pendingRequests.delete(incomingData.uuid);
 
                     incomingData.headers = sanitizeHeaders(incomingData.headers);
-                    rewriteObject(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
+                    incomingData.headers = rewriteHeaders(incomingData.headers, incomingData.host, pendingRequest.rewriteHost);
                     pendingRequest.res.status(incomingData.statusCode).set(incomingData.headers);
                     if (incomingData.body) {
                         pendingRequest.res.send(Buffer.from(incomingData.body, 'binary'));
@@ -123,7 +108,7 @@ export class Gateway {
                     this.pendingRequests.delete(pendingRequest.uuid);
                     res.sendStatus(504);
                 }
-            }, Config.timeout);
+            }, this.timeout);
         } else {
             res.sendStatus(502);
         }

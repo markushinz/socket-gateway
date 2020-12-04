@@ -9,7 +9,7 @@ const ports = {
 
 const testServer = createServer(function (req, res) {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('content-type', 'text/plain');
     res.end('Hello World');
 });
 testServer.listen(ports.testServer, 'localhost');

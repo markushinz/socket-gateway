@@ -1,10 +1,11 @@
 import { Router } from 'express';
+
+import { Gateway } from '../gateway';
+
 const router = Router();
 
-import { createChallenge } from '../tools/challenge';
-
 router.get('/', async function (req, res) {
-    const challenge = await createChallenge();
+    const challenge = await (req.app.get('gateway') as Gateway).challengeTool.createChallenge();
     res.send(challenge);
 });
 

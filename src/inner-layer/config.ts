@@ -1,9 +1,9 @@
-import fs from 'fs';
-import os from 'os';
+import { readFileSync } from 'fs';
+import { hostname } from 'os';
 
 class Config {
     private isDevelopment = process.env.NODE_ENV === 'development';
-    innerLayerIdentifier = process.env.SG_INNER_LAYER_IDENTIFIER || os.hostname();
+    innerLayerIdentifier = process.env.SG_INNER_LAYER_IDENTIFIER || hostname();
 
     outerLayer = (() => {
         const uri = process.env.SG_OUTER_LAYER;
@@ -23,7 +23,7 @@ class Config {
             return process.env.SG_INNER_LAYER_PRIVATE_KEY;
         }
         if (process.env.SG_INNER_LAYER_PRIVATE_KEY_FILE) {
-            return fs.readFileSync(process.env.SG_INNER_LAYER_PRIVATE_KEY_FILE);
+            return readFileSync(process.env.SG_INNER_LAYER_PRIVATE_KEY_FILE);
         }
         console.error('You have to specify the inner layer private key either via the environment variable ' +
             'process.env.SG_INNER_LAYER_PRIVATE_KEY or provide an absolute path to a file using the environment variable ' +

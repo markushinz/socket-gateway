@@ -1,10 +1,13 @@
 import express from 'express';
 import compression from 'compression';
 
-import Config from './config';
 import { getTarget, evaluatePolicy } from './tools/evaluate';
-import { sanitizeHeaders, Headers } from './tools/rewrite';
+import { sanitizeHeaders } from './tools/rewrite';
+import { Gateway } from './gateway';
 import defaultRouter from './routers/default';
+
+import { Headers } from '../models';
+import Config from './config';
 
 const app = express();
 app.disable('x-powered-by');
@@ -48,7 +51,7 @@ app.use(function (req, res, next) {
             body
         };
 
-        app.get('gateway').request(rewriteHost, res, outgoingData);
+        (app.get('gateway') as Gateway).request(rewriteHost, res, outgoingData);
     } else {
         res.status(403).type('text').send(`Forbidden: ${req.method} ${url} is not allowed by policy.`);
     }

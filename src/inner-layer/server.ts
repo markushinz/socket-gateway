@@ -1,9 +1,9 @@
-import crypto from 'crypto';
+import { createSign } from 'crypto';
 
-import { io as socketio } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 
-import { IncomingData } from '../models';
+import { Data } from '../models';
 import Config from './config';
 
 async function getChallenge(attempt = 0): Promise<string> {
@@ -24,7 +24,7 @@ async function getChallenge(attempt = 0): Promise<string> {
 }
 
 function solveChallenge(challenge: string) {
-    const sign = crypto.createSign('SHA256');
+    const sign = createSign('SHA256');
     sign.update(challenge);
     sign.end();
     const challengeResponse = sign.sign(Config.privateKey).toString('hex');
@@ -43,7 +43,7 @@ async function getHeaders() {
 
 async function connect() {
     const outerLayer = Config.outerLayer;
-    const io = socketio(outerLayer, {
+    const socket = io(outerLayer, {
         transportOptions: {
             polling: {
                 extraHeaders: await getHeaders()
@@ -54,11 +54,11 @@ async function connect() {
 
     console.log(`Connecting to outer layer ${outerLayer}...`);
 
-    io.on('connect', function () {
+    socket.on('connect', function () {
         console.log(`Outer Layer ${outerLayer} connected.`);
     });
 
-    io.on('request', async function (incomingData: IncomingData) {
+    socket.on('request', async function (incomingData: Data) {
         try {
             const response = await axios({
                 method: incomingData.method,
@@ -77,7 +77,7 @@ async function connect() {
                 body: response.data.toString('binary'),
                 headers: response.headers
             };
-            io.emit('request', outgoingData);
+            socket.emit('request', outgoingData);
         } catch (error) {
             console.error(error);
             const outgoingData = {
@@ -87,22 +87,22 @@ async function connect() {
                 body: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain' }
             };
-            io.emit('request', outgoingData);
+            socket.emit('request', outgoingData);
         }
     });
 
-    io.on('pong', function (latency: number) {
-        io.emit('latency', latency);
+    socket.on('pong', function (latency: number) {
+        socket.emit('latency', latency);
     });
 
-    io.on('disconnect', function (reason: string) {
+    socket.on('disconnect', function (reason: string) {
         console.log(`Outer Layer ${outerLayer} disconnected.`);
         if (reason !== 'io client disconnect') {
             connect(); // reconnect
         }
     });
 
-    return io;
+    return socket;
 }
 
 export const client = connect();
