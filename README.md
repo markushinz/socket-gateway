@@ -30,7 +30,7 @@ If you deploy multiple inner layers, the requests will be forwarded to the diffe
 
 Set the environment variable `SG_MODE` to `outer-layer`. This is the default.
 
-The outer layer exposes the gateway functionality on port 80 (environment variable `PORT` or `SG_APP_PORT`). It accepts connections from (the) inner layer(s) on port 3000 (environment variable `SG_SOCKET_PORT`).
+The outer layer exposes the gateway functionality on port 3000 (environment variable `PORT` or `SG_APP_PORT`). It accepts connections from (the) inner layer(s) on port 3001 (environment variable `SG_SOCKET_PORT`).
 
 You have to specify the inner layer public key either via the environment variable `SG_INNER_LAYER_PUBLIC_KEY` or provide an absolute path to a file using the environment variable `SG_INNER_LAYER_PUBLIC_KEY_FILE`.
 
