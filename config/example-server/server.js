@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 
 const express = require('express');
@@ -9,40 +10,40 @@ app.disable('x-powered-by');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/', function (req, res, next) {
+app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/redirect', function (req, res, next) {
+app.get('/redirect', function (req, res) {
     res.redirect('/');
 });
 
-app.get('/headers', function (req, res, next) {
+app.get('/headers', function (req, res) {
     res.json(req.headers);
 });
 
-app.get('/query', function (req, res, next) {
+app.get('/query', function (req, res) {
     res.json(req.query);
 });
 
-app.post('/body', function (req, res, next) {
+app.post('/body', function (req, res) {
     res.json(req.body);
 });
 
-app.post('/cookie', function (req, res, next) {
+app.post('/cookie', function (req, res) {
     res.cookie(req.body.key, req.body.value);
     res.sendStatus(200);
 });
 
-app.get('/healthz', function (req, res, next) {
+app.get('/healthz', function (req, res) {
     res.sendStatus(200);
 });
 
-app.use(function (req, res, next) {
+app.use(function (req, res) {
     res.sendStatus(404);
 });
 
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res) {
     console.error(err);
     res.sendStatus(500);
 });

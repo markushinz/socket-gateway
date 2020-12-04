@@ -28,7 +28,7 @@ If you deploy multiple inner layers, the requests will be forwarded to the diffe
 
 ### Outer Layer
 
-Set the environment variable `SG_MODE` to `outer-layer`.
+Set the environment variable `SG_MODE` to `outer-layer`. This is the default.
 
 The outer layer exposes the gateway functionality on port 80 (environment variable `PORT` or `SG_APP_PORT`). It accepts connections from (the) inner layer(s) on port 3000 (environment variable `SG_SOCKET_PORT`).
 
@@ -66,7 +66,7 @@ You have to specify the inner layer private key either via the environment varia
 
 ### Docker 🐳 and docker-compose
 
-This is how you get a fully working local setup. Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost and json.gateway.localhost to http://hello-world:3000 and json.gateway.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://hello-world:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
+This is how you get a fully working local setup. Please have a look [`config/targets.yaml`](config/targets.yaml), first. It maps localhost and example.gateway.localhost to http://example-server-service:3000 and json.gateway.localhost to https://jsonplaceholder.typicode.com:443. It allows all requests to http://example-server-service:3000 and only GET requests to https://jsonplaceholder.typicode.com:443 with the path todos/1.
 
 Run [`./createCertificates.sh`](createCertificates.sh) to generate all required files and `docker-compose up --build` to start both layers as well as a simple web server. After that, the gateway listens on http://localhost (Port 80) and via an nginx reverse proxy on https://localhost (Port 443). Futhermore, the inner layer connects to the outer layer via an nginx reverse proxy on https://localhost:3000. 
 
