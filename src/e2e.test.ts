@@ -30,7 +30,7 @@ const tests: Test[] = [
     {
         name: 'timeout',
         args: {
-            timeout: 2000,
+            timeout: 4000,
             statusCode: 200,
             body: 'Hello World!'
         },
@@ -41,7 +41,7 @@ const tests: Test[] = [
 
 process.env.SG_APP_PORT = ports.appServer;
 process.env.SG_SOCKET_PORT = ports.socketServer;
-process.env.SG_TIMEOUT = "1000";
+process.env.SG_TIMEOUT = '2000';
 process.env.SG_TARGETS = `targets:
   localhost:
     protocol: http
@@ -60,7 +60,7 @@ tests.forEach(function (tt) {
             res.end(tt.args.body);
         });
         testServer.listen(ports.testServer, 'localhost');
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 2000));
         const response = await axios.get(`http://localhost:${ports.appServer}`, { validateStatus: undefined });
 
         expect(response.status).toStrictEqual(tt.wantStatusCode ?? tt.args.statusCode);

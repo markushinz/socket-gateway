@@ -1,4 +1,7 @@
-import { randomBytes, createVerify } from 'crypto';
+import { verify, decode } from 'jsonwebtoken';
+import { v1 as uuid } from 'uuid';
+
+import { JWTPayload } from '../../models';
 
 export class ChallengeTool {
     pendingChallenges: Set<string>;
@@ -7,40 +10,36 @@ export class ChallengeTool {
         this.pendingChallenges = new Set();
     }
 
-    createChallenge(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            randomBytes(256, (error, buffer) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    const challenge = buffer.toString('hex');
-                    this.pendingChallenges.add(challenge);
-                    console.log(`Created challege "${challenge}".`);
-                    setTimeout(() => {
-                        if (this.pendingChallenges.has(challenge)) {
-                            this.pendingChallenges.delete(challenge);
-                            console.log(`Deleted challege "${challenge}".`);
-                        }
-                    }, this.challengeValidity);
-                    resolve(challenge);
-                }
-            });
-        });
+    createChallenge(): string {
+        const challenge = uuid();
+        this.pendingChallenges.add(challenge);
+        console.log(`Created challege "${challenge}".`);
+        setTimeout(() => {
+            if (this.pendingChallenges.has(challenge)) {
+                this.pendingChallenges.delete(challenge);
+                console.log(`Deleted challege "${challenge}".`);
+            }
+        }, this.challengeValidity);
+        return challenge;
     }
 
-    verifyChallengeResponse(challenge: string, challengeResponse: string): boolean {
-        if (this.pendingChallenges.has(challenge)) {
-            this.pendingChallenges.delete(challenge);
-            const verify = createVerify('SHA256');
-            verify.update(challenge);
-            verify.end();
-            if (verify.verify(this.innerLayerPublicKey, Buffer.from(challengeResponse, 'hex'))) {
-                console.log(`Challege "${challenge}" and challenge response "${challengeResponse}" sucessfully verified.`);
+    verifyChallengeResponse(token: string): boolean {
+        try {
+            const payload = verify(token, this.innerLayerPublicKey, { algorithms: ['RS256'] }) as JWTPayload;
+            if (this.pendingChallenges.has(payload.challenge)) {
+                console.log(`Challege "${payload.challenge}" sucessfully verified.`);
                 return true;
+            } else {
+                console.error(`Challege "${payload.challenge}" is no pending challenge.`);
+                return false;
             }
-        } else {
-            console.error(`Challege "${challenge}" is no pending challenge.`);
+        } catch (err) {
+            console.error(err);
+            return false;
         }
-        return false;
+    }
+
+    decodeChallengeResponse(token: string): JWTPayload {
+        return decode(token) as JWTPayload;
     }
 }

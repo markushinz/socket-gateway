@@ -1,4 +1,4 @@
-import { Method } from "axios";
+import { Method } from 'axios';
 
 export type Policy = Record<string, (Method | '*')[]>;
 
@@ -28,11 +28,15 @@ export type Data = {
     statusCode: number
 };
 
+export type JWTPayload = {
+    challenge: string,
+    identifier: string
+};
+
 export type InnerLayer = {
     id: string,
     ip: string,
     timestamp: string,
     headers: Headers,
-    latencies: number[]
+    payload: JWTPayload
 };
-

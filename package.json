@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "lint": "eslint . --ext .ts,.tsx",
-        "test": "jest --collectCoverage --detectOpenHandles --silent=true",
+        "test": "jest --silent=true",
         "build": "rm -rf ./dist && tsc",
         "start": "node dist/${SG_MODE:-\"outer-layer\"}/server.js",
         "serve": "npm run build && SG_TARGETS='{\"targets\":{\"localhost\":{\"hostname\":\"jsonplaceholder.typicode.com\"}}}' node dist/server.js"
@@ -14,6 +14,7 @@
         "compression": "^1.7.4",
         "express": "^4.17.1",
         "js-yaml": "^3.14.0",
+        "jsonwebtoken": "^8.5.1",
         "socket.io": "^3.0.3",
         "socket.io-client": "^3.0.3",
         "uuid": "^8.3.1"
@@ -22,6 +23,7 @@
         "@types/compression": "^1.7.0",
         "@types/express": "^4.17.9",
         "@types/js-yaml": "^3.12.5",
+        "@types/jsonwebtoken": "^8.5.0",
         "@types/node-forge": "^0.9.5",
         "@types/uuid": "^8.3.0",
         "@typescript-eslint/eslint-plugin": "^4.9.0",

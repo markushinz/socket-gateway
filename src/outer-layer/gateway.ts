@@ -16,16 +16,12 @@ export class Gateway {
 
     constructor(server: HTTPServer, public challengeTool: ChallengeTool, public timeout: number) {
         this.io = new Server(server);
-        this.timeout = timeout;
 
         this.io.use(function (socket, next) {
-            const headers = socket.handshake.headers as Record<string, string>;
-            const challenge = headers['x-challenge'];
+            const headers = socket.handshake.headers as { 'x-challenge-response'?: string };
             const challengeResponse = headers['x-challenge-response'];
-
-            if (!!challenge &&
-                !!challengeResponse &&
-                challengeTool.verifyChallengeResponse(challenge, challengeResponse)) {
+            if (challengeResponse &&
+                challengeTool.verifyChallengeResponse(challengeResponse)) {
                 next();
             } else {
                 next(new Error('Inner Layer did not present a valid challenge / challenge reponse pair.'));
@@ -38,19 +34,11 @@ export class Gateway {
                 ip: socket.handshake.address,
                 timestamp: new Date().toUTCString(),
                 headers: socket.handshake.headers,
-                latencies: []
+                payload: challengeTool.decodeChallengeResponse(socket.handshake.headers['x-challenge-response']),
             };
             this.innerLayersMap.set(socket.id, innerLayer);
 
             console.log(`Inner layer ${socket.id} connected.`);
-
-            socket.on('latency', (latency: number) => {
-                const latencies = this.innerLayersMap.get(socket.id).latencies;
-                latencies.unshift(`${latency} ms`);
-                if (latencies.length > 10) {
-                    latencies.pop();
-                }
-            });
 
             socket.on('request', (incomingData: Data) => {
                 const pendingRequest = this.pendingRequests.get(incomingData.uuid);
