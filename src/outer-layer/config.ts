@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 
-import { safeLoad } from 'js-yaml';
+import {load } from 'js-yaml';
 
 import { Cache, Target } from '../models';
 
@@ -37,7 +37,7 @@ class Config {
         try {
             const now = Date.now();
             if (!this.cache.timestamp || now - this.cache.timestamp > 60000) {
-                const config = safeLoad(process.env.SG_TARGETS ||
+                const config = load(process.env.SG_TARGETS ||
                     readFileSync(process.env.SG_TARGETS_FILE as string, 'utf8')) as {
                         targets: Record<string, Target>
                     };
