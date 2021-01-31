@@ -18,12 +18,12 @@ version=${1:-"${major}.${minor}.${patch}"}
 
 echo "${version}"
 
-docker build -t "markushinz/socket-gateway:$version" \
-  -t "markushinz/socket-gateway:latest" .
+# docker buildx create --use
+docker buildx build \
+--push \
+--platform linux/amd64,linux/arm64 \
+--tag "markushinz/socket-gateway:$version" \
+--tag "markushinz/socket-gateway:latest" .
 
 git tag "v$version" -m "v$version"
-
-docker push "markushinz/socket-gateway:$version"
-docker push "markushinz/socket-gateway:latest"
-
 git push origin "v$version"
