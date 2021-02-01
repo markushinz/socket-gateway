@@ -2,7 +2,7 @@
 
 set -e
 
-# git diff --exit-code
+git diff --exit-code
 
 git fetch
 tag=$(git describe --abbrev=0)
