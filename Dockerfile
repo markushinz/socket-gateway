@@ -1,4 +1,4 @@
-FROM node:14.15.1-alpine as builder
+FROM node:15.7.0-alpine as builder
 WORKDIR /usr/src/socket-gateway
 COPY package*.json ./
 RUN npm ci
@@ -10,7 +10,7 @@ RUN npm run lint
 RUN npm run test
 RUN npm run build
 
-FROM node:14.15.1-alpine as runner
+FROM node:15.7.0-alpine as runner
 ENV SG_MODE outer-layer
 WORKDIR /usr/src/socket-gateway
 COPY package.json .
