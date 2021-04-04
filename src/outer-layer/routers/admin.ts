@@ -1,23 +1,23 @@
-import { Router } from 'express';
-const router = Router();
+import { Router } from 'express'
+const router = Router()
 
-import Config from '../config';
+import Config from '../config'
 
 router.use(function (req, res, next) {
     if (Config.adminCredentials) {
         if (req.headers.authorization === `Basic ${Config.adminCredentials}`) {
-            next();
+            next()
         } else {
-            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"');
-            res.sendStatus(401);
+            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
+            res.sendStatus(401)
         }
     } else {
-        res.sendStatus(404);
+        res.sendStatus(404)
     }
-});
+})
 
 router.get('/', function (req, res) {
-    res.setHeader('content-type', 'text/html; charset=utf-8');
+    res.setHeader('content-type', 'text/html; charset=utf-8')
     res.send(`<!DOCTYPE html>
 <html lang="en">
 
@@ -41,11 +41,11 @@ router.get('/', function (req, res) {
 </body>
 
 </html>
-`);
-});
+`)
+})
 
 router.get('/stylesheet.css', function (req, res) {
-    res.setHeader('content-type', 'text/css; charset=utf-8');
+    res.setHeader('content-type', 'text/css; charset=utf-8')
     res.send(`html {
     font-family: monospace, monospace;
     font-size:0.9em;
@@ -91,7 +91,7 @@ pre {
         max-width: 1140px;
     }
 }
-`);
-});
+`)
+})
 
-export default router;
+export default router

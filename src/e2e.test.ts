@@ -1,11 +1,11 @@
-import { createServer } from 'http';
-import axios from 'axios';
+import { createServer } from 'http'
+import axios from 'axios'
 
 const ports = {
     appServer: '4000',
     socketServer: '4001',
     testServer: 4002
-};
+}
 
 type Test = {
     name: string,
@@ -16,7 +16,7 @@ type Test = {
     },
     wantStatusCode?: number
     wantBody?: string
-};
+}
 
 const tests: Test[] = [
     {
@@ -37,42 +37,42 @@ const tests: Test[] = [
         wantStatusCode: 504,
         wantBody: 'Gateway Timeout'
     }
-];
+]
 
-process.env.SG_APP_PORT = ports.appServer;
-process.env.SG_SOCKET_PORT = ports.socketServer;
-process.env.SG_TIMEOUT = '2000';
+process.env.SG_APP_PORT = ports.appServer
+process.env.SG_SOCKET_PORT = ports.socketServer
+process.env.SG_TIMEOUT = '2000'
 process.env.SG_TARGETS = `targets:
   localhost:
     protocol: http
     hostname: localhost
     port: ${ports.testServer}
-`;
+`
 
-import { appServer, socketServer, client } from './server';
+import { appServer, socketServer, client } from './server'
 
 tests.forEach(function (tt) {
     test(tt.name, async function () {
         const testServer = createServer(async function (req, res) {
-            await new Promise(r => setTimeout(r, tt.args.timeout));
-            res.setHeader('content-type', 'text/plain');
-            res.statusCode = tt.args.statusCode;
-            res.end(tt.args.body);
-        });
-        testServer.listen(ports.testServer, 'localhost');
-        await new Promise(r => setTimeout(r, 2000));
-        const response = await axios.get(`http://localhost:${ports.appServer}`, { validateStatus: undefined });
+            await new Promise(r => setTimeout(r, tt.args.timeout))
+            res.setHeader('content-type', 'text/plain')
+            res.statusCode = tt.args.statusCode
+            res.end(tt.args.body)
+        })
+        testServer.listen(ports.testServer, 'localhost')
+        await new Promise(r => setTimeout(r, 2000))
+        const response = await axios.get(`http://localhost:${ports.appServer}`, { validateStatus: undefined })
 
-        expect(response.status).toStrictEqual(tt.wantStatusCode ?? tt.args.statusCode);
-        expect(response.data).toStrictEqual(tt.wantBody ?? tt.args.body);
+        expect(response.status).toStrictEqual(tt.wantStatusCode ?? tt.args.statusCode)
+        expect(response.data).toStrictEqual(tt.wantBody ?? tt.args.body)
 
-        testServer.close();
-    });
-});
+        testServer.close()
+    })
+})
 
 afterAll(async function () {
-    appServer.close();
+    appServer.close()
     socketServer.close();
-    (await client).close();
-    await new Promise(r => setTimeout(r, 1000));
-});
+    (await client).close()
+    await new Promise(r => setTimeout(r, 1000))
+})
