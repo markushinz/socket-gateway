@@ -7,7 +7,7 @@ import { v1 as uuid } from 'uuid'
 import { ChallengeTool } from './tools/challenge'
 import { sanitizeHeaders, rewriteHeaders } from './tools/rewrite'
 
-import { Data, InnerLayer } from '../models'
+import { Headers, Data, InnerLayer } from '../models'
 
 export class Gateway {
     io: Server
@@ -33,7 +33,7 @@ export class Gateway {
                 id: socket.id,
                 ip: socket.handshake.address,
                 timestamp: new Date().toUTCString(),
-                headers: socket.handshake.headers,
+                headers: socket.handshake.headers as Headers,
                 payload: challengeTool.decodeChallengeResponse(socket.handshake.headers['x-challenge-response'] as string),
             }
             this.innerLayersMap.set(socket.id, innerLayer)

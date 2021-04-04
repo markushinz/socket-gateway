@@ -39,6 +39,6 @@ export type InnerLayer = {
     id: string,
     ip: string,
     timestamp: string,
-    headers: IncomingHttpHeaders,
+    headers: Headers,
     payload: JWTPayload
 }
