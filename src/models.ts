@@ -1,5 +1,3 @@
-import { IncomingHttpHeaders } from 'http'
-
 import { Method } from 'axios'
 
 export type Policy = Record<string, (Method | '*')[]>
