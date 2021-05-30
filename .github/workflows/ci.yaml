@@ -22,7 +22,7 @@ jobs:
       - name: Tag
         env:
           GIT_AUTHOR_NAME: Markus Hinz
-          GIT_AUTHOR_EMAI: info@markushinz.de
+          GIT_AUTHOR_EMAIL: info@markushinz.de
         run: |
           git config --global user.email "you@example.com"
           git tag "$VERSION" -m "$VERSION"
