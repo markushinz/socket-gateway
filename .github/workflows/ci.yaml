@@ -26,7 +26,7 @@ jobs:
           cache-to: type=inline
       - name: Compute version
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        run: echo "VERSION=v$(./scripts/version.sh)" >> $GITHUB_ENV
+        run: echo "VERSION=v$(./version.sh)" >> $GITHUB_ENV
       - name: Docker - Login
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: docker/login-action@v1
