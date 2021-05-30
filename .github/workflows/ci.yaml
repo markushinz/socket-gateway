@@ -20,6 +20,10 @@ jobs:
       #       markushinz/socket-gateway:latest
       #       markushinz/socket-gateway:${{ env.VERSION }}
       - name: Tag
+        env:
+          GIT_AUTHOR_NAME: Markus Hinz
+          GIT_AUTHOR_EMAI: info@markushinz.de
         run: |
+          git config --global user.email "you@example.com"
           git tag "$VERSION" -m "$VERSION"
           git push origin "$VERSION"
