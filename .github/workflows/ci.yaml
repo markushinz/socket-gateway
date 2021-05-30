@@ -9,8 +9,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Compute version
-        run: echo "::set-env name=VERSION::$(./scripts./version)"
+        run: echo "::set-env name=VERSION::$(./scripts/version.sh)"
       - name: Print version
         run: echo $VERSION
-      - name: Build
-        uses: docker/build-push-action@v2
+      # - name: Build
+      #   uses: docker/build-push-action@v2
