@@ -10,9 +10,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Compute version
-        run: echo "::set-env name=VERSION::$(./scripts/version.sh)"
-      - name: Print version
-        run: echo $VERSION
+      - name: Compute tag
+        run: echo "TAG=v$(./scripts/version.sh)" >> $GITHUB_ENV
+      - name: Print tag
+        run: echo $TAG
       # - name: Build
       #   uses: docker/build-push-action@v2
