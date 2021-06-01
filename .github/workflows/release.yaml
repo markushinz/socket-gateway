@@ -45,7 +45,4 @@ jobs:
             markushinz/socket-gateway:latest
             markushinz/socket-gateway:v${{ env.VERSION }}
       - name: Release
-        run: |
-          git tag "v${VERSION}" -m "v${VERSION}"
-          git push origin "v${VERSION}"
-          GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh release create "v${VERSION}" --title "v${VERSION}" --notes "" ./socket-gateway.tgz
+        run: GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh release create "v${VERSION}" --title "v${VERSION}" --notes "" ./socket-gateway.tgz

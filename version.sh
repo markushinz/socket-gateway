@@ -3,7 +3,7 @@
 set -eo pipefail
 
 git fetch
-tag=$(git describe --abbrev=0)
+tag=$(git describe --tags --abbrev=0)
 
 major=0
 minor=0
