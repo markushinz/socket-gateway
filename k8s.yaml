@@ -19,8 +19,6 @@ spec:
         - name: outer-layer
           image: markushinz/socket-gateway:latest
           env:
-            - name: NODE_ENV
-              value: production
             - name: SG_MODE
               value: outer-layer
             - name: SG_TARGETS

@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path')
+const mode = process.env.SG_MODE || 'outer-layer'
+if (mode === 'inner-layer' || mode === 'outer-layer') {
+    require(path.join(__dirname, `../dist/${mode}/server.js`))
+}

@@ -170,7 +170,6 @@ Finally, you can run an inner layer from within the desired target network:
 ```shell
 docker run --rm \
   -v "$(pwd)/k8s/innerLayer.key:/mnt/innerLayer.key" \
-  -e "NODE_ENV=production" \
   -e "SG_MODE=inner-layer" \
   -e "SG_OUTER_LAYER=https://gateway.example.com" \
   -e "SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key" \
