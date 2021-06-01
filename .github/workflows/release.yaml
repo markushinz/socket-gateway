@@ -36,5 +36,4 @@ jobs:
             markushinz/socket-gateway:latest
             markushinz/socket-gateway:${{ env.VERSION }}
       - name: Release
-        run: |
-          gh release create "$VERSION" --notes ""
+        run: GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh release create "$VERSION" --title "$VERSION" --notes ""
