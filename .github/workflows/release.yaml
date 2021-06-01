@@ -1,11 +1,11 @@
-name: Continuous Integration
+name: Release
 on:
   push:
     branches:
       - master
-  pull_request:
 jobs:
-  pipeline:
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,17 +18,14 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Docker - Build
         uses: docker/build-push-action@v2
-      - name: Compute version
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        run: echo "VERSION=v$(./version.sh)" >> $GITHUB_ENV
       - name: Docker - Login
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Version
+        run: echo "VERSION=v$(./version.sh)" >> $GITHUB_ENV
       - name: Docker - Push
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: docker/build-push-action@v2
         with:
           push: true
@@ -38,11 +35,6 @@ jobs:
           tags: |
             markushinz/socket-gateway:latest
             markushinz/socket-gateway:${{ env.VERSION }}
-      - name: Tag
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        env:
-          GIT_COMMITTER_NAME: Markus Hinz
-          GIT_COMMITTER_EMAIL: info@markushinz.de
+      - name: Release
         run: |
-          git tag "$VERSION" -m "$VERSION"
-          git push origin "$VERSION"
+          gh release create "$VERSION" --notes ""
