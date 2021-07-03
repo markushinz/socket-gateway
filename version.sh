@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+minimum="0.0.0"
+
 git fetch
 tag=$(git tag | sort -V | tail -1)
 
@@ -13,7 +15,9 @@ if [[ ${tag:1} =~ ([0-9]+).([0-9]+).([0-9]+) ]]; then
   minor="${BASH_REMATCH[2]}"
   patch="${BASH_REMATCH[3]}"
 fi
+
 patch=$(echo "${patch} + 1" | bc)
-version=${1:-"${major}.${minor}.${patch}"}
+version=$(echo "${major}.${minor}.${patch}
+${minimum}" | sort -V | tail -1)
 
 echo "${version}"
