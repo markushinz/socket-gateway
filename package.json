@@ -9,7 +9,12 @@
         "start": "./bin/socket-gateway",
         "serve": "npm run build && SG_TARGETS='{\"targets\":{\"localhost\":{\"hostname\":\"jsonplaceholder.typicode.com\"}}}' node dist/server.js"
     },
-    "bin": "./bin/socket-gateway",
+    "bin": {
+        "socket-gateway": "./bin/socket-gateway",
+        "socket-gateway-inner-layer": "./bin/socket-gateway-inner-layer",
+        "socket-gateway-outer-layer": "./bin/socket-gateway-outer-layer"
+        
+    },
     "dependencies": {
         "axios": "^0.21.1",
         "compression": "^1.7.4",
