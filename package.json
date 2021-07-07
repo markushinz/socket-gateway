@@ -28,7 +28,7 @@
     "devDependencies": {
         "@types/compression": "^1.7.1",
         "@types/express": "^4.17.11",
-        "@types/jest": "^26.0.22",
+        "@types/jest": "^26.0.24",
         "@types/js-yaml": "^4.0.0",
         "@types/jsonwebtoken": "^8.5.4",
         "@types/node-forge": "^0.10.0",
