@@ -4,11 +4,10 @@
     "scripts": {
         "lint": "eslint . --ext .ts,.tsx",
         "test": "jest --silent=true",
-        "build": "rm -rf ./dist && tsc",
-        "start": "./bin/socket-gateway",
-        "serve": "npm run build && SG_TARGETS='{\"targets\":{\"localhost\":{\"hostname\":\"jsonplaceholder.typicode.com\"}}}' node dist/server.js"
+        "build": "rm -rf dist && tsc && echo \"#!/usr/bin/env node\n$(cat dist/socket-gateway.js)\" > dist/socket-gateway.js && chmod +x dist/socket-gateway.js",
+        "start": "dist/socket-gateway.js"
     },
-    "bin": "./bin/socket-gateway",
+    "bin": "dist/socket-gateway.js",
     "dependencies": {
         "axios": "^0.21.1",
         "compression": "^1.7.4",

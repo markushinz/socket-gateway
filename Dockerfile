@@ -6,7 +6,6 @@ COPY tsconfig.json .
 COPY .eslint* ./
 COPY jest.config.js .
 COPY src ./src
-COPY bin ./bin
 RUN npm run lint
 RUN npm run test
 RUN npm run build
