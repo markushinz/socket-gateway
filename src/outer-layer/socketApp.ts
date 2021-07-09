@@ -1,15 +1,17 @@
-import express from 'express'
+import express, { Express } from 'express'
 import compression from 'compression'
 
-import adminRouter from './routers/admin'
+import { newAdminRouter } from './routers/admin'
 import challengeRouter from './routers/challenge'
 import defaultRouter from './routers/default'
+import { OuterLayerConfig } from './config'
 
-const app = express()
-app.disable('x-powered-by')
-app.use(compression())
-app.use('/admin', adminRouter)
-app.use('/challenge', challengeRouter)
-app.use(defaultRouter)
-
-export default app
+export function NewSocketApp (config: OuterLayerConfig): Express {
+    const app = express()
+    app.disable('x-powered-by')
+    app.use(compression())
+    app.use('/admin', newAdminRouter(config))
+    app.use('/challenge', challengeRouter)
+    app.use(defaultRouter)
+    return app
+} 

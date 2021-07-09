@@ -1,10 +1,3 @@
 #!/usr/bin/env node
 
-'use strict'
-switch(process.env.SG_MODE || 'outer-layer') {
-case 'inner-layer': require('../dist/inner-layer/server')
-    break
-case 'outer-layer': require('../dist/outer-layer/server')
-    break
-default: console.error('Unknown SG_MODE')
-}
+require('../dist/socket-gateway')

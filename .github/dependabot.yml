@@ -12,8 +12,20 @@ updates:
       interval: daily
     assignees:
       - markushinz
+  - package-ecosystem: docker
+    directory: /config/example-server
+    schedule:
+      interval: daily
+    assignees:
+      - markushinz
   - package-ecosystem: npm
     directory: /
+    schedule:
+      interval: daily
+    assignees:
+      - markushinz
+  - package-ecosystem: npm
+    directory: /config/example-server
     schedule:
       interval: daily
     assignees:

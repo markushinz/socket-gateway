@@ -40,3 +40,7 @@ export type InnerLayer = {
     headers: Headers,
     payload: JWTPayload
 }
+
+export interface Closeable {
+    close: () => void
+}

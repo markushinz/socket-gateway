@@ -2,20 +2,25 @@ import { io, Socket } from 'socket.io-client'
 import axios from 'axios'
 import { sign } from 'jsonwebtoken'
 
-import { Data, JWTPayload } from '../models'
-import Config from './config'
+import { Closeable, Data, JWTPayload } from './models'
 
-class Client {
+type InnerLayerConfig = {
+    'private-key': string | Buffer,
+    'outer-layer': URL,
+    identifier: string
+}
+
+export class InnerLayer implements Closeable {
     private reconnect: boolean
     private socket: Promise<Socket>
 
-    constructor() {
+    constructor(public config: InnerLayerConfig) {
         this.reconnect = true
         this.socket = this.connect()
     }
 
     private async getChallenge(attempt = 0): Promise<string> {
-        const challengeURL = new URL('/challenge', Config.outerLayer).href
+        const challengeURL = new URL('/challenge', this.config['outer-layer']).href
         try {
             const response = await axios.get(challengeURL)
             const challenge = response.data
@@ -32,8 +37,8 @@ class Client {
     }
 
     private solveChallenge(challenge: string) {
-        const payload: JWTPayload = { challenge, identifier: Config.innerLayerIdentifier }
-        const challengeResponse = sign(payload, Config.privateKey, { algorithm: 'RS256', expiresIn: 2 })
+        const payload: JWTPayload = { challenge, identifier: this.config.identifier }
+        const challengeResponse = sign(payload, this.config['private-key'], { algorithm: 'RS256', expiresIn: 2 })
         return challengeResponse
     }
 
@@ -45,7 +50,7 @@ class Client {
     }
 
     private async connect() {
-        const outerLayer = Config.outerLayer
+        const outerLayer = this.config['outer-layer'].toString()
         const socket = io(outerLayer, {
             transportOptions: {
                 polling: {
@@ -104,10 +109,8 @@ class Client {
         return socket
     }
 
-    async close() {
+    async close(): Promise<void> {
         this.reconnect = false;
         (await this.socket).close()
     }
 }
-
-export const client = new Client()

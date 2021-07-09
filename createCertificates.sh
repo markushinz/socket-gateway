@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
-cd config
+pushd config
 
 cat << EOF > server.conf
 [req]
@@ -28,4 +28,4 @@ openssl rsa -in innerLayer.pem -pubout -out innerLayer.crt
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in innerLayer.pem -out innerLayer.key
 rm -f innerLayer.pem
 
-cd ..
+popd

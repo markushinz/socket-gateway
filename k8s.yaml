@@ -18,19 +18,13 @@ spec:
       containers:
         - name: outer-layer
           image: markushinz/socket-gateway:latest
+          args:
+            - outer-layer
+            - --targets
+            - /mnt/socket-gateway/targets.yaml
+            - --public-key
+            - /mnt/socket-gateway/innerLayer.crt
           env:
-            - name: SG_MODE
-              value: outer-layer
-            - name: SG_TARGETS
-              valueFrom:
-                configMapKeyRef:
-                  name: outer-layer-config
-                  key: targets.yaml
-            - name: SG_INNER_LAYER_PUBLIC_KEY
-              valueFrom:
-                configMapKeyRef:
-                  name: outer-layer-config
-                  key: innerLayer.crt
             - name: SG_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -43,6 +37,14 @@ spec:
             httpGet:
               port: 3001
               path: /healthz
+          volumeMounts:
+            - name: outer-layer-config
+              subPath: socket-gateway
+              mountPath: /mnt/socket-gateway
+      volumes:
+        - name: outer-layer-config
+          configMap:
+            name: outer-layer-config
 ---
 apiVersion: v1
 kind: Service

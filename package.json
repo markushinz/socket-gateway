@@ -1,7 +1,6 @@
 {
     "name": "socket-gateway",
     "version": "0.0.0",
-    "private": true,
     "scripts": {
         "lint": "eslint . --ext .ts,.tsx",
         "test": "jest --silent=true",
@@ -9,21 +8,19 @@
         "start": "./bin/socket-gateway",
         "serve": "npm run build && SG_TARGETS='{\"targets\":{\"localhost\":{\"hostname\":\"jsonplaceholder.typicode.com\"}}}' node dist/server.js"
     },
-    "bin": {
-        "socket-gateway": "./bin/socket-gateway",
-        "socket-gateway-inner-layer": "./bin/socket-gateway-inner-layer",
-        "socket-gateway-outer-layer": "./bin/socket-gateway-outer-layer"
-        
-    },
+    "bin": "./bin/socket-gateway",
     "dependencies": {
         "axios": "^0.21.1",
         "compression": "^1.7.4",
         "express": "^4.17.1",
         "js-yaml": "^4.0.0",
         "jsonwebtoken": "^8.5.1",
+        "morgan": "^1.10.0",
+        "node-forge": "^0.10.0",
         "socket.io": "^4.0.1",
         "socket.io-client": "^4.0.1",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "yargs": "^16.2.0"
     },
     "devDependencies": {
         "@types/compression": "^1.7.1",
@@ -31,13 +28,13 @@
         "@types/jest": "^26.0.24",
         "@types/js-yaml": "^4.0.2",
         "@types/jsonwebtoken": "^8.5.4",
+        "@types/morgan": "^1.9.3",
         "@types/node-forge": "^0.10.1",
         "@types/uuid": "^8.3.1",
         "@typescript-eslint/eslint-plugin": "^4.28.2",
         "@typescript-eslint/parser": "^4.28.2",
         "eslint": "^7.30.0",
         "jest": "^27.0.4",
-        "node-forge": "^0.10.0",
         "ts-jest": "^27.0.3",
         "typescript": "^4.1.3"
     }
