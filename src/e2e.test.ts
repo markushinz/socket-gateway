@@ -1,11 +1,9 @@
 import { createServer } from 'http'
 import axios from 'axios'
 
-const ports = {
-    appServer: '4000',
-    socketServer: '4001',
-    testServer: 4002
-}
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
+import { join } from 'path'
+import { tmpdir } from 'os'
 
 type Test = {
     name: string,
@@ -39,17 +37,22 @@ const tests: Test[] = [
     }
 ]
 
-process.env.SG_APP_PORT = ports.appServer
-process.env.SG_SOCKET_PORT = ports.socketServer
-process.env.SG_TIMEOUT = '2000'
-process.env.SG_TARGETS = `targets:
-  localhost:
-    protocol: http
-    hostname: localhost
-    port: ${ports.testServer}
-`
+import { cli } from './cli'
+import { Closeable } from './models'
+const closeables: Closeable[] = []
 
-import { appServer, socketServer, client } from './server'
+const directory = mkdtempSync(join(tmpdir(), 'socket-gateway-'))
+beforeAll(async function() {
+    writeFileSync(join(directory,'targets.yaml'), `targets:
+  "e2e":
+    protocol: "http"
+    hostname: "localhost"
+    port: 4002
+`)
+    closeables.push(await cli(['certificates', '--private-key', join(directory,'innerLayer.key'),  '--public-key', join(directory,'innerLayer.crt')]))
+    closeables.push(await cli(['inner-layer', '--outer-layer', 'ws://localhost:4001', '--private-key', join(directory,'innerLayer.key')]))
+    closeables.push(await cli(['outer-layer', '--app-port', '4000', '--socket-port', '4001', '--timeout', '2000', '--targets', join(directory,'targets.yaml'), '--public-key', join(directory,'innerLayer.crt')]))
+})
 
 tests.forEach(function (tt) {
     test(tt.name, async function () {
@@ -59,9 +62,9 @@ tests.forEach(function (tt) {
             res.statusCode = tt.args.statusCode
             res.end(tt.args.body)
         })
-        testServer.listen(ports.testServer, 'localhost')
+        testServer.listen(4002, 'localhost')
         await new Promise(r => setTimeout(r, 2000))
-        const response = await axios.get(`http://localhost:${ports.appServer}`, { validateStatus: undefined })
+        const response = await axios.get('http://localhost:4000', { validateStatus: undefined, headers: { host: 'e2e' } })
 
         expect(response.status).toStrictEqual(tt.wantStatusCode ?? tt.args.statusCode)
         expect(response.data).toStrictEqual(tt.wantBody ?? tt.args.body)
@@ -71,8 +74,7 @@ tests.forEach(function (tt) {
 })
 
 afterAll(async function () {
-    appServer.close()
-    socketServer.close();
-    (await client).close()
+    closeables.forEach(server => server.close())
     await new Promise(r => setTimeout(r, 1000))
+    rmSync(directory, { recursive: true, force: true })
 })

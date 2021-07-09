@@ -1,5 +1,3 @@
-import Config from '../config'
-
 import { Policy, Target } from '../../models'
 
 export function evaluatePolicy(policy: Policy, path: string, method: string): boolean {
@@ -10,9 +8,9 @@ export function evaluatePolicy(policy: Policy, path: string, method: string): bo
     return false
 }
 
-export function getTarget(host: string): Target | undefined {
+export function getTarget(targets: Record<string, Target>, host: string): Target | undefined {
     try {
-        return Config.targets[host]
+        return targets[host]
     } catch (error) {
         return undefined
     }

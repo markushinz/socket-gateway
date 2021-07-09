@@ -6,7 +6,7 @@ import { JWTPayload } from '../../models'
 export class ChallengeTool {
     pendingChallenges: Set<string>
 
-    constructor(public challengeValidity: number, public innerLayerPublicKey: string | Buffer) {
+    constructor(public validity: number, public publicKey: string | Buffer) {
         this.pendingChallenges = new Set()
     }
 
@@ -19,13 +19,13 @@ export class ChallengeTool {
                 this.pendingChallenges.delete(challenge)
                 console.log(`Deleted challege "${challenge}".`)
             }
-        }, this.challengeValidity)
+        }, this.validity)
         return challenge
     }
 
     verifyChallengeResponse(token: string): boolean {
         try {
-            const payload = verify(token, this.innerLayerPublicKey, { algorithms: ['RS256'] }) as JWTPayload
+            const payload = verify(token, this.publicKey, { algorithms: ['RS256'] }) as JWTPayload
             if (this.pendingChallenges.has(payload.challenge)) {
                 console.log(`Challege "${payload.challenge}" sucessfully verified.`)
                 return true

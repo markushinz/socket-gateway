@@ -1,24 +1,25 @@
 import { Router } from 'express'
-const router = Router()
+import { OuterLayerConfig } from '../config'
 
-import Config from '../config'
-
-router.use(function (req, res, next) {
-    if (Config.adminCredentials) {
-        if (req.headers.authorization === `Basic ${Config.adminCredentials}`) {
-            next()
+export function newAdminRouter(config: OuterLayerConfig): Router {
+    const router = Router()
+    
+    router.use(function (req, res, next) {
+        if (config.adminCredentialsParsed) {
+            if (req.headers.authorization === `Basic ${config.adminCredentialsParsed}`) {
+                next()
+            } else {
+                res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
+                res.sendStatus(401)
+            }
         } else {
-            res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
-            res.sendStatus(401)
+            res.sendStatus(404)
         }
-    } else {
-        res.sendStatus(404)
-    }
-})
+    })
 
-router.get('/', function (req, res) {
-    res.setHeader('content-type', 'text/html; charset=utf-8')
-    res.send(`<!DOCTYPE html>
+    router.get('/', function (req, res) {
+        res.setHeader('content-type', 'text/html; charset=utf-8')
+        res.send(`<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -34,19 +35,19 @@ router.get('/', function (req, res) {
         <h3>Inner Layers</h3>
         <pre>${JSON.stringify(req.app.get('gateway').innerLayers, null, 4)}</pre>
         <h3>Inner Layer Public Key</h3>
-        <pre>${Config.innerLayerPublicKey}</pre>
+        <pre>${config.publicKey}</pre>
         <h3>Targets</h3>
-        <pre>${JSON.stringify(Config.targets, null, 4)}</pre>
+        <pre>${JSON.stringify(config.targetsParsed, null, 4)}</pre>
     </div>
 </body>
 
 </html>
 `)
-})
+    })
 
-router.get('/stylesheet.css', function (req, res) {
-    res.setHeader('content-type', 'text/css; charset=utf-8')
-    res.send(`html {
+    router.get('/stylesheet.css', function (req, res) {
+        res.setHeader('content-type', 'text/css; charset=utf-8')
+        res.send(`html {
     font-family: monospace, monospace;
     font-size:0.9em;
     margin: 15px;
@@ -92,6 +93,7 @@ pre {
     }
 }
 `)
-})
+    })
 
-export default router
+    return router
+}

@@ -4,41 +4,48 @@ import { load } from 'js-yaml'
 
 import { Cache, Target } from '../models'
 
-class Config {
+export class OuterLayerConfig {
     private cache: Cache
+    appPort: number
+    socketPort: number
+    publicKey: string | Buffer
+    targets: string
+    adminPassword: string | undefined
+    trustProxy: string
+    timeout: number
+    validity: number
 
-    constructor() {
+    constructor(
+        argv: {
+            'admin-password'?: string;
+            'trust-proxy': string;
+            timeout: number;
+            validity: number;
+            'app-port': number;
+            'socket-port': number;
+            'public-key': string | Buffer;
+            targets: string;
+        },
+    ) {
+        this.adminPassword = argv['admin-password']
+        this.trustProxy = argv['trust-proxy'],
+        this.timeout = argv.timeout,
+        this.validity = argv.validity,
+        this.appPort = argv['app-port']
+        this.socketPort = argv['socket-port']
+        this.publicKey = argv['public-key']
+        this.targets = argv.targets,
+
         this.cache = {
             targets: {}
         }
     }
 
-    private isDevelopment = process.env.NODE_ENV === 'development'
-    appPort = parseInt(process.env.PORT || process.env.SG_APP_PORT || '3000')
-    socketPort = parseInt(process.env.SG_SOCKET_PORT || '3001')
-    trustProxy = process.env.SG_TRUST_PROXY || 'loopback, linklocal, uniquelocal'
-    timeout = parseInt(process.env.SG_TIMEOUT || '10000') // ms
-    challengeValidity = parseInt(process.env.SG_CHALLENGE_VALIDITY || '1000') // ms
-
-    innerLayerPublicKey = (() => {
-        if (process.env.SG_INNER_LAYER_PUBLIC_KEY) {
-            return process.env.SG_INNER_LAYER_PUBLIC_KEY
-        }
-        if (process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE) {
-            return readFileSync(process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE)
-        }
-        console.error('You have to specify the inner layer public key either via the environment variable ' +
-            'process.env.SG_INNER_LAYER_PUBLIC_KEY or provide an absolute path to a file using the environment variable ' +
-            'process.env.SG_INNER_LAYER_PUBLIC_KEY_FILE')
-        process.exit(1)
-    })()
-
-    get targets(): Record<string, Target> {
+    get targetsParsed(): Record<string, Target> {
         try {
             const now = Date.now()
             if (!this.cache.timestamp || now - this.cache.timestamp > 60000) {
-                const config = load(process.env.SG_TARGETS ||
-                    readFileSync(process.env.SG_TARGETS_FILE as string, 'utf8')) as {
+                const config = load(readFileSync(this.targets as string, 'utf8')) as {
                         targets: Record<string, Target>
                     }
                 this.cache.targets = config.targets
@@ -51,14 +58,11 @@ class Config {
         }
     }
 
-    adminCredentials = (() => {
-        const adminPassword = process.env.SG_ADMIN_PASSWORD
-        if (this.isDevelopment || adminPassword) {
-            return Buffer.from(`${process.env.SG_ADMIN_USERNAME || 'admin'}:${adminPassword || 'admin'}`).toString('base64')
+    adminCredentialsParsed = (() => {
+        if (this.adminPassword) {
+            return Buffer.from(`admin:${this.adminPassword}`).toString('base64')
         } else {
             return undefined
         }
     })()
 }
-
-export default new Config()

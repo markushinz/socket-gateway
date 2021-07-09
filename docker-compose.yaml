@@ -1,7 +1,7 @@
-version: "3.7"
+version: "3.9"
 services:
   nginx-service:
-    image: nginx
+    image: nginx:1.21.1-alpine
     restart: always
     ports:
       # - 80:80
@@ -16,11 +16,10 @@ services:
   outer-layer-service:
     build: .
     restart: always
+    command: outer-layer
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - SG_MODE=outer-layer
-      - SG_TARGETS_FILE=/mnt/targets.yaml
-      - SG_INNER_LAYER_PUBLIC_KEY_FILE=/mnt/innerLayer.crt
+      - SG_TARGETS=/mnt/targets.yaml
+      - SG_PUBLIC_KEY=/mnt/innerLayer.crt
     ports:
       - 80:3000
     volumes:
@@ -29,12 +28,11 @@ services:
   inner-layer-service:
     build: .
     restart: always
+    command: inner-layer
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
       - NODE_EXTRA_CA_CERTS=/mnt/server.crt
-      - SG_MODE=inner-layer
       - SG_OUTER_LAYER=${SG_OUTER_LAYER:-https://nginx-service:3001}
-      - SG_INNER_LAYER_PRIVATE_KEY_FILE=/mnt/innerLayer.key
+      - SG_PRIVATE_KEY=/mnt/innerLayer.key
     volumes:
       - ./config/server.crt:/mnt/server.crt
       - ./config/innerLayer.key:/mnt/innerLayer.key
