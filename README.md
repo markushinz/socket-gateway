@@ -162,7 +162,7 @@ spec:
 Finally, you can run an inner layer from within the desired target network:
 
 ```bash
-npx https://github.com/markushinz/socket-gateway/releases/latest/download/socket-gateway.tgz inner \
+npx https://github.com/markushinz/socket-gateway/releases/latest/download/socket-gateway.tgz inner-layer \
   --private-key "$(pwd)/k8s/innerLayer.key" \
   --outer-layer "https://gateway.example.com"
 ```
