@@ -20,7 +20,7 @@
         "socket.io": "^4.0.1",
         "socket.io-client": "^4.0.1",
         "uuid": "^8.3.2",
-        "yargs": "^16.2.0"
+        "yargs": "^17.0.1"
     },
     "devDependencies": {
         "@types/compression": "^1.7.1",
