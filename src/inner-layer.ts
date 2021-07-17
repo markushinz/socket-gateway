@@ -2,12 +2,22 @@ import { io, Socket } from 'socket.io-client'
 import axios from 'axios'
 import { sign } from 'jsonwebtoken'
 
-import { Closeable, Data, JWTPayload } from './models'
+import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
 
 type InnerLayerConfig = {
     'private-key': string | Buffer,
     'outer-layer': URL,
     identifier: string
+}
+
+function color(status: number) {
+    switch(true){
+    case (status >= 500): return 31
+    case (status >= 400): return 33
+    case (status >= 300): return 36
+    case (status >= 200): return 32
+    default: return 0
+    }
 }
 
 export class InnerLayer implements Closeable {
@@ -38,8 +48,7 @@ export class InnerLayer implements Closeable {
 
     private solveChallenge(challenge: string) {
         const payload: JWTPayload = { challenge, identifier: this.config.identifier }
-        const challengeResponse = sign(payload, this.config['private-key'], { algorithm: 'RS256', expiresIn: 2 })
-        return challengeResponse
+        return sign(payload, this.config['private-key'], { algorithm: 'RS256' })
     }
 
     private async getHeaders() {
@@ -50,7 +59,7 @@ export class InnerLayer implements Closeable {
     }
 
     private async connect() {
-        const outerLayer = this.config['outer-layer'].toString()
+        const outerLayer = this.config['outer-layer'].href
         const socket = io(outerLayer, {
             transportOptions: {
                 polling: {
@@ -66,36 +75,33 @@ export class InnerLayer implements Closeable {
             console.log(`Outer Layer ${outerLayer} connected.`)
         })
 
-        socket.on('request', async (incomingData: Data) => {
+        socket.on('connect_error', err => {
+            console.error(err)
+        })
+
+        socket.on('request', async (req: GatewayRequest) => {
+            const res: GatewayResponse = {
+                uuid: req.uuid,
+                status: 500,
+                data: 'Internal Server Error',
+                headers: { 'content-type': 'text/plain' }
+            }
             try {
-                const response = await axios({
-                    method: incomingData.method,
-                    url: incomingData.url,
-                    headers: incomingData.headers,
-                    params: incomingData.query,
-                    data: incomingData.body,
+                const { status, data, headers } = await axios({
+                    ...req,
                     maxRedirects: 0,
                     responseType: 'arraybuffer',
                     validateStatus: null,
+                    decompress: false
                 })
-                const outgoingData = {
-                    uuid: incomingData.uuid,
-                    host: incomingData.host,
-                    statusCode: response.status,
-                    body: response.data.toString('binary'),
-                    headers: response.headers
-                }
-                socket.emit('request', outgoingData)
+                res.status = status
+                res.data = data.toString('binary')
+                res.headers = headers
             } catch (error) {
                 console.error(error)
-                const outgoingData = {
-                    uuid: incomingData.uuid,
-                    host: incomingData.host,
-                    statusCode: 500,
-                    body: 'Internal Server Error',
-                    headers: { 'content-type': 'text/plain' }
-                }
-                socket.emit('request', outgoingData)
+            } finally {
+                socket.emit('response', res)
+                console.log(`\x1b[0m${req.method} ${req.url} \x1b[${color(res.status)}m${res.status}\x1b[0m`)
             }
         })
 

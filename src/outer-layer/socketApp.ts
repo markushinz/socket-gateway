@@ -2,16 +2,21 @@ import express, { Express } from 'express'
 import compression from 'compression'
 
 import { newAdminRouter } from './routers/admin'
-import challengeRouter from './routers/challenge'
 import defaultRouter from './routers/default'
-import { OuterLayerConfig } from './config'
+import { Gateway } from './gateway'
+import { EvaluateTool } from './tools/evaluate'
+import { OuterLayerConfig } from '.'
 
-export function NewSocketApp (config: OuterLayerConfig): Express {
+export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): Express {
     const app = express()
     app.disable('x-powered-by')
     app.use(compression())
-    app.use('/admin', newAdminRouter(config))
-    app.use('/challenge', challengeRouter)
+    app.use('/admin', newAdminRouter(config, gateway, evaluateTool))
+    app.get('/challenge', async function (_req, res) {
+        const challenge = await gateway.challengeTool.createChallenge()
+        res.send(challenge)
+    })
+    
     app.use(defaultRouter)
     return app
 } 

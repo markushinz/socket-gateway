@@ -1,12 +1,22 @@
 import { Router } from 'express'
-import { OuterLayerConfig } from '../config'
+import { OuterLayerConfig } from '..'
+import { Gateway } from '../gateway'
+import { EvaluateTool } from '../tools/evaluate'
 
-export function newAdminRouter(config: OuterLayerConfig): Router {
+export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): Router {
     const router = Router()
+
+    const adminCredentialsParsed = (() => {
+        if (config['admin-password']) {
+            return Buffer.from(`admin:${config['admin-password']}`).toString('base64')
+        } else {
+            return undefined
+        }
+    })()
     
     router.use(function (req, res, next) {
-        if (config.adminCredentialsParsed) {
-            if (req.headers.authorization === `Basic ${config.adminCredentialsParsed}`) {
+        if (adminCredentialsParsed) {
+            if (req.headers.authorization === `Basic ${adminCredentialsParsed}`) {
                 next()
             } else {
                 res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
@@ -28,16 +38,16 @@ export function newAdminRouter(config: OuterLayerConfig): Router {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/admin/stylesheet.css">
 </head>
-  
+
 <body>
     <div id="container">
         <h1>Socket Gateway</h1>
         <h3>Inner Layers</h3>
-        <pre>${JSON.stringify(req.app.get('gateway').innerLayers, null, 4)}</pre>
+        <pre>${JSON.stringify(gateway.connections, null, 4)}</pre>
         <h3>Inner Layer Public Key</h3>
-        <pre>${config.publicKey}</pre>
+        <pre>${config['public-key']}</pre>
         <h3>Targets</h3>
-        <pre>${JSON.stringify(config.targetsParsed, null, 4)}</pre>
+        <pre>${JSON.stringify(evaluateTool.targetsParsed, null, 4)}</pre>
     </div>
 </body>
 

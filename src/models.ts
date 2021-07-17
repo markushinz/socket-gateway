@@ -1,6 +1,7 @@
 import { Method } from 'axios'
+import { v1 as uuid } from 'uuid'
 
-export type Policy = Record<string, (Method | '*')[]>
+export type Policy = '*' | Record<string, '*' | (Method | '*')[]>
 
 export type Target = {
     protocol?: 'http' | 'https',
@@ -9,36 +10,39 @@ export type Target = {
     policy?: Policy
 }
 
-export type Cache = {
-    timestamp?: number
-    targets: Record<string, Target>,
-}
-
 export type Headers = Record<string, string | string[]>
 
-export type Data = {
+export class GatewayRequest {
+    uuid: string
+    url: string
+    method: Method
+    headers: Headers
+    data: string | undefined
+
+    constructor(raw: {
+        method: string,
+        url: URL,
+        headers: Headers
+        data: string | undefined}
+    ) {
+        this.uuid = uuid()
+        this.method = raw.method as Method
+        this.url = raw.url.href
+        this.headers = raw.headers
+        this.data = raw.data
+    }
+}
+
+export type GatewayResponse = {
     uuid: string,
-    method: Method,
-    host: string,
-    url: string,
     headers: Headers,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query: any,
-    body: string | undefined,
-    statusCode: number
+    data: string | undefined
+    status: number
 }
 
 export type JWTPayload = {
     challenge: string,
     identifier: string
-}
-
-export type InnerLayer = {
-    id: string,
-    ip: string,
-    timestamp: string,
-    headers: Headers,
-    payload: JWTPayload
 }
 
 export interface Closeable {
