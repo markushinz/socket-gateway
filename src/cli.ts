@@ -3,7 +3,6 @@ import yargs from 'yargs'
 import { hostname } from 'os'
 import { readFileSync, writeFileSync } from 'fs'
 import { InnerLayer } from './inner-layer'
-import { OuterLayerConfig } from './outer-layer/config'
 import { OuterLayer } from './outer-layer'
 import { pki } from 'node-forge'
 import { Closeable } from './models'
@@ -26,7 +25,7 @@ function coerceFileExists(file: string) {
 
 export function cli (args: string[]): Promise<Closeable> {
     return new Promise(function (resolve) {
-        yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().strict()
+        yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion().strict()
             
             .command('inner-layer', 'Start the inner-layer', yargs => {
                 return yargs
@@ -79,7 +78,7 @@ export function cli (args: string[]): Promise<Closeable> {
                         demandOption: true,
                         coerce: coerceFileExists
                     })
-            }, argv => resolve(new OuterLayer(new OuterLayerConfig(argv))))
+            }, argv => resolve(new OuterLayer(argv)))
 
             .command('certificates', 'Generate certificates', yargs => {
                 return yargs

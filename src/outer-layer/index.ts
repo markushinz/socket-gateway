@@ -5,31 +5,43 @@ import { NewSocketApp } from './socketApp'
 import { Gateway } from './gateway'
 import { ChallengeTool } from './tools/challenge'
 
-import { OuterLayerConfig } from './config'
 import { Closeable } from '../models'
+import { EvaluateTool } from './tools/evaluate'
+
+export type OuterLayerConfig = {
+    'admin-password'?: string;
+    'trust-proxy': string;
+    timeout: number;
+    validity: number;
+    'app-port': number;
+    'socket-port': number;
+    'public-key': string | Buffer;
+    targets: string;
+}
 
 export class OuterLayer implements Closeable {
     appServer: Server
     socketServer: Server
 
     constructor(config: OuterLayerConfig) {
-        const app = NewApp(config)
-        const socketApp = NewSocketApp(config)
+        const challegeTool = new ChallengeTool(config.validity, config['public-key'])
+        const evaluateTool = new EvaluateTool(config.targets)
+        
+        const gateway = new Gateway(challegeTool, config.timeout)
 
-        this.appServer = createServer(app)
+        const socketApp = NewSocketApp(config, gateway, evaluateTool)
         this.socketServer = createServer(socketApp)
-        const gateway = new Gateway(this.socketServer, new ChallengeTool(config.validity, config.publicKey), config.timeout)
+        gateway.attach(this.socketServer)
 
-        app.set('port', config.appPort)
-        app.set('gateway', gateway)
-        socketApp.set('port', config.socketPort)
-        socketApp.set('gateway', gateway)
 
-        this.appServer.listen(config.appPort)
-        console.log(`Listening on port ${config.appPort}...`)
+        const app = NewApp(config, gateway, evaluateTool)
+        this.appServer = createServer(app)
 
-        this.socketServer.listen(config.socketPort)
-        console.log(`Awaiting connections from inner layer(s) on port ${config.socketPort}...`)
+        this.appServer.listen(config['app-port'])
+        console.log(`Listening on port ${config['app-port']}...`)
+
+        this.socketServer.listen(config['socket-port'])
+        console.log(`Awaiting connections from inner layer(s) on port ${config['socket-port']}...`)
     }
 
     close(): void {

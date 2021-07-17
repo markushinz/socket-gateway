@@ -26,10 +26,6 @@ export function rewriteHeaders(headers: Headers, fromHost: string, toHost: strin
 }
 
 function rewriteString(str: string, fromHost: string, toHost: string) {
-    if (toHost) {
-        str = str.replace(new RegExp(encodeURIComponent(fromHost), 'g'), encodeURIComponent(toHost))
-        return str.replace(new RegExp(fromHost, 'g'), toHost)
-    } else {
-        return str
-    }
+    str = str.replace(new RegExp(encodeURIComponent(fromHost), 'g'), encodeURIComponent(toHost))
+    return str.replace(new RegExp(fromHost, 'g'), toHost)
 }

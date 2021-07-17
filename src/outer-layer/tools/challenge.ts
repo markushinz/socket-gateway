@@ -4,7 +4,7 @@ import { v1 as uuid } from 'uuid'
 import { JWTPayload } from '../../models'
 
 export class ChallengeTool {
-    pendingChallenges: Set<string>
+    private pendingChallenges: Set<string>
 
     constructor(public validity: number, public publicKey: string | Buffer) {
         this.pendingChallenges = new Set()

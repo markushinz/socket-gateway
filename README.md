@@ -6,10 +6,14 @@ An API Gateway based on websockets to expose endpoints not reachable from the In
 
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
+### Docker 🐳
 ```bash
-# 🐳 https://hub.docker.com/r/markushinz/socket-gateway/tags
+# https://hub.docker.com/r/markushinz/socket-gateway/tags
 docker pull markushinz/socket-gateway:latest
+```
+### npm
 
+```bash
 # npm https://github.com/markushinz/socket-gateway/releases
 npm install -g https://github.com/markushinz/socket-gateway/releases/latest/download/socket-gateway.tgz
 
@@ -46,10 +50,12 @@ targets:
     protocol: "https" # optional, target protocol, defaults to "https"
     hostname: "my.private.api" # required, target hostname
     port: 443 # optional, target port, defaults to 443
-    policy: # optional, defaults to {"*": ["*"]}
+    policy: # optional, defaults to *
+      # /helloworld gets compiled to ^/helloworld$
+      # specify paths with a leading ^ if you want to use more advanced regexes
       "/helloworld": # allowed path(s), may be *
         - "GET"
-        - "POST" # allowed method(s), may include *
+        - "POST" # allowed method(s), may be or include *
 ```
 
 Now, all requests that are allowed py the specified policy that have the request header "host" set to "socket.gateway" get proxied to "my.private.api".
