@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "scripts": {
         "lint": "eslint . --ext .ts,.tsx",
-        "test": "jest --silent=true",
+        "test": "jest --silent --collect-coverage",
         "build": "rm -rf dist && tsc && echo \"#!/usr/bin/env node\n$(cat dist/socket-gateway.js)\" > dist/socket-gateway.js && chmod +x dist/socket-gateway.js",
         "start": "dist/socket-gateway.js"
     },
