@@ -101,7 +101,7 @@ export class InnerLayer implements Closeable {
                 console.error(error)
             } finally {
                 socket.emit('response', res)
-                console.log(`\x1b[0m${req.method} ${req.url} \x1b[${color(res.status)}m${res.status}\x1b[0m`)
+                process.stdout.write(`\x1b[0m${req.method} ${req.url} \x1b[${color(res.status)}m${res.status}\x1b[0m\n`)
             }
         })
 

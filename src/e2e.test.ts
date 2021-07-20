@@ -42,8 +42,6 @@ writeFileSync(join(directory,'targets.yaml'), JSON.stringify({
     } as Record<string,Target>
 }))
 
-console.log(directory)
-
 const closeables: Closeable[] = []
 beforeAll(async function() {
     closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--public-key', config.publicKey]))
