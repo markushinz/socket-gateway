@@ -9,7 +9,7 @@
     },
     "bin": "dist/socket-gateway.js",
     "dependencies": {
-        "axios": "^0.21.3",
+        "axios": "^0.21.4",
         "compression": "^1.7.4",
         "express": "^4.17.1",
         "js-yaml": "^4.0.0",
