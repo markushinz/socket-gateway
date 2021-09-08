@@ -2,10 +2,10 @@
 
 ![CI](https://github.com/markushinz/socket-gateway/actions/workflows/ci.yaml/badge.svg)
 
-An API Gateway based on websockets to expose endpoints not reachable from the Internet - implemented in node.js.
+An API Gateway based on websockets to expose HTTP(S) endpoints not reachable from the Internet - implemented in node.js.
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
 
-![](scenario.svg)
+![](scenario/scenario.svg)
 
 In the preceding scenario `Client` can not directly connect to `Server` as no connection to `Router 2` can be established from the `Internet`.
 When using the socket-gateway the inner layer (a component that is able to establish a connection to `Server`) creates a persistent websocket connection (`Inner layer -> Router 2 -> Internet -> Router 3 -> Outer layer`) to the outer layer (a compoent that can be connected to from the `Internet`).
