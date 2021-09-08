@@ -1,3 +1,5 @@
+# dot -Tsvg scenario.dot -o scenario.svg
+
 digraph G {
     rankdir=RL;
 
@@ -40,4 +42,6 @@ digraph G {
         INET -> R3  [dir="both",minlen=2];
         label="Public network";
     }
+
+    C -> R1 -> INET -> R3 -> O -> R3 -> INET -> R2 -> I -> R2 -> S [style="invis",color="blue"]
 }
