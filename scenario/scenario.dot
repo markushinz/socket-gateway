@@ -1,0 +1,47 @@
+# dot -Tsvg scenario.dot -o scenario.svg
+
+digraph G {
+    rankdir=RL;
+
+    subgraph cluster0 {
+        color=white;
+        INET [label="Internet"];
+    }
+
+    subgraph cluster1 {
+        node [style=filled,color=white];
+        style=filled;
+        color=lightgrey;
+        R1 [label="Router 1",shape="cylinder"];
+        C [label="Client",shape="box"];
+        C -> R1  [dir="both",minlen=2];
+        R1 -> INET [minlen=2];
+        label="Private network 1";
+    }
+
+    subgraph cluster2 {
+        node [style=filled,color=white];
+        style=filled;
+        color=lightgrey;
+        R2 [label="Router 2",shape="cylinder"];
+        S [label="Server",shape="box"];
+        I [label="Inner layer",shape="box"];
+        R2 -> I [dir="both",minlen=2];
+        R2 -> S  [dir="both",minlen=2];
+        INET -> R2 [dir="back",minlen=2];
+        label="Private network 2";
+    }
+
+    subgraph cluster3 {
+        node [style=filled,color=white];
+        style=filled;
+        color=lightgrey;
+        O [label="Outer layer",shape="box"];
+        R3 [label="Router 3",shape="cylinder"];
+        R3 -> O  [dir="both",minlen=2];
+        INET -> R3  [dir="both",minlen=2];
+        label="Public network";
+    }
+
+    C -> R1 -> INET -> R3 -> O -> R3 -> INET -> R2 -> I -> R2 -> S [style="invis",color="blue"]
+}
