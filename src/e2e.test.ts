@@ -34,18 +34,30 @@ writeFileSync(join(directory,'targets.yaml'), JSON.stringify({
             policy: {
                 '/allowed': '*',
                 '^/regexAllowed': '*'
-            }
+            },
         },
         error: {
             hostname: 'error'
-        }
+        },
+        withIdentifier: {
+            protocol: 'http',
+            hostname: 'localhost',
+            port: config.serverPort,
+            identifier: 'identifier'
+        },
+        withUnknownIdentifier: {
+            protocol: 'http',
+            hostname: 'localhost',
+            port: config.serverPort,
+            identifier: 'unknown'
+        },
     } as Record<string,Target>
 }))
 
 const closeables: Closeable[] = []
 beforeAll(async function() {
     closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--public-key', config.publicKey]))
-    closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--private-key', config.privateKey]))
+    closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--private-key', config.privateKey, '--identifier', 'identifier']))
     closeables.push(await cli(['outer-layer', '--app-port', config.appPort, '--socket-port', config.socketPort, '--timeout', config.timeout, '--targets', config.targets, '--public-key', config.publicKey, '--admin-password', config.adminPassword]))
 })
 
@@ -74,7 +86,7 @@ type Test = {
 
 const tests: Test[] = [
     {
-        name: 'withoutPolicy - happy path',
+        name: 'withoutPolicy - allowed',
         args: {
             req: {
                 host: 'withoutPolicy'
@@ -179,6 +191,16 @@ const tests: Test[] = [
         }
     },
     {
+        name: 'socket - readyz',
+        args: {
+            req: {
+                port: +config.socketPort,
+                host: 'withoutPolicy',
+                path: '/readyz'
+            }
+        }
+    },
+    {
         name: 'socket - error',
         args: {
             req: {
@@ -215,6 +237,24 @@ const tests: Test[] = [
             }
         },
         wantBody: '<!DOCTYPE html>'
+    },
+    {
+        name: 'withIdentifier - allowed',
+        args: {
+            req: {
+                host: 'withIdentifier'
+            }
+        }
+    },
+    {
+        name: 'withUnkownIdentifier - bad gateway',
+        args: {
+            req: {
+                host: 'withUnknownIdentifier'
+            }
+        },
+        wantStatusCode: 502,
+        wantBody: 'Bad Gateway'
     },
 ]
 

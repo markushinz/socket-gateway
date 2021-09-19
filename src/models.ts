@@ -8,6 +8,7 @@ export type Target = {
     hostname: string,
     port?: number,
     policy?: Policy
+    identifier? : string | string[]
 }
 
 export type Headers = Record<string, string | string[]>

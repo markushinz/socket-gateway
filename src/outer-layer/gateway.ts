@@ -16,10 +16,17 @@ export type Connection = {
     payload: JWTPayload
 }
 
+type PendingRequest = {
+    uuid: string,
+    host: string,
+    rewriteHost: string,
+    res: Response<unknown>
+}
+
 export class Gateway {
     private io: Server
-    private pendingRequests = new Map()
-    private connectionsMap = new Map()
+    private pendingRequests:Map<string,PendingRequest> = new Map()
+    private connectionsMap: Map<string,Connection> = new Map()
 
     constructor(public challengeTool: ChallengeTool, public timeout: number) {
         this.io = new Server({ serveClient: false })
@@ -85,9 +92,13 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request(host: string, rewriteHost: string, appRes: Response<unknown>, gatewayReq: GatewayRequest): void {
-        if (this.connectionsMap.size > 0) {
-            const pendingRequest = {
+    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appRes: Response<unknown>, gatewayReq: GatewayRequest): void {
+        const possibleConnections = this.connections.filter(connection => {
+            return !identifier || [identifier].flat().includes(connection.payload.identifier)
+        })
+        
+        if (possibleConnections.length > 0) {
+            const pendingRequest: PendingRequest = {
                 uuid: gatewayReq.uuid,
                 host,
                 rewriteHost,
@@ -99,9 +110,8 @@ export class Gateway {
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
             // This does not garantuee any fair scheduling.
-            const connectionsArray = Array.from(this.connectionsMap.keys())
-            const connectionIndex = (appRes.req?.socket.remotePort ?? 0) % connectionsArray.length
-            const connectionID = connectionsArray[connectionIndex]
+            const connectionIndex = (appRes.req?.socket.remotePort ?? 0) % possibleConnections.length
+            const connectionID = possibleConnections[connectionIndex].id
 
             this.io.to(connectionID).emit('request', gatewayReq)
 
