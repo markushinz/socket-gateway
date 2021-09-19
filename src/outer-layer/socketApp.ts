@@ -2,7 +2,7 @@ import express, { Express } from 'express'
 import compression from 'compression'
 
 import { newAdminRouter } from './routers/admin'
-import defaultRouter from './routers/default'
+import { newDefaultRouter } from './routers/default'
 import { Gateway } from './gateway'
 import { EvaluateTool } from './tools/evaluate'
 import { OuterLayerConfig } from '.'
@@ -17,6 +17,6 @@ export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evalua
         res.send(challenge)
     })
     
-    app.use(defaultRouter)
+    app.use(newDefaultRouter(gateway))
     return app
 } 

@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16.8.0"
+          node-version: "16.9.1"
       - name: Version, Lint, Test, Build and Pack
         run: |
           export VERSION=$(./version.sh)

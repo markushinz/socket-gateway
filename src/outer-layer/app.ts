@@ -5,7 +5,7 @@ import morgan from 'morgan'
 import { EvaluateTool } from './tools/evaluate'
 import { sanitizeHeaders } from './tools/rewrite'
 import { Gateway } from './gateway'
-import defaultRouter from './routers/default'
+import { newDefaultRouter } from './routers/default'
 
 import { GatewayRequest, Headers } from '../models'
 import { OuterLayerConfig } from '.'
@@ -49,13 +49,13 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
                 data: appReq.body
             })
 
-            gateway.request(url.host, rewriteHost, appRes, gatewayReq)
+            gateway.request(target.identifier, url.host, rewriteHost, appRes, gatewayReq)
         } else {
             appRes.status(403).type('text').send(`Forbidden: ${appReq.method} ${url} is not allowed by policy.`)
         }
     })
 
-    app.use(defaultRouter)
+    app.use(newDefaultRouter(gateway))
 
     return app
 }

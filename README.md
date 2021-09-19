@@ -62,6 +62,7 @@ targets:
       "/helloworld": # allowed path(s), may be *
         - "GET"
         - "POST" # allowed method(s), may be or include *
+    identifier: "inner-layer" # optional, identifier or list of identifiers to route to. If not specified, requests will get routed to any connected inner layer
 ```
 
 Now, all requests that are allowed py the specified policy that have the request header "host" set to "socket.gateway" get proxied to "my.private.api".
