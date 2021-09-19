@@ -20,7 +20,8 @@ type PendingRequest = {
     uuid: string,
     host: string,
     rewriteHost: string,
-    res: Response<unknown>
+    res: Response<unknown>,
+    index: number
 }
 
 export class Gateway {
@@ -57,14 +58,23 @@ export class Gateway {
             socket.on('response', (res: GatewayResponse) => {
                 const pendingRequest = this.pendingRequests.get(res.uuid)
                 if (pendingRequest) {
-                    this.pendingRequests.delete(res.uuid)
-
-                    res.headers = sanitizeHeaders(res.headers)
-                    res.headers = rewriteHeaders(res.headers, pendingRequest.host, pendingRequest.rewriteHost)
-                    pendingRequest.res.status(res.status).set(res.headers)
+                    if (res.index !== pendingRequest.index) {
+                        throw new Error('Unexpected order of gateway responses')
+                    }
+                    pendingRequest.index++
+                    if (res.status) {
+                        pendingRequest.res.status(res.status)
+                    }
+                    if (res.headers) {
+                        res.headers = sanitizeHeaders(res.headers)
+                        res.headers = rewriteHeaders(res.headers, pendingRequest.host, pendingRequest.rewriteHost)
+                        pendingRequest.res.set(res.headers)
+                    }
                     if (res.data) {
-                        pendingRequest.res.send(Buffer.from(res.data, 'binary'))
-                    } else {
+                        pendingRequest.res.write(Buffer.from(res.data, 'binary'))
+                    }
+                    if (res.end) {
+                        this.pendingRequests.delete(res.uuid)
                         pendingRequest.res.end()
                     }
                 }
@@ -102,7 +112,8 @@ export class Gateway {
                 uuid: gatewayReq.uuid,
                 host,
                 rewriteHost,
-                res: appRes
+                res: appRes,
+                index: 0
             }
 
             this.pendingRequests.set(pendingRequest.uuid, pendingRequest)

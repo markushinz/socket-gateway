@@ -1,5 +1,7 @@
+import { Stream } from 'stream'
+
 import { io, Socket } from 'socket.io-client'
-import axios from 'axios'
+import axios, { AxiosPromise } from 'axios'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
@@ -80,28 +82,52 @@ export class InnerLayer implements Closeable {
         })
 
         socket.on('request', async (req: GatewayRequest) => {
+            let _status = 500
             const res: GatewayResponse = {
                 uuid: req.uuid,
-                status: 500,
+                index: 0,
+                status: _status,
                 data: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain' }
             }
             try {
-                const { status, data, headers } = await axios({
+                const { status , data, headers } = await (axios({
                     ...req,
                     maxRedirects: 0,
-                    responseType: 'arraybuffer',
+                    responseType: 'stream',
                     validateStatus: null,
                     decompress: false
-                })
+                }) as AxiosPromise<Stream>)
+
+                _status = status
                 res.status = status
-                res.data = data.toString('binary')
+                delete res.data
                 res.headers = headers
+
+                await new Promise<void>((resolve, reject) => {
+                    data.on('data', function (buffer: Buffer) {
+                        res.data = buffer.toString('binary')
+                        socket.emit('response', res)
+                        res.index++
+                        delete res.status
+                        delete res.data
+                        delete res.headers
+                    })
+    
+                    data.on('end', function () {
+                        resolve()
+                    })
+    
+                    data.on('error', function (err: Error) {
+                        reject(err)
+                    })
+                })
             } catch (error) {
                 console.error(error)
             } finally {
+                res.end = true
                 socket.emit('response', res)
-                process.stdout.write(`\x1b[0m${req.method} ${req.url} \x1b[${color(res.status)}m${res.status}\x1b[0m\n`)
+                process.stdout.write(`\x1b[0m${req.method} ${req.url} \x1b[${color(_status)}m${_status}\x1b[0m\n`)
             }
         })
 

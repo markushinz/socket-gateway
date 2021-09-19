@@ -36,9 +36,11 @@ export class GatewayRequest {
 
 export type GatewayResponse = {
     uuid: string,
-    headers: Headers,
-    data: string | undefined
-    status: number
+    index: number,
+    headers?: Headers,
+    data?: string
+    status?: number
+    end?: boolean
 }
 
 export type JWTPayload = {
