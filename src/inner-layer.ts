@@ -7,7 +7,8 @@ import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models
 type InnerLayerConfig = {
     'private-key': string | Buffer,
     'outer-layer': URL,
-    identifier: string
+    identifier: string,
+    insecure: boolean
 }
 
 function color(status: number) {
@@ -59,6 +60,14 @@ export class InnerLayer implements Closeable {
     }
 
     private async connect() {
+        if (
+            !this.config.insecure &&
+            !['localhost', '127.0.0.1', '[::1]'].includes(this.config['outer-layer'].hostname) &&
+            !['https:', 'wss:'].includes(this.config['outer-layer'].hostname)
+        ) {
+            throw(new Error('Outer layer protocol must be https: or wss:'))
+        }
+
         const outerLayer = this.config['outer-layer'].href
         const socket = io(outerLayer, {
             transportOptions: {

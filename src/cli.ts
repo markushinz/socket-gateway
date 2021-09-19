@@ -8,14 +8,7 @@ import { pki } from 'node-forge'
 import { Closeable } from './models'
 
 function coerceOuterLayer(url: string): URL {
-    const parsed = new URL(url)
-    if (
-        ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) || 
-        ['https:', 'wss:'].includes(parsed.protocol)
-    ) {
-        return parsed
-    }
-    throw(new Error('Protocol must be https: or wss:'))
+    return new URL(url)
 }
 
 function coerceFileExists(file: string) {
@@ -42,6 +35,10 @@ export function cli (args: string[]): Promise<Closeable> {
                         description: 'The outer layer URI to connect to',
                         demandOption: true,
                         coerce: coerceOuterLayer
+                    })
+                    .option('insecure', {
+                        description: 'Allow connections via http/ws',
+                        default: false
                     })
             }, argv => resolve(new InnerLayer(argv)))
 
