@@ -61,7 +61,7 @@ export function cli (args: string[]): Promise<Closeable> {
                         default: 'loopback, linklocal, uniquelocal'
                     })
                     .option('timeout', {
-                        default: 10000
+                        default: 180000
                     })
                     .option('validity', {
                         default: 1000

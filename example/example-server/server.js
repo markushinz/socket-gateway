@@ -26,6 +26,19 @@ app.get('/query', function (req, res) {
     res.json(req.query)
 })
 
+function sleep() {
+    return new Promise(resolve => setTimeout(resolve, 100))
+}
+
+app.get('/stream', async function (req, res) {
+    res.status(200)
+    for (let i = 0; i < 10; i++) {
+        res.write(`${i+1}\n`)
+        await sleep()
+    }
+    res.end()
+})
+
 app.post('/body', function (req, res) {
     res.json(req.body)
 })
@@ -36,6 +49,10 @@ app.post('/cookie', function (req, res) {
 })
 
 app.get('/healthz', function (req, res) {
+    res.sendStatus(200)
+})
+
+app.get('/readyz', function (req, res) {
     res.sendStatus(200)
 })
 

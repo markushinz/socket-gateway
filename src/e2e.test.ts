@@ -78,10 +78,11 @@ type Test = {
         },
         timeout?: number,
         statusCode?: number,
-        body?: string,
+        body?: string | string[],
     },
     wantStatusCode?: number
     wantBody?: string
+    wantBodyToContain?: boolean
 }
 
 const tests: Test[] = [
@@ -89,8 +90,18 @@ const tests: Test[] = [
         name: 'withoutPolicy - allowed',
         args: {
             req: {
-                host: 'withoutPolicy'
-            }
+                host: 'withoutPolicy',
+            },
+            body: 'OK'
+        }
+    },
+    {
+        name: 'withoutPolicy - allowed with chuncked body',
+        args: {
+            req: {
+                host: 'withoutPolicy',
+            },
+            body: ['O', 'K']
         }
     },
     {
@@ -236,7 +247,8 @@ const tests: Test[] = [
                 }
             }
         },
-        wantBody: '<!DOCTYPE html>'
+        wantBody: '<!DOCTYPE html>',
+        wantBodyToContain: true
     },
     {
         name: 'withIdentifier - allowed',
@@ -262,17 +274,25 @@ tests.forEach(function (tt) {
     test(tt.name, async function () {
         const testServer = createServer(async function (_req, res) {
             await new Promise(r => setTimeout(r, tt.args.timeout || 0))
-            res.setHeader('content-type', 'text/plain')
+            res.setHeader('content-type', 'text/plain; charset=utf-8')
             res.statusCode = tt.args.statusCode || 200
-            res.end(tt.args.body || 'OK')
+            const body = [tt.args.body || 'OK'].flat()
+            body.forEach(data => res.write(data))
+            res.end()
         })
         testServer.listen(config.serverPort)
         await new Promise(r => setTimeout(r, 100))
-        const response = await axios(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`, { method: tt.args.req.method || 'GET', validateStatus: undefined, headers: { host: tt.args.req.host, ...tt.args.req.headers } })
-
-        expect(response.status).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
-        expect(response.data).toContain(tt.wantBody || tt.args.body || 'OK')
-
-        testServer.close()
+        try {
+            const { status, data } = await axios(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`, { method: tt.args.req.method || 'GET', validateStatus: undefined, headers: { host: tt.args.req.host, ...tt.args.req.headers } })
+            expect(status).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
+            const wantBody = tt.wantBody || [tt.args.body].flat().join('') || 'OK'
+            if (tt.wantBodyToContain) {
+                expect(data).toContain(wantBody)
+            } else {
+                expect(data).toStrictEqual(wantBody)
+            }
+        } finally {
+            testServer.close()
+        }
     })
 })
