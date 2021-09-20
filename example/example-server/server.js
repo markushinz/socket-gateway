@@ -35,7 +35,24 @@ app.post('/cookie', function (req, res) {
     res.sendStatus(200)
 })
 
+function sleep() {
+    return new Promise(resolve => setTimeout(resolve, 100))
+}
+
+app.get('/stream', async function (req, res) {
+    res.status(200)
+    for (let i = 0; i < 10; i++) {
+        res.write(`${i+1}\n`)
+        await sleep()
+    }
+    res.end()
+})
+
 app.get('/healthz', function (req, res) {
+    res.sendStatus(200)
+})
+
+app.get('/readyz', function (req, res) {
     res.sendStatus(200)
 })
 
