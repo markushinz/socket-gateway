@@ -274,7 +274,7 @@ tests.forEach(function (tt) {
     test(tt.name, async function () {
         const testServer = createServer(async function (_req, res) {
             await new Promise(r => setTimeout(r, tt.args.timeout || 0))
-            res.setHeader('content-type', 'text/plain')
+            res.setHeader('content-type', 'text/plain; charset=utf-8')
             res.statusCode = tt.args.statusCode || 200
             const body = [tt.args.body || 'OK'].flat()
             body.forEach(data => res.write(data))
@@ -282,16 +282,17 @@ tests.forEach(function (tt) {
         })
         testServer.listen(config.serverPort)
         await new Promise(r => setTimeout(r, 100))
-        const response = await axios(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`, { method: tt.args.req.method || 'GET', validateStatus: undefined, headers: { host: tt.args.req.host, ...tt.args.req.headers } })
-
-        expect(response.status).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
-        const wantBody = tt.wantBody || [tt.args.body].flat().join('') || 'OK'
-        if (tt.wantBodyToContain) {
-            expect(response.data).toContain(wantBody)
-        } else {
-            expect(response.data).toStrictEqual(wantBody)
+        try {
+            const { status, data } = await axios(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`, { method: tt.args.req.method || 'GET', validateStatus: undefined, headers: { host: tt.args.req.host, ...tt.args.req.headers } })
+            expect(status).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
+            const wantBody = tt.wantBody || [tt.args.body].flat().join('') || 'OK'
+            if (tt.wantBodyToContain) {
+                expect(data).toContain(wantBody)
+            } else {
+                expect(data).toStrictEqual(wantBody)
+            }
+        } finally {
+            testServer.close()
         }
-
-        testServer.close()
     })
 })

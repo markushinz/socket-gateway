@@ -26,15 +26,6 @@ app.get('/query', function (req, res) {
     res.json(req.query)
 })
 
-app.post('/body', function (req, res) {
-    res.json(req.body)
-})
-
-app.post('/cookie', function (req, res) {
-    res.cookie(req.body.key, req.body.value)
-    res.sendStatus(200)
-})
-
 function sleep() {
     return new Promise(resolve => setTimeout(resolve, 100))
 }
@@ -46,6 +37,15 @@ app.get('/stream', async function (req, res) {
         await sleep()
     }
     res.end()
+})
+
+app.post('/body', function (req, res) {
+    res.json(req.body)
+})
+
+app.post('/cookie', function (req, res) {
+    res.cookie(req.body.key, req.body.value)
+    res.sendStatus(200)
 })
 
 app.get('/healthz', function (req, res) {
