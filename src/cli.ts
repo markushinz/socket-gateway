@@ -16,7 +16,7 @@ function coerceOuterLayer(url: string, insecure: boolean): URL {
     ) {
         return parsed
     }
-    throw(new Error('Protocol must be https: or wss:'))
+    throw new Error('Protocol must be https: or wss:')
 }
 
 function coerceFileExists(file: string) {

@@ -1,7 +1,6 @@
-import { Method } from 'axios'
 import { v1 as uuid } from 'uuid'
 
-export type Policy = '*' | Record<string, '*' | (Method | '*')[]>
+export type Policy = '*' | Record<string, '*' | string[]>
 
 export type Target = {
     protocol?: 'http' | 'https',
@@ -11,12 +10,12 @@ export type Target = {
     identifier? : string | string[]
 }
 
-export type Headers = Record<string, string | string[]>
+export type Headers = Record<string, string | string[] | undefined>
 
 export class GatewayRequest {
     uuid: string
     url: string
-    method: Method
+    method: string
     headers: Headers
     data: string | undefined
 
@@ -27,7 +26,7 @@ export class GatewayRequest {
         data: string | undefined}
     ) {
         this.uuid = uuid()
-        this.method = raw.method as Method
+        this.method = raw.method
         this.url = raw.url.href
         this.headers = raw.headers
         this.data = raw.data

@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 
-import axios, { Method } from 'axios'
+import { request } from './request'
 
 import { cli } from './cli'
 import { Closeable, Target, Headers } from './models'
@@ -70,7 +70,7 @@ type Test = {
     name: string,
     args: {
         req: {
-            method?: Method,
+            method?: string,
             port?: number,
             host: string
             path?: string,
@@ -283,9 +283,17 @@ tests.forEach(function (tt) {
         testServer.listen(config.serverPort)
         await new Promise(r => setTimeout(r, 100))
         try {
-            const { status, data } = await axios(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`, { method: tt.args.req.method || 'GET', validateStatus: undefined, headers: { host: tt.args.req.host, ...tt.args.req.headers } })
-            expect(status).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
+            const method = tt.args.req.method || 'GET'
+            const url = new URL(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`)
+            const headers = { host: tt.args.req.host, ...tt.args.req.headers }
+            const res = await request(method, url, headers)
+            expect(res.statusCode).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
             const wantBody = tt.wantBody || [tt.args.body].flat().join('') || 'OK'
+            const chunks = []
+            for await (const chunk of res) {
+                chunks.push(chunk)
+            }
+            const data = Buffer.concat(chunks).toString()
             if (tt.wantBodyToContain) {
                 expect(data).toContain(wantBody)
             } else {

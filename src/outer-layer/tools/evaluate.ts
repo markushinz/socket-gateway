@@ -1,4 +1,3 @@
-import { Method } from 'axios'
 import { Policy, Target } from '../../models'
 import { load } from 'js-yaml'
 import { readFileSync } from 'fs'
@@ -47,7 +46,7 @@ export class EvaluateTool {
         }
         for (const [policyPath, methods] of Object.entries(policy)) {
             if (pathToRegex(policyPath).test(testPath)) {
-                return methods === '*' || methods.includes(method as Method) || methods.includes('*')
+                return methods === '*' || methods.includes(method) || methods.includes('*')
             }
         }
         return false
