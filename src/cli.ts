@@ -66,6 +66,11 @@ export function cli (args: string[]): Promise<Closeable> {
                     .option('validity', {
                         default: 1000
                     })
+                    .option('remove-csps', {
+                        type: 'boolean',
+                        description: 'Removes content-security-policy response headers',
+                        default: false
+                    })
                     .option('app-port', {
                         description: 'The port the gateway consumers connect to',
                         default: 3000

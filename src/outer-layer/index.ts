@@ -7,6 +7,7 @@ import { ChallengeTool } from './tools/challenge'
 
 import { Closeable } from '../models'
 import { EvaluateTool } from './tools/evaluate'
+import { RewriteTool } from './tools/rewrite'
 
 export type OuterLayerConfig = {
     'admin-password'?: string;
@@ -17,6 +18,7 @@ export type OuterLayerConfig = {
     'socket-port': number;
     'public-key': string | Buffer;
     targets: string;
+    'remove-csps': boolean;
 }
 
 export class OuterLayer implements Closeable {
@@ -26,15 +28,16 @@ export class OuterLayer implements Closeable {
     constructor(config: OuterLayerConfig) {
         const challegeTool = new ChallengeTool(config.validity, config['public-key'])
         const evaluateTool = new EvaluateTool(config.targets)
+        const rewriteTool = new RewriteTool(config['remove-csps'])
         
-        const gateway = new Gateway(challegeTool, config.timeout)
+        const gateway = new Gateway(challegeTool, rewriteTool, config.timeout)
 
         const socketApp = NewSocketApp(config, gateway, evaluateTool)
         this.socketServer = createServer(socketApp)
         gateway.attach(this.socketServer)
 
 
-        const app = NewApp(config, gateway, evaluateTool)
+        const app = NewApp(config, gateway, evaluateTool, rewriteTool)
         this.appServer = createServer(app)
 
         this.appServer.listen(config['app-port'])

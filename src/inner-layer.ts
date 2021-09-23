@@ -1,7 +1,5 @@
-import { Stream } from 'stream'
-
 import { io, Socket } from 'socket.io-client'
-import axios, { AxiosPromise } from 'axios'
+import axios from 'axios'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
@@ -43,7 +41,7 @@ export class InnerLayer implements Closeable {
             if (attempt > 5) {
                 console.error(error)
             }
-            await new Promise(function (resolve) { setTimeout(resolve, attempt * 1000) })
+            await new Promise(resolve => setTimeout(resolve, 1000))
             return this.getChallenge(attempt ? attempt + 1 : 1)
         }
     }
@@ -88,40 +86,31 @@ export class InnerLayer implements Closeable {
                 index: 0,
                 status: _status,
                 data: 'Internal Server Error',
-                headers: { 'content-type': 'text/plain' }
+                headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
-                const { status , data, headers } = await (axios({
+                const { status , data, headers } = await axios({
                     ...req,
                     maxRedirects: 0,
                     responseType: 'stream',
                     validateStatus: null,
                     decompress: false
-                }) as AxiosPromise<Stream>)
+                })
 
                 _status = status
                 res.status = status
                 delete res.data
                 res.headers = headers
 
-                await new Promise<void>((resolve, reject) => {
-                    data.on('data', function (buffer: Buffer) {
-                        res.data = buffer.toString('binary')
-                        socket.emit('response', res)
-                        res.index++
-                        delete res.status
-                        delete res.data
-                        delete res.headers
-                    })
-    
-                    data.on('end', function () {
-                        resolve()
-                    })
-    
-                    data.on('error', function (err: Error) {
-                        reject(err)
-                    })
-                })
+                for await (const chunk of data) {
+                    res.data = chunk
+                    socket.emit('response', res)
+                    res.index++
+                    delete res.status
+                    delete res.data
+                    delete res.headers
+                }
+            
             } catch (error) {
                 console.error(error)
             } finally {

@@ -4,7 +4,7 @@ import { Response } from 'express'
 import { Server } from 'socket.io'
 
 import { ChallengeTool } from './tools/challenge'
-import { sanitizeHeaders, rewriteHeaders } from './tools/rewrite'
+import { RewriteTool } from './tools/rewrite'
 
 import { Headers, GatewayResponse, GatewayRequest, JWTPayload } from '../models'
 
@@ -29,7 +29,7 @@ export class Gateway {
     private pendingRequests:Map<string,PendingRequest> = new Map()
     private connectionsMap: Map<string,Connection> = new Map()
 
-    constructor(public challengeTool: ChallengeTool, public timeout: number) {
+    constructor(public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
         this.io = new Server({ serveClient: false })
 
         this.io.use(function (socket, next) {
@@ -66,12 +66,12 @@ export class Gateway {
                         pendingRequest.res.status(res.status)
                     }
                     if (res.headers) {
-                        res.headers = sanitizeHeaders(res.headers)
-                        res.headers = rewriteHeaders(res.headers, pendingRequest.host, pendingRequest.rewriteHost)
+                        res.headers = rewriteTool.sanitizeHeaders(res.headers)
+                        res.headers = rewriteTool.rewriteHeaders(res.headers, pendingRequest.host, pendingRequest.rewriteHost)
                         pendingRequest.res.set(res.headers)
                     }
                     if (res.data) {
-                        pendingRequest.res.write(Buffer.from(res.data, 'binary'))
+                        pendingRequest.res.write(res.data)
                     }
                     if (res.end) {
                         this.pendingRequests.delete(res.uuid)

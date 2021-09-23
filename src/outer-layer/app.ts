@@ -3,14 +3,14 @@ import compression from 'compression'
 import morgan from 'morgan'
 
 import { EvaluateTool } from './tools/evaluate'
-import { sanitizeHeaders } from './tools/rewrite'
+import { RewriteTool } from './tools/rewrite'
 import { Gateway } from './gateway'
 import { newDefaultRouter } from './routers/default'
 
 import { GatewayRequest, Headers } from '../models'
 import { OuterLayerConfig } from '.'
 
-export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): Express {
+export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool, rewriteTool: RewriteTool): Express {
     const app = express()
     app.disable('x-powered-by')
     app.disable('etag')
@@ -31,9 +31,9 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
 
         if (evaluateTool.evaluatePolicy(policy, appReq.path, appReq.method)) {
             const rewriteHost = appReq.hostname
-            const headers = sanitizeHeaders(appReq.headers as Headers)
+            const headers = rewriteTool.sanitizeHeaders(appReq.headers as Headers)
             headers['x-real-ip'] = appReq.ip
-            headers['x-forwarded-for'] = [...appReq.ips, appReq.ip].join(', ')
+            headers['x-forwarded-for'] = [...appReq.ips, appReq.socket.remoteAddress].join(', ')
             headers['x-forwarded-host'] = rewriteHost
             if (config['trust-proxy'] && appReq.headers['x-forwarded-port']) {
                 headers['x-forwarded-port'] = appReq.headers['x-forwarded-port']
@@ -46,7 +46,7 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
                 method: appReq.method,
                 url,
                 headers,
-                data: appReq.body
+                data: appReq.method == 'GET' ? undefined : appReq.body
             })
 
             gateway.request(target.identifier, url.host, rewriteHost, appRes, gatewayReq)
