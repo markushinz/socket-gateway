@@ -46,7 +46,7 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
                 method: appReq.method,
                 url,
                 headers,
-                data: appReq.method == 'GET' ? undefined : appReq.body
+                data: appReq.method == 'GET' ? undefined : String(appReq.body)
             })
 
             gateway.request(target.identifier, url.host, rewriteHost, appRes, gatewayReq)

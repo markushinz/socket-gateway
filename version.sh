@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-minimum="5.0.0"
+minimum="5.1.0"
 
 git fetch
 tag=$(git tag | sort -V | tail -1)

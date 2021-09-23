@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client'
-import axios from 'axios'
+import { request } from './request'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
@@ -30,10 +30,14 @@ export class InnerLayer implements Closeable {
     }
 
     private async getChallenge(attempt = 0): Promise<string> {
-        const challengeURL = new URL('/challenge', this.config['outer-layer']).href
+        const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
-            const response = await axios.get(challengeURL)
-            const challenge = response.data
+            const res = await request('GET', challengeURL, {})
+            const chunks = []
+            for await (const chunk of res) {
+                chunks.push(chunk)
+            }
+            const challenge = Buffer.concat(chunks).toString()
             console.log(`Got challenge "${challenge}" from ${challengeURL}.`)
             return challenge
         } catch (error) {
@@ -79,44 +83,37 @@ export class InnerLayer implements Closeable {
             console.error(err)
         })
 
-        socket.on('request', async (req: GatewayRequest) => {
+        socket.on('request', async (gatewayReq: GatewayRequest) => {
             let _status = 500
-            const res: GatewayResponse = {
-                uuid: req.uuid,
+            const gatewayRes: GatewayResponse = {
+                uuid: gatewayReq.uuid,
                 index: 0,
                 status: _status,
                 data: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
-                const { status , data, headers } = await axios({
-                    ...req,
-                    maxRedirects: 0,
-                    responseType: 'stream',
-                    validateStatus: null,
-                    decompress: false
-                })
+                const res = await request(gatewayReq.method, new URL(gatewayReq.url), gatewayReq.headers, gatewayReq.data)
+  
+                _status = res.statusCode || _status
+                gatewayRes.status = res.statusCode
+                delete gatewayRes.data
+                gatewayRes.headers = res.headers
 
-                _status = status
-                res.status = status
-                delete res.data
-                res.headers = headers
-
-                for await (const chunk of data) {
-                    res.data = chunk
-                    socket.emit('response', res)
-                    res.index++
-                    delete res.status
-                    delete res.data
-                    delete res.headers
+                for await (const chunk of res) {
+                    gatewayRes.data = chunk
+                    socket.emit('response', gatewayRes)
+                    gatewayRes.index++
+                    delete gatewayRes.status
+                    delete gatewayRes.data
+                    delete gatewayRes.headers
                 }
-            
             } catch (error) {
                 console.error(error)
             } finally {
-                res.end = true
-                socket.emit('response', res)
-                process.stdout.write(`\x1b[0m${req.method} ${req.url} \x1b[${color(_status)}m${_status}\x1b[0m\n`)
+                gatewayRes.end = true
+                socket.emit('response', gatewayRes)
+                process.stdout.write(`\x1b[0m${gatewayReq.method} ${gatewayReq.url} \x1b[${color(_status)}m${_status}\x1b[0m\n`)
             }
         })
 
