@@ -87,7 +87,6 @@ export class InnerLayer implements Closeable {
             let _status = 500
             const gatewayRes: GatewayResponse = {
                 uuid: gatewayReq.uuid,
-                index: 0,
                 status: _status,
                 data: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
@@ -103,7 +102,6 @@ export class InnerLayer implements Closeable {
                 for await (const chunk of res) {
                     gatewayRes.data = chunk
                     socket.emit('response', gatewayRes)
-                    gatewayRes.index++
                     delete gatewayRes.status
                     delete gatewayRes.data
                     delete gatewayRes.headers

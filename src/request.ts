@@ -22,17 +22,14 @@ export async function request(method: string, url: URL, headers: Headers, data?:
             default:
                 throw new Error('Protocol must be http:, https:, ws: or wss:')
             }
-            if (data) {
-                headers['content-length'] = `${data.length}`
-            }
             const req = requestor(url, {
                 method,
                 headers
             }, resolve)
-
             req.on('error', reject)
 
             if (data) {
+                req.setHeader('content-length', data.length)
                 req.write(data)
             }
             req.end()

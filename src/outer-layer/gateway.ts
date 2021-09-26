@@ -21,7 +21,6 @@ type PendingRequest = {
     host: string,
     rewriteHost: string,
     res: Response<unknown>,
-    index: number
 }
 
 export class Gateway {
@@ -58,10 +57,6 @@ export class Gateway {
             socket.on('response', (res: GatewayResponse) => {
                 const pendingRequest = this.pendingRequests.get(res.uuid)
                 if (pendingRequest) {
-                    if (res.index !== pendingRequest.index) {
-                        throw new Error('Unexpected order of gateway responses')
-                    }
-                    pendingRequest.index++
                     if (res.status) {
                         pendingRequest.res.status(res.status)
                     }
@@ -112,8 +107,7 @@ export class Gateway {
                 uuid: gatewayReq.uuid,
                 host,
                 rewriteHost,
-                res: appRes,
-                index: 0
+                res: appRes
             }
 
             this.pendingRequests.set(pendingRequest.uuid, pendingRequest)

@@ -35,7 +35,6 @@ export class GatewayRequest {
 
 export type GatewayResponse = {
     uuid: string,
-    index: number,
     headers?: Headers,
     data?: string
     status?: number
