@@ -1,5 +1,4 @@
 import express, { Express } from 'express'
-import compression from 'compression'
 import morgan from 'morgan'
 
 import { EvaluateTool } from './tools/evaluate'
@@ -15,8 +14,6 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
     app.disable('x-powered-by')
     app.disable('etag')
     app.set('trust proxy', config['trust-proxy'])
-    app.use(compression())
-    app.use(express.text({ type: '*/*' }))
     app.use(morgan('dev'))
 
     app.use(function (appReq, appRes, next) {
@@ -46,7 +43,7 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
                 method: appReq.method,
                 url,
                 headers,
-                data: appReq.method == 'GET' ? undefined : String(appReq.body)
+                data: appReq.method == 'GET' ? undefined : appReq.body
             })
 
             gateway.request(target.identifier, url.host, rewriteHost, appRes, gatewayReq)

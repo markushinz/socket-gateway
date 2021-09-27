@@ -81,6 +81,9 @@ export class InnerLayer implements Closeable {
 
         socket.on('connect_error', err => {
             console.error(err)
+            if (this.reconnect) {
+                this.socket = this.connect()
+            }
         })
 
         socket.on('request', async (gatewayReq: GatewayRequest) => {
