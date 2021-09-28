@@ -102,7 +102,7 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appReq: IncomingMessage, appRes: ServerResponse, gwReq: GatewayRequest): void {
+    request(identifier: undefined | string | string[], host: string, rewriteHost: string, outerReq: IncomingMessage, outerRes: ServerResponse, gwReq: GatewayRequest): void {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
@@ -112,8 +112,8 @@ export class Gateway {
                 uuid: gwReq.uuid,
                 host,
                 rewriteHost,
-                req: appReq,
-                res: appRes
+                req: outerReq,
+                res: outerRes
             }
 
             this.pendingReqs.set(pendingReq.uuid, pendingReq)
@@ -121,7 +121,7 @@ export class Gateway {
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
             // This does not garantuee any fair scheduling.
-            const connectionIndex = (appReq.socket.remotePort ?? 0) % possibleConnections.length
+            const connectionIndex = (outerReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
             this.io.to(connectionID).emit('request', gwReq)
@@ -129,11 +129,11 @@ export class Gateway {
             setTimeout(() => {
                 if (this.pendingReqs.has(pendingReq.uuid)) {
                     this.pendingReqs.delete(pendingReq.uuid)
-                    sendStatus(appReq, appRes, 504)
+                    sendStatus(outerReq, outerRes, 504)
                 }
             }, this.timeout)
         } else {
-            sendStatus(appReq, appRes, 502)
+            sendStatus(outerReq, outerRes, 502)
         }
     }
 }

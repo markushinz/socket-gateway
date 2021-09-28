@@ -79,7 +79,7 @@ export class InnerLayer implements Closeable {
 
         socket.on('request', async(gwReq: GatewayRequest) => {
             let _statusCode = 500
-            const gatewayRes: GatewayResponse = {
+            const gwRes: GatewayResponse = {
                 uuid: gwReq.uuid,
                 statusCode: _statusCode,
                 statusMessage: 'Internal Server Error',
@@ -87,27 +87,27 @@ export class InnerLayer implements Closeable {
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
-                const res = await request(gwReq.method, new URL(gwReq.url), gwReq.headers, gwReq.data)
+                const innerRes = await request(gwReq.method, new URL(gwReq.url), gwReq.headers, gwReq.data)
   
-                _statusCode = res.statusCode || _statusCode
-                gatewayRes.statusCode = res.statusCode
-                gatewayRes.statusMessage = res.statusMessage
-                delete gatewayRes.data
-                gatewayRes.headers = res.headers
+                _statusCode = innerRes.statusCode || _statusCode
+                gwRes.statusCode = innerRes.statusCode
+                gwRes.statusMessage = innerRes.statusMessage
+                delete gwRes.data
+                gwRes.headers = innerRes.headers
 
-                for await (const chunk of res) {
-                    gatewayRes.data = chunk
-                    socket.emit('response', gatewayRes)
-                    delete gatewayRes.statusCode
-                    delete gatewayRes.statusMessage
-                    delete gatewayRes.data
-                    delete gatewayRes.headers
+                for await (const chunk of innerRes) {
+                    gwRes.data = chunk
+                    socket.emit('response', gwRes)
+                    delete gwRes.statusCode
+                    delete gwRes.statusMessage
+                    delete gwRes.data
+                    delete gwRes.headers
                 }
             } catch (error) {
                 console.error('request', gwReq, error)
             } finally {
-                gatewayRes.end = true
-                socket.emit('response', gatewayRes)
+                gwRes.end = true
+                socket.emit('response', gwRes)
                 process.stdout.write(`\x1b[0m${gwReq.method} ${gwReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
             }
         })
