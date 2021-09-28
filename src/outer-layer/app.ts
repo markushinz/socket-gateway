@@ -42,14 +42,14 @@ export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool:
             }
             const body = Buffer.concat(chunks).toString()
             const method = appReq.method || 'GET'
-            const gatewayReq = new GatewayRequest({
+            const gwReq = new GatewayRequest({
                 method,
                 url,
                 headers,
                 data: method == 'GET' ? undefined : body
             })
 
-            gateway.request(target.identifier, url.host, rewriteHost, appReq, appRes, gatewayReq)
+            gateway.request(target.identifier, url.host, rewriteHost, appReq, appRes, gwReq)
         } else {
             sendStatus(appReq, appRes, 403, `Forbidden: ${appReq.method} ${url} is not allowed by policy.`)
         }

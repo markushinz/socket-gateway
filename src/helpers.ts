@@ -12,7 +12,8 @@ export function color(status: number): number {
 }
 
 export function log(req: IncomingMessage, res: ServerResponse): void {
-    process.stdout.write(`\x1b[0m${req.method} ${req.url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
+    const url = new URL(req.url || '', `http://${req.headers.host}`)
+    process.stdout.write(`\x1b[0m${req.method} ${url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
 }
 
 export function sendStatus(req: IncomingMessage, res: ServerResponse, status: number, body?: string | string[]): void {

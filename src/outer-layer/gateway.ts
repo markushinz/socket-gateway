@@ -26,7 +26,7 @@ type PendingRequest = {
 
 export class Gateway {
     private io: Server
-    private pendingRequests: Map<string, PendingRequest> = new Map()
+    private pendingReqs: Map<string, PendingRequest> = new Map()
     private connectionsMap: Map<string, Connection> = new Map()
 
     constructor(public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
@@ -56,7 +56,7 @@ export class Gateway {
             console.log(`Inner layer ${socket.id} connected.`)
 
             socket.on('response', (gwRes: GatewayResponse) => {
-                const pendingReq = this.pendingRequests.get(gwRes.uuid)
+                const pendingReq = this.pendingReqs.get(gwRes.uuid)
                 if (pendingReq) {
                     if (gwRes.statusCode) {
                         pendingReq.res.statusCode = gwRes.statusCode
@@ -73,7 +73,7 @@ export class Gateway {
                         pendingReq.res.write(gwRes.data)
                     }
                     if (gwRes.end) {
-                        this.pendingRequests.delete(gwRes.uuid)
+                        this.pendingReqs.delete(gwRes.uuid)
                         pendingReq.res.end()
                         log(pendingReq.req, pendingReq.res)
                     }
@@ -84,10 +84,10 @@ export class Gateway {
                 this.connectionsMap.delete(socket.id)
 
                 if (this.connectionsMap.size == 0) {
-                    this.pendingRequests.forEach(pendingReq => {
+                    this.pendingReqs.forEach(pendingReq => {
                         sendStatus(pendingReq.req, pendingReq.res, 502)
                     })
-                    this.pendingRequests.clear()
+                    this.pendingReqs.clear()
                 }
                 console.log(`Inner layer ${socket.id} disconnected.`)
             })
@@ -102,21 +102,21 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appReq: IncomingMessage, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
+    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appReq: IncomingMessage, appRes: ServerResponse, gwReq: GatewayRequest): void {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
         
         if (possibleConnections.length > 0) {
             const pendingReq: PendingRequest = {
-                uuid: gatewayReq.uuid,
+                uuid: gwReq.uuid,
                 host,
                 rewriteHost,
                 req: appReq,
                 res: appRes
             }
 
-            this.pendingRequests.set(pendingReq.uuid, pendingReq)
+            this.pendingReqs.set(pendingReq.uuid, pendingReq)
 
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
@@ -124,11 +124,11 @@ export class Gateway {
             const connectionIndex = (appReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
-            this.io.to(connectionID).emit('request', gatewayReq)
+            this.io.to(connectionID).emit('request', gwReq)
 
             setTimeout(() => {
-                if (this.pendingRequests.has(pendingReq.uuid)) {
-                    this.pendingRequests.delete(pendingReq.uuid)
+                if (this.pendingReqs.has(pendingReq.uuid)) {
+                    this.pendingReqs.delete(pendingReq.uuid)
                     sendStatus(appReq, appRes, 504)
                 }
             }, this.timeout)

@@ -77,17 +77,17 @@ export class InnerLayer implements Closeable {
             }
         })
 
-        socket.on('request', async(gatewayReq: GatewayRequest) => {
+        socket.on('request', async(gwReq: GatewayRequest) => {
             let _statusCode = 500
             const gatewayRes: GatewayResponse = {
-                uuid: gatewayReq.uuid,
+                uuid: gwReq.uuid,
                 statusCode: _statusCode,
                 statusMessage: 'Internal Server Error',
                 data: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
-                const res = await request(gatewayReq.method, new URL(gatewayReq.url), gatewayReq.headers, gatewayReq.data)
+                const res = await request(gwReq.method, new URL(gwReq.url), gwReq.headers, gwReq.data)
   
                 _statusCode = res.statusCode || _statusCode
                 gatewayRes.statusCode = res.statusCode
@@ -104,11 +104,11 @@ export class InnerLayer implements Closeable {
                     delete gatewayRes.headers
                 }
             } catch (error) {
-                console.error('request', gatewayReq, error)
+                console.error('request', gwReq, error)
             } finally {
                 gatewayRes.end = true
                 socket.emit('response', gatewayRes)
-                process.stdout.write(`\x1b[0m${gatewayReq.method} ${gatewayReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
+                process.stdout.write(`\x1b[0m${gwReq.method} ${gwReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
             }
         })
 
