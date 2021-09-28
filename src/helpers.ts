@@ -1,6 +1,10 @@
 import { ServerResponse, STATUS_CODES } from 'http'
 import { Headers } from './models'
 
+export function log(res: ServerResponse): void {
+    process.stdout.write(`\x1b[0m${res.req.method} ${res.req.url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
+}
+
 export function sendStatus(res: ServerResponse, status: number, body?: string | string[]): void {
     res.statusCode = status
     const statusMessage = STATUS_CODES[status]
@@ -16,11 +20,11 @@ export function sendStatus(res: ServerResponse, status: number, body?: string | 
     } else if (statusMessage) {
         res.write(statusMessage)
     }
-    process.stdout.write(`\x1b[0m${res.req.method} ${res.req.url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
     res.end()
+    log(res)
 }
 
-export function set(res: ServerResponse, headers: Headers): void {
+export function setHeaders(res: ServerResponse, headers: Headers): void {
     for (const [key, value] of Object.entries(headers)) {
         if (value) {
             res.setHeader(key,value)
