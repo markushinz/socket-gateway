@@ -49,9 +49,9 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
                 data: method == 'GET' ? undefined : body
             })
 
-            gateway.request(target.identifier, url.host, rewriteHost, appRes, gatewayReq)
+            gateway.request(target.identifier, url.host, rewriteHost, appReq, appRes, gatewayReq)
         } else {
-            sendStatus(appRes, 403, `Forbidden: ${appReq.method} ${url} is not allowed by policy.`)
+            sendStatus(appReq, appRes, 403, `Forbidden: ${appReq.method} ${url} is not allowed by policy.`)
         }
     }
 }

@@ -273,9 +273,9 @@ const tests: Test[] = [
 
 tests.forEach(function (tt) {
     test(tt.name, async function () {
-        const testServer = createServer(async function (_req, res) {
+        const testServer = createServer(async function (req, res) {
             await new Promise(r => setTimeout(r, tt.args.timeout || 0))
-            sendStatus(res, tt.args.statusCode || 200, tt.args.body || 'OK')
+            sendStatus(req, res, tt.args.statusCode || 200, tt.args.body || 'OK')
         })
         testServer.listen(config.serverPort)
         await new Promise(r => setTimeout(r, 100))

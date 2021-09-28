@@ -94,19 +94,19 @@ export function newAdminRouter (config: OuterLayerConfig, gateway: Gateway, eval
                 const url = new URL(req.url || '/', `http://${req.headers.host}`)
                 if (['/admin', '/admin/'].includes(url.pathname) && req.method === 'GET') {
                     res.setHeader('content-type', 'text/html; charset=utf-8')
-                    return sendStatus(res, 200, html(config, gateway, evaluateTool))
+                    return sendStatus(req, res, 200, html(config, gateway, evaluateTool))
                 }
                 if (url.pathname === '/admin/stylesheet.css' && req.method === 'GET') {
                     res.setHeader('content-type', 'text/css; charset=utf-8')
-                    return sendStatus(res, 200, stylesheet)
+                    return sendStatus(req, res, 200, stylesheet)
                 }
-                return sendStatus(res, 404)
+                return sendStatus(req, res, 404)
             } else {
                 res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
-                sendStatus(res, 401)
+                sendStatus(req, res, 401)
             }
         } else {
-            sendStatus(res, 404)
+            sendStatus(req, res, 404)
         }
     }
 }

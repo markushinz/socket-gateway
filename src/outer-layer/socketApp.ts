@@ -20,13 +20,13 @@ export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evalua
 
             if (['/challenge', '/challenge/'].includes(url.pathname) && req.method === 'GET') {
                 const challenge = await gateway.challengeTool.createChallenge()
-                return sendStatus(res, 200, challenge)
+                return sendStatus(req, res, 200, challenge)
             }
 
             return defaultRouter(req, res)
         } catch (err) {
             console.error(err)
-            sendStatus(res, 500)
+            sendStatus(req, res, 500)
         }
     }
 } 

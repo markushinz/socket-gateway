@@ -1,4 +1,4 @@
-import { Server as HTTPServer, ServerResponse } from 'http'
+import { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http'
 
 import { Server } from 'socket.io'
 
@@ -20,6 +20,7 @@ type PendingRequest = {
     uuid: string;
     host: string;
     rewriteHost: string;
+    req: IncomingMessage;
     res: ServerResponse;
 }
 
@@ -74,7 +75,7 @@ export class Gateway {
                     if (res.end) {
                         this.pendingRequests.delete(res.uuid)
                         pendingRequest.res.end()
-                        log(pendingRequest.res)
+                        log(pendingRequest.req, pendingRequest.res)
                     }
                 }
             })
@@ -84,7 +85,7 @@ export class Gateway {
 
                 if (this.connectionsMap.size == 0) {
                     this.pendingRequests.forEach(pendingRequest => {
-                        sendStatus(pendingRequest.res, 502)
+                        sendStatus(pendingRequest.req, pendingRequest.res, 502)
                     })
                     this.pendingRequests.clear()
                 }
@@ -101,7 +102,7 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request (identifier: undefined | string | string[], host: string, rewriteHost: string, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
+    request (identifier: undefined | string | string[], host: string, rewriteHost: string, appReq: IncomingMessage, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
@@ -111,6 +112,7 @@ export class Gateway {
                 uuid: gatewayReq.uuid,
                 host,
                 rewriteHost,
+                req: appReq,
                 res: appRes
             }
 
@@ -119,7 +121,7 @@ export class Gateway {
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
             // This does not garantuee any fair scheduling.
-            const connectionIndex = (appRes.req?.socket.remotePort ?? 0) % possibleConnections.length
+            const connectionIndex = (appReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
             this.io.to(connectionID).emit('request', gatewayReq)
@@ -127,11 +129,11 @@ export class Gateway {
             setTimeout(() => {
                 if (this.pendingRequests.has(pendingRequest.uuid)) {
                     this.pendingRequests.delete(pendingRequest.uuid)
-                    sendStatus(appRes, 504)
+                    sendStatus(appReq, appRes, 504)
                 }
             }, this.timeout)
         } else {
-            sendStatus(appRes, 502)
+            sendStatus(appReq, appRes, 502)
         }
     }
 }
