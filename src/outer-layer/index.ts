@@ -11,7 +11,7 @@ import { RewriteTool } from './tools/rewrite'
 
 export type OuterLayerConfig = {
     'admin-password'?: string;
-    'trust-proxy': string;
+    'trust-proxy': (addr: string, i: number) => boolean;
     timeout: number;
     validity: number;
     'app-port': number;

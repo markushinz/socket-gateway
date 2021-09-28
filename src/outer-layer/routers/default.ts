@@ -5,7 +5,7 @@ import { Gateway } from '../gateway'
 export function newDefaultRouter(gateway: Gateway): RequestListener {
     return function(req, res) {
         if (req.method === 'GET') {
-            const url = new URL(req.url || '', `http://${req.headers.host}`)
+            const url = new URL(req.url || '/', `http://${req.headers.host}`)
             if (['/healthz', '/healthz/'].includes(url.pathname)) {
                 return sendStatus(res, 200)
             }

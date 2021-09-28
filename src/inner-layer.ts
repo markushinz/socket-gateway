@@ -24,6 +24,9 @@ export class InnerLayer implements Closeable {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
             const res = await request('GET', challengeURL, {})
+            if (res.statusCode !== 200) {
+                throw new Error(`Unexpected status ${res.statusCode} ${res.statusMessage}`)
+            }
             const chunks = []
             for await (const chunk of res) {
                 chunks.push(chunk)

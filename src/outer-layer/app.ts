@@ -1,5 +1,7 @@
 import { RequestListener } from 'http'
 
+import { all } from 'proxy-addr'
+
 import { EvaluateTool } from './tools/evaluate'
 import { RewriteTool } from './tools/rewrite'
 import { Gateway } from './gateway'
@@ -10,42 +12,41 @@ import { OuterLayerConfig } from '.'
 import { sendStatus } from '../helpers'
 
 export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool, rewriteTool: RewriteTool): RequestListener {
-    const next = newDefaultRouter(gateway)
+    const defaultRouter = newDefaultRouter(gateway)
     return async function(appReq, appRes) {
-        const appURL = new URL(appReq.url || '', `http://${appReq.headers.host}`)
+        const appURL = new URL(appReq.url || '/', `http://${appReq.headers.host}`)
         const target = evaluateTool.getTarget(appURL.hostname)
         if (!target) {
-            return next(appReq,appRes)
+            return defaultRouter(appReq,appRes)
         }
         const protocol = target.protocol || 'https'
         const port = target.port || (protocol === 'http' ? 80 : 443)
         const url = new URL(`${protocol}://${target.hostname}:${port}${appReq.url}`)
         const policy = target.policy || '*'
 
-        if (evaluateTool.evaluatePolicy(policy, appURL.pathname, appReq.method || '')) {
+        if (evaluateTool.evaluatePolicy(policy, appURL.pathname, appReq.method || 'GET')) {
             const rewriteHost = appURL.host
             const headers = rewriteTool.sanitizeHeaders(appReq.headers as Headers)
-            // headers['x-real-ip'] = appReq.ip
-            // headers['x-forwarded-for'] = [...appReq.ips, appReq.socket.remoteAddress].join(', ')
-            // headers['x-forwarded-host'] = rewriteHost
-            // if (config['trust-proxy'] && appReq.headers['x-forwarded-port']) {
-            //     headers['x-forwarded-port'] = appReq.headers['x-forwarded-port']
-            // } else if (!config['trust-proxy']) {
-            //     headers['x-forwarded-port'] = app.get('port')
-            // }
-            // headers['x-forwarded-proto'] = appReq.protocol
+
+            const realIP = appReq.socket.remoteAddress
+            const trustProxy = config['trust-proxy'](realIP || '', 0)
+            headers['x-real-ip'] = realIP
+            headers['x-forwarded-for'] = all(appReq, config['trust-proxy']).reverse().join(', ')
+            headers['x-forwarded-host'] = rewriteHost
+            headers['x-forwarded-port'] = trustProxy ? appReq.headers['x-forwarded-port'] || appReq.socket.localPort : appReq.socket.localPort
+            headers['x-forwarded-proto'] = trustProxy ? appReq.headers['x-forwarded-proto'] || 'http' : 'http'
 
             const chunks = []
             for await (const chunk of appReq) {
                 chunks.push(chunk)
             }
             const body = Buffer.concat(chunks).toString()
-
+            const method = appReq.method || 'GET'
             const gatewayReq = new GatewayRequest({
-                method: appReq.method || '',
+                method,
                 url,
                 headers,
-                data: appReq.method == 'GET' ? undefined : body
+                data: method == 'GET' ? undefined : body
             })
 
             gateway.request(target.identifier, url.host, rewriteHost, appRes, gatewayReq)
@@ -53,6 +54,4 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
             sendStatus(appRes, 403, `Forbidden: ${appReq.method} ${url} is not allowed by policy.`)
         }
     }
-    // app.set('trust proxy', config['trust-proxy'])
-    // app.use(morgan('dev'))
 }

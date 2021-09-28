@@ -1,4 +1,5 @@
 import yargs from 'yargs'
+import { compile } from 'proxy-addr'
 
 import { hostname } from 'os'
 import { readFileSync, writeFileSync } from 'fs'
@@ -22,6 +23,10 @@ function coerceOuterLayer(url: string, insecure: boolean): URL {
 function coerceFileExists(file: string) {
     readFileSync(file)
     return file
+}
+
+function coerceTrustProxy(values: string) {
+    return compile(values ? values.split(/ *, */) : [])
 }
 
 export function cli (args: string[]): Promise<Closeable> {
@@ -58,7 +63,8 @@ export function cli (args: string[]): Promise<Closeable> {
                         type: 'string'
                     })
                     .option('trust-proxy', {
-                        default: 'loopback, linklocal, uniquelocal'
+                        default: 'loopback, linklocal, uniquelocal',
+                        coerce: coerceTrustProxy
                     })
                     .option('timeout', {
                         default: 180000
