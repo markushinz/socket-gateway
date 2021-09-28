@@ -7,6 +7,7 @@ import { request } from './request'
 
 import { cli } from './cli'
 import { Closeable, Target, Headers } from './models'
+import { sendStatus } from './helpers'
 
 const directory = mkdtempSync(join(tmpdir(), 'socket-gateway-'))
 const config = {
@@ -274,11 +275,7 @@ tests.forEach(function (tt) {
     test(tt.name, async function () {
         const testServer = createServer(async function (_req, res) {
             await new Promise(r => setTimeout(r, tt.args.timeout || 0))
-            res.setHeader('content-type', 'text/plain; charset=utf-8')
-            res.statusCode = tt.args.statusCode || 200
-            const body = [tt.args.body || 'OK'].flat()
-            body.forEach(data => res.write(data))
-            res.end()
+            sendStatus(res, tt.args.statusCode || 200, tt.args.body || 'OK')
         })
         testServer.listen(config.serverPort)
         await new Promise(r => setTimeout(r, 100))

@@ -3,21 +3,12 @@ import { request } from './request'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
+import { color } from './helpers'
 
 type InnerLayerConfig = {
     'private-key': string | Buffer,
     'outer-layer': URL,
     identifier: string,
-}
-
-function color(status: number) {
-    switch(true){
-    case (status >= 500): return 31
-    case (status >= 400): return 33
-    case (status >= 300): return 36
-    case (status >= 200): return 32
-    default: return 0
-    }
 }
 
 export class InnerLayer implements Closeable {
@@ -33,6 +24,9 @@ export class InnerLayer implements Closeable {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
             const res = await request('GET', challengeURL, {})
+            if (res.statusCode !== 200) {
+                throw new Error(`Unexpected status ${res.statusCode} ${res.statusMessage}`)
+            }
             const chunks = []
             for await (const chunk of res) {
                 chunks.push(chunk)
@@ -40,11 +34,8 @@ export class InnerLayer implements Closeable {
             const challenge = Buffer.concat(chunks).toString()
             console.log(`Got challenge "${challenge}" from ${challengeURL}.`)
             return challenge
-        } catch (error) {
-            console.error(`Could not get challenge from ${challengeURL}. Retrying in 1 second...`)
-            if (attempt > 5) {
-                console.error(error)
-            }
+        } catch (err) {
+            console.error(`Could not get challenge from ${challengeURL}. Retrying in 1 second...`, err)
             await new Promise(resolve => setTimeout(resolve, 1000))
             return this.getChallenge(attempt ? attempt + 1 : 1)
         }
@@ -80,41 +71,44 @@ export class InnerLayer implements Closeable {
         })
 
         socket.on('connect_error', err => {
-            console.error(err)
+            console.error('connect_error', err)
             if (this.reconnect) {
                 this.socket = this.connect()
             }
         })
 
         socket.on('request', async (gatewayReq: GatewayRequest) => {
-            let _status = 500
+            let _statusCode = 500
             const gatewayRes: GatewayResponse = {
                 uuid: gatewayReq.uuid,
-                status: _status,
+                statusCode: _statusCode,
+                statusMessage: 'Internal Server Error',
                 data: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
                 const res = await request(gatewayReq.method, new URL(gatewayReq.url), gatewayReq.headers, gatewayReq.data)
   
-                _status = res.statusCode || _status
-                gatewayRes.status = res.statusCode
+                _statusCode = res.statusCode || _statusCode
+                gatewayRes.statusCode = res.statusCode
+                gatewayRes.statusMessage = res.statusMessage
                 delete gatewayRes.data
                 gatewayRes.headers = res.headers
 
                 for await (const chunk of res) {
                     gatewayRes.data = chunk
                     socket.emit('response', gatewayRes)
-                    delete gatewayRes.status
+                    delete gatewayRes.statusCode
+                    delete gatewayRes.statusMessage
                     delete gatewayRes.data
                     delete gatewayRes.headers
                 }
             } catch (error) {
-                console.error(error)
+                console.error('request', gatewayReq, error)
             } finally {
                 gatewayRes.end = true
                 socket.emit('response', gatewayRes)
-                process.stdout.write(`\x1b[0m${gatewayReq.method} ${gatewayReq.url} \x1b[${color(_status)}m${_status}\x1b[0m\n`)
+                process.stdout.write(`\x1b[0m${gatewayReq.method} ${gatewayReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
             }
         })
 

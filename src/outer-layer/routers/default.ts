@@ -1,25 +1,18 @@
-import { Router, ErrorRequestHandler } from 'express'
+import { RequestListener } from 'http'
+import { sendStatus } from '../../helpers'
 import { Gateway } from '../gateway'
 
-export function newDefaultRouter(gateway: Gateway): Router {
-    const router = Router()
-
-    router.get('/healthz', function (_req, res) {
-        res.sendStatus(200)
-    })
-
-    router.get('/readyz', function (_req, res) {
-        res.sendStatus(gateway.connections.length > 0 ? 200: 502)
-    })
-    
-    router.use(function (_req, res) {
-        res.sendStatus(404)
-    })
-    
-    router.use(function (err, _req, res) {
-        console.error(err)
-        res.sendStatus(500)
-    } as ErrorRequestHandler)
-
-    return router
+export function newDefaultRouter(gateway: Gateway): RequestListener {
+    return function(req, res) {
+        if (req.method === 'GET') {
+            const url = new URL(req.url || '/', `http://${req.headers.host}`)
+            if (['/healthz', '/healthz/'].includes(url.pathname)) {
+                return sendStatus(res, 200)
+            }
+            if (['/readyz', '/readyz/'].includes(url.pathname)) {
+                return sendStatus(res, gateway.connections.length > 0 ? 200: 502) 
+            }
+        }
+        return sendStatus(res, 404)
+    }
 }
