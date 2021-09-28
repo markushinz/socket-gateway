@@ -9,7 +9,6 @@
     },
     "bin": "dist/socket-gateway.js",
     "dependencies": {
-        "express": "^4.17.1",
         "js-yaml": "^4.0.0",
         "jsonwebtoken": "^8.5.1",
         "morgan": "^1.10.0",
@@ -20,7 +19,6 @@
         "yargs": "^17.2.1"
     },
     "devDependencies": {
-        "@types/express": "^4.17.13",
         "@types/jest": "^27.0.2",
         "@types/js-yaml": "^4.0.3",
         "@types/jsonwebtoken": "^8.5.5",

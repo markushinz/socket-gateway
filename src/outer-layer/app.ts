@@ -10,9 +10,7 @@ import { OuterLayerConfig } from '.'
 import { sendStatus } from '../helpers'
 
 export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool, rewriteTool: RewriteTool): RequestListener {
-    const next: RequestListener = function(_appReq, appRes) {
-        sendStatus(appRes, 404)
-    }
+    const next = newDefaultRouter(gateway)
     return async function(appReq, appRes) {
         const appURL = new URL(appReq.url || '', `http://${appReq.headers.host}`)
         const target = evaluateTool.getTarget(appURL.hostname)
@@ -55,16 +53,6 @@ export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool
             sendStatus(appRes, 403, `Forbidden: ${appReq.method} ${url} is not allowed by policy.`)
         }
     }
-    // app.disable('x-powered-by')
-    // app.disable('etag')
     // app.set('trust proxy', config['trust-proxy'])
     // app.use(morgan('dev'))
-
-    // app.use(function (appReq, appRes, next) {
-
-    // })
-
-    // app.use(newDefaultRouter(gateway))
-
-    // return app
 }

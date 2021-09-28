@@ -1,63 +1,38 @@
-import { Router } from 'express'
+import { RequestListener } from 'http'
+
 import { OuterLayerConfig } from '..'
+import { sendStatus } from '../../helpers'
 import { Gateway } from '../gateway'
 import { EvaluateTool } from '../tools/evaluate'
 
-export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): Router {
-    const router = Router()
-
-    const adminCredentialsParsed = (() => {
-        if (config['admin-password']) {
-            return Buffer.from(`admin:${config['admin-password']}`).toString('base64')
-        } else {
-            return undefined
-        }
-    })()
+function html(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool) {
+    return `<!DOCTYPE html>
+    <html lang="en">
     
-    router.use(function (req, res, next) {
-        if (adminCredentialsParsed) {
-            if (req.headers.authorization === `Basic ${adminCredentialsParsed}`) {
-                next()
-            } else {
-                res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
-                res.sendStatus(401)
-            }
-        } else {
-            res.sendStatus(404)
-        }
-    })
+    <head>
+        <meta charset="utf-8">
+        <title>Socket Gateway</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="/admin/stylesheet.css">
+    </head>
+    
+    <body>
+        <div id="container">
+            <h1>Socket Gateway</h1>
+            <h3>Inner Layers</h3>
+            <pre>${JSON.stringify(gateway.connections, null, 4)}</pre>
+            <h3>Inner Layer Public Key</h3>
+            <pre>${config['public-key']}</pre>
+            <h3>Targets</h3>
+            <pre>${JSON.stringify(evaluateTool.targetsParsed, null, 4)}</pre>
+        </div>
+    </body>
+    
+    </html>
+    `
+}
 
-    router.get('/', function (req, res) {
-        res.setHeader('content-type', 'text/html; charset=utf-8')
-        res.send(`<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>Socket Gateway</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="/admin/stylesheet.css">
-</head>
-
-<body>
-    <div id="container">
-        <h1>Socket Gateway</h1>
-        <h3>Inner Layers</h3>
-        <pre>${JSON.stringify(gateway.connections, null, 4)}</pre>
-        <h3>Inner Layer Public Key</h3>
-        <pre>${config['public-key']}</pre>
-        <h3>Targets</h3>
-        <pre>${JSON.stringify(evaluateTool.targetsParsed, null, 4)}</pre>
-    </div>
-</body>
-
-</html>
-`)
-    })
-
-    router.get('/stylesheet.css', function (req, res) {
-        res.setHeader('content-type', 'text/css; charset=utf-8')
-        res.send(`html {
+const stylesheet = `html {
     font-family: monospace, monospace;
     font-size:0.9em;
     margin: 15px;
@@ -102,8 +77,35 @@ pre {
         max-width: 1140px;
     }
 }
-`)
-    })
+`
 
-    return router
+export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): RequestListener {
+    const adminCredentialsParsed = (() => {
+        if (config['admin-password']) {
+            return Buffer.from(`admin:${config['admin-password']}`).toString('base64')
+        } else {
+            return undefined
+        }
+    })()
+    
+    return function(req, res) {
+        if (adminCredentialsParsed) {
+            if (req.headers.authorization === `Basic ${adminCredentialsParsed}`) {
+                const url = new URL(req.url || '', `http://${req.headers.host}`)
+                if (['/admin', '/admin/'].includes(url.pathname) && req.method === 'GET') {
+                    res.setHeader('content-type', 'text/html; charset=utf-8')
+                    return sendStatus(res, 200, html(config, gateway, evaluateTool))
+                }
+                if (url.pathname === '/stylesheet.css' && req.method === 'GET') {
+                    return sendStatus(res, 200, stylesheet)
+                }
+                return sendStatus(res, 404)
+            } else {
+                res.setHeader('www-authenticate', 'Basic realm="Socket Gateway"')
+                sendStatus(res, 401)
+            }
+        } else {
+            sendStatus(res, 404)
+        }
+    }
 }
