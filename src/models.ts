@@ -1,3 +1,4 @@
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
 import { v1 as uuid } from 'uuid'
 
 export type Policy = '*' | Record<string, '*' | string[]>
@@ -10,7 +11,7 @@ export type Target = {
     identifier? : string | string[]
 }
 
-export type Headers = Record<string, string | string[] | undefined>
+export type Headers = IncomingHttpHeaders | OutgoingHttpHeaders
 
 export class GatewayRequest {
     uuid: string
@@ -37,7 +38,8 @@ export type GatewayResponse = {
     uuid: string,
     headers?: Headers,
     data?: string
-    status?: number
+    statusCode?: number
+    statusMessage?: string
     end?: boolean
 }
 

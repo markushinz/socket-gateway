@@ -1,12 +1,12 @@
-import { Server as HTTPServer } from 'http'
+import { Server as HTTPServer, ServerResponse } from 'http'
 
-import { Response } from 'express'
 import { Server } from 'socket.io'
 
 import { ChallengeTool } from './tools/challenge'
 import { RewriteTool } from './tools/rewrite'
 
 import { Headers, GatewayResponse, GatewayRequest, JWTPayload } from '../models'
+import { sendStatus, set } from '../helpers'
 
 export type Connection = {
     id: string,
@@ -20,7 +20,7 @@ type PendingRequest = {
     uuid: string,
     host: string,
     rewriteHost: string,
-    res: Response<unknown>,
+    res: ServerResponse,
 }
 
 export class Gateway {
@@ -57,13 +57,16 @@ export class Gateway {
             socket.on('response', (res: GatewayResponse) => {
                 const pendingRequest = this.pendingRequests.get(res.uuid)
                 if (pendingRequest) {
-                    if (res.status) {
-                        pendingRequest.res.status(res.status)
+                    if (res.statusCode) {
+                        pendingRequest.res.statusCode = res.statusCode
+                    }
+                    if (res.statusMessage) {
+                        pendingRequest.res.statusMessage = res.statusMessage
                     }
                     if (res.headers) {
                         res.headers = rewriteTool.sanitizeHeaders(res.headers)
                         res.headers = rewriteTool.rewriteHeaders(res.headers, pendingRequest.host, pendingRequest.rewriteHost)
-                        pendingRequest.res.set(res.headers)
+                        set(pendingRequest.res, res.headers)
                     }
                     if (res.data) {
                         pendingRequest.res.write(res.data)
@@ -80,7 +83,7 @@ export class Gateway {
 
                 if (this.connectionsMap.size == 0) {
                     this.pendingRequests.forEach(pendingRequest => {
-                        pendingRequest.res.sendStatus(502)
+                        sendStatus(pendingRequest.res, 502)
                     })
                     this.pendingRequests.clear()
                 }
@@ -97,7 +100,7 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appRes: Response<unknown>, gatewayReq: GatewayRequest): void {
+    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
@@ -123,11 +126,11 @@ export class Gateway {
             setTimeout(() => {
                 if (this.pendingRequests.has(pendingRequest.uuid)) {
                     this.pendingRequests.delete(pendingRequest.uuid)
-                    appRes.sendStatus(504)
+                    sendStatus(appRes, 504)
                 }
             }, this.timeout)
         } else {
-            appRes.sendStatus(502)
+            sendStatus(appRes, 502)
         }
     }
 }

@@ -33,11 +33,8 @@ export class EvaluateTool {
     }
 
     getTarget(host: string): Target | undefined {
-        try {
-            return this.targetsParsed[host]
-        } catch (error) {
-            return undefined
-        }
+        const casedHost = Object.keys(this.targetsParsed).find(key => key.toLowerCase() === host)
+        return casedHost ? this.targetsParsed[casedHost] : undefined
     }
 
     evaluatePolicy(policy: Policy, testPath: string, method: string): boolean {
