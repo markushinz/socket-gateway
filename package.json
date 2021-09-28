@@ -11,7 +11,6 @@
     "dependencies": {
         "js-yaml": "^4.0.0",
         "jsonwebtoken": "^8.5.1",
-        "morgan": "^1.10.0",
         "node-forge": "^0.10.0",
         "socket.io": "^4.2.0",
         "socket.io-client": "^4.2.0",
@@ -22,7 +21,6 @@
         "@types/jest": "^27.0.2",
         "@types/js-yaml": "^4.0.3",
         "@types/jsonwebtoken": "^8.5.5",
-        "@types/morgan": "^1.9.3",
         "@types/node-forge": "^0.10.5",
         "@types/uuid": "^8.3.1",
         "@typescript-eslint/eslint-plugin": "^4.32.0",
