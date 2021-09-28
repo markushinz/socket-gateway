@@ -25,7 +25,7 @@ export class OuterLayer implements Closeable {
     appServer: Server
     socketServer: Server
 
-    constructor(config: OuterLayerConfig) {
+    constructor (config: OuterLayerConfig) {
         const challegeTool = new ChallengeTool(config.validity, config['public-key'])
         const evaluateTool = new EvaluateTool(config.targets)
         const rewriteTool = new RewriteTool(config['remove-csps'])
@@ -47,7 +47,7 @@ export class OuterLayer implements Closeable {
         console.log(`Awaiting connections from inner layer(s) on port ${config['socket-port']}...`)
     }
 
-    close(): void {
+    close (): void {
         this.appServer.close()
         this.socketServer.close()
     }

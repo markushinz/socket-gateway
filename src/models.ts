@@ -4,11 +4,11 @@ import { v1 as uuid } from 'uuid'
 export type Policy = '*' | Record<string, '*' | string[]>
 
 export type Target = {
-    protocol?: 'http' | 'https',
-    hostname: string,
-    port?: number,
-    policy?: Policy
-    identifier? : string | string[]
+    protocol?: 'http' | 'https';
+    hostname: string;
+    port?: number;
+    policy?: Policy;
+    identifier?: string | string[];
 }
 
 export type Headers = IncomingHttpHeaders | OutgoingHttpHeaders
@@ -20,11 +20,11 @@ export class GatewayRequest {
     headers: Headers
     data: string | undefined
 
-    constructor(raw: {
-        method: string,
-        url: URL,
-        headers: Headers
-        data: string | undefined}
+    constructor (raw: {
+        method: string;
+        url: URL;
+        headers: Headers;
+        data: string | undefined; }
     ) {
         this.uuid = uuid()
         this.method = raw.method
@@ -35,19 +35,19 @@ export class GatewayRequest {
 }
 
 export type GatewayResponse = {
-    uuid: string,
-    headers?: Headers,
-    data?: string
-    statusCode?: number
-    statusMessage?: string
-    end?: boolean
+    uuid: string;
+    headers?: Headers;
+    data?: string;
+    statusCode?: number;
+    statusMessage?: string;
+    end?: boolean;
 }
 
 export type JWTPayload = {
-    challenge: string,
-    identifier: string
+    challenge: string;
+    identifier: string;
 }
 
 export interface Closeable {
-    close: () => void
+    close: () => void;
 }

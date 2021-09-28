@@ -16,12 +16,12 @@ const config = {
     serverPort: 4002,
     timeout: '500',
     adminPassword: 'admin',
-    privateKey: join(directory,'innerLayer.key'),
-    publicKey: join(directory,'innerLayer.crt'),
-    targets: join(directory,'targets.yaml')
+    privateKey: join(directory, 'innerLayer.key'),
+    publicKey: join(directory, 'innerLayer.crt'),
+    targets: join(directory, 'targets.yaml')
 }
 const adminCredentials = Buffer.from(`admin:${config.adminPassword}`).toString('base64')
-writeFileSync(join(directory,'targets.yaml'), JSON.stringify({
+writeFileSync(join(directory, 'targets.yaml'), JSON.stringify({
     targets: {
         withoutPolicy: {
             protocol: 'http',
@@ -35,7 +35,7 @@ writeFileSync(join(directory,'targets.yaml'), JSON.stringify({
             policy: {
                 '/allowed': '*',
                 '^/regexAllowed': '*'
-            },
+            }
         },
         error: {
             hostname: 'error'
@@ -51,12 +51,12 @@ writeFileSync(join(directory,'targets.yaml'), JSON.stringify({
             hostname: 'localhost',
             port: config.serverPort,
             identifier: 'unknown'
-        },
-    } as Record<string,Target>
+        }
+    } as Record<string, Target>
 }))
 
 const closeables: Closeable[] = []
-beforeAll(async function() {
+beforeAll(async function () {
     closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--public-key', config.publicKey]))
     closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--private-key', config.privateKey, '--identifier', 'identifier']))
     closeables.push(await cli(['outer-layer', '--app-port', config.appPort, '--socket-port', config.socketPort, '--timeout', config.timeout, '--targets', config.targets, '--public-key', config.publicKey, '--admin-password', config.adminPassword]))
@@ -68,22 +68,22 @@ afterAll(async function () {
 })
 
 type Test = {
-    name: string,
+    name: string;
     args: {
         req: {
-            method?: string,
-            port?: number,
-            host: string
-            path?: string,
-            headers?: Headers
-        },
-        timeout?: number,
-        statusCode?: number,
-        body?: string | string[],
-    },
-    wantStatusCode?: number
-    wantBody?: string
-    wantBodyToContain?: boolean
+            method?: string;
+            port?: number;
+            host: string;
+            path?: string;
+            headers?: Headers;
+        };
+        timeout?: number;
+        statusCode?: number;
+        body?: string | string[];
+    };
+    wantStatusCode?: number;
+    wantBody?: string;
+    wantBodyToContain?: boolean;
 }
 
 const tests: Test[] = [
@@ -91,7 +91,7 @@ const tests: Test[] = [
         name: 'withoutPolicy - allowed',
         args: {
             req: {
-                host: 'withoutPolicy',
+                host: 'withoutPolicy'
             },
             body: 'OK'
         }
@@ -100,7 +100,7 @@ const tests: Test[] = [
         name: 'withoutPolicy - allowed with chuncked body',
         args: {
             req: {
-                host: 'withoutPolicy',
+                host: 'withoutPolicy'
             },
             body: ['O', 'K']
         }
@@ -111,7 +111,7 @@ const tests: Test[] = [
             req: {
                 host: 'withoutPolicy'
             },
-            timeout: +config.timeout + 100,
+            timeout: +config.timeout + 100
         },
         wantStatusCode: 504,
         wantBody: 'Gateway Timeout'
@@ -122,8 +122,8 @@ const tests: Test[] = [
             req: {
                 host: 'withoutPolicy'
             },
-            timeout: +config.timeout - 100,
-        },
+            timeout: +config.timeout - 100
+        }
     },
     {
         name: 'withPolicy - allowed 1',
@@ -186,7 +186,7 @@ const tests: Test[] = [
         name: 'error - error',
         args: {
             req: {
-                host: 'error',
+                host: 'error'
             }
         },
         wantStatusCode: 500,
@@ -268,7 +268,7 @@ const tests: Test[] = [
         },
         wantStatusCode: 502,
         wantBody: 'Bad Gateway'
-    },
+    }
 ]
 
 tests.forEach(function (tt) {

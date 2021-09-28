@@ -9,26 +9,26 @@ import { Headers, GatewayResponse, GatewayRequest, JWTPayload } from '../models'
 import { log, sendStatus, setHeaders } from '../helpers'
 
 export type Connection = {
-    id: string,
-    ip: string,
-    timestamp: string,
-    headers: Headers,
-    payload: JWTPayload
+    id: string;
+    ip: string;
+    timestamp: string;
+    headers: Headers;
+    payload: JWTPayload;
 }
 
 type PendingRequest = {
-    uuid: string,
-    host: string,
-    rewriteHost: string,
-    res: ServerResponse,
+    uuid: string;
+    host: string;
+    rewriteHost: string;
+    res: ServerResponse;
 }
 
 export class Gateway {
     private io: Server
-    private pendingRequests:Map<string,PendingRequest> = new Map()
-    private connectionsMap: Map<string,Connection> = new Map()
+    private pendingRequests: Map<string, PendingRequest> = new Map()
+    private connectionsMap: Map<string, Connection> = new Map()
 
-    constructor(public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
+    constructor (public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
         this.io = new Server({ serveClient: false })
 
         this.io.use(function (socket, next) {
@@ -48,7 +48,7 @@ export class Gateway {
                 ip: socket.handshake.address,
                 timestamp: new Date().toUTCString(),
                 headers: socket.handshake.headers as Headers,
-                payload: challengeTool.decodeChallengeResponse(socket.handshake.headers['x-challenge-response'] as string),
+                payload: challengeTool.decodeChallengeResponse(socket.handshake.headers['x-challenge-response'] as string)
             }
             this.connectionsMap.set(socket.id, connection)
 
@@ -93,15 +93,15 @@ export class Gateway {
         })
     }
 
-    get connections(): Connection[] {
+    get connections (): Connection[] {
         return Array.from(this.connectionsMap.values())
     }
 
-    attach(server: HTTPServer): void {
+    attach (server: HTTPServer): void {
         this.io.attach(server)
     }
 
-    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
+    request (identifier: undefined | string | string[], host: string, rewriteHost: string, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })

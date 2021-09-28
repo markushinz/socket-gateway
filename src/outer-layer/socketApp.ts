@@ -10,7 +10,7 @@ import { sendStatus } from '../helpers'
 export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): RequestListener {
     const adminRouter = newAdminRouter(config, gateway, evaluateTool)
     const defaultRouter = newDefaultRouter(gateway)
-    return async function(req, res) {
+    return async function (req, res) {
         try {
             const url = new URL(req.url || '', `http://${req.headers.host}`)
             
@@ -23,7 +23,7 @@ export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evalua
                 return sendStatus(res, 200, challenge)
             }
 
-            return defaultRouter(req,res)
+            return defaultRouter(req, res)
         } catch (err) {
             console.error(err)
             sendStatus(res, 500)

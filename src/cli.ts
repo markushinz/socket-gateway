@@ -8,7 +8,7 @@ import { OuterLayer } from './outer-layer'
 import { pki } from 'node-forge'
 import { Closeable } from './models'
 
-function coerceOuterLayer(url: string, insecure: boolean): URL {
+function coerceOuterLayer (url: string, insecure: boolean): URL {
     const parsed = new URL(url)
     if (
         insecure ||
@@ -20,12 +20,12 @@ function coerceOuterLayer(url: string, insecure: boolean): URL {
     throw new Error('Protocol must be https: or wss:')
 }
 
-function coerceFileExists(file: string) {
+function coerceFileExists (file: string) {
     readFileSync(file)
     return file
 }
 
-function coerceTrustProxy(values: string) {
+function coerceTrustProxy (values: string) {
     return compile(values ? values.split(/ *, */) : [])
 }
 
@@ -33,8 +33,8 @@ export function cli (args: string[]): Promise<Closeable> {
     return new Promise(function (resolve) {
         yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion().strict()
             
-            .command('inner-layer', 'Start the inner-layer', yargs => {
-                return yargs
+            .command('inner-layer', 'Start the inner-layer', yargs_ => {
+                return yargs_
                     .option('identifier', {
                         description: 'The identifier to distinguish multiple inner layers',
                         default: hostname()
@@ -47,7 +47,7 @@ export function cli (args: string[]): Promise<Closeable> {
                     .option('outer-layer', {
                         description: 'The outer layer URI to connect to',
                         demandOption: true,
-                        coerce: url => coerceOuterLayer(url, yargs.argv.insecure as boolean)
+                        coerce: url => coerceOuterLayer(url, yargs_.argv.insecure as boolean)
                     })
                     .option('insecure', {
                         type: 'boolean',
@@ -56,8 +56,8 @@ export function cli (args: string[]): Promise<Closeable> {
                     })
             }, argv => resolve(new InnerLayer(argv)))
 
-            .command('outer-layer', 'Start the outer-layer', yargs => {
-                return yargs
+            .command('outer-layer', 'Start the outer-layer', yargs_ => {
+                return yargs_
                     .option('admin-password', {
                         description: 'The admin password',
                         type: 'string'
@@ -97,8 +97,8 @@ export function cli (args: string[]): Promise<Closeable> {
                     })
             }, argv => resolve(new OuterLayer(argv)))
 
-            .command('certificates', 'Generate certificates', yargs => {
-                return yargs
+            .command('certificates', 'Generate certificates', yargs_ => {
+                return yargs_
                     .option('private-key', {
                         description: 'The private key file to write',
                         default: 'innerLayer.key'
