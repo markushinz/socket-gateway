@@ -6,7 +6,7 @@ import { ChallengeTool } from './tools/challenge'
 import { RewriteTool } from './tools/rewrite'
 
 import { Headers, GatewayResponse, GatewayRequest, JWTPayload } from '../models'
-import { sendStatus, set } from '../helpers'
+import { color, sendStatus, set } from '../helpers'
 
 export type Connection = {
     id: string,
@@ -74,6 +74,7 @@ export class Gateway {
                     if (res.end) {
                         this.pendingRequests.delete(res.uuid)
                         pendingRequest.res.end()
+                        process.stdout.write(`\x1b[0m${pendingRequest.res.req.method} ${pendingRequest.res.req.url} \x1b[${color(pendingRequest.res.statusCode)}m${pendingRequest.res.statusCode}\x1b[0m\n`)
                     }
                 }
             })

@@ -14,6 +14,7 @@ export function sendStatus(res: ServerResponse, status: number, body?: string | 
     } else if (statusMessage) {
         res.write(statusMessage)
     }
+    process.stdout.write(`\x1b[0m${res.req.method} ${res.req.url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
     res.end()
 }
 
@@ -24,4 +25,14 @@ export function set(res: ServerResponse, headers: Headers): void {
         }
     }
 
+}
+
+export function color(status: number): number {
+    switch(true){
+    case (status >= 500): return 31
+    case (status >= 400): return 33
+    case (status >= 300): return 36
+    case (status >= 200): return 32
+    default: return 0
+    }
 }

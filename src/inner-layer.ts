@@ -3,21 +3,12 @@ import { request } from './request'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
+import { color } from './helpers'
 
 type InnerLayerConfig = {
     'private-key': string | Buffer,
     'outer-layer': URL,
     identifier: string,
-}
-
-function color(status: number) {
-    switch(true){
-    case (status >= 500): return 31
-    case (status >= 400): return 33
-    case (status >= 300): return 36
-    case (status >= 200): return 32
-    default: return 0
-    }
 }
 
 export class InnerLayer implements Closeable {
