@@ -21,6 +21,7 @@ services:
       - SG_TARGETS=/mnt/targets.yaml
       - SG_PUBLIC_KEY=/mnt/innerLayer.crt
       - SG_REMOVE_CSPS=true
+      - SG_ADMIN_PASSWORD=admin
     ports:
       - 80:3000
     volumes:

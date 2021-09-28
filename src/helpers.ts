@@ -7,7 +7,9 @@ export function sendStatus(res: ServerResponse, status: number, body?: string | 
     if (statusMessage) {
         res.statusMessage = statusMessage
     }
-    res.setHeader('content-type', 'text/plain; charset=utf-8')
+    if(!res.hasHeader('content-type')) {
+        res.setHeader('content-type', 'text/plain; charset=utf-8')
+    }
     if (body) {
         body = [body].flat()
         body.forEach(data => res.write(data))

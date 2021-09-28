@@ -96,7 +96,8 @@ export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evalu
                     res.setHeader('content-type', 'text/html; charset=utf-8')
                     return sendStatus(res, 200, html(config, gateway, evaluateTool))
                 }
-                if (url.pathname === '/stylesheet.css' && req.method === 'GET') {
+                if (url.pathname === '/admin/stylesheet.css' && req.method === 'GET') {
+                    res.setHeader('content-type', 'text/css; charset=utf-8')
                     return sendStatus(res, 200, stylesheet)
                 }
                 return sendStatus(res, 404)

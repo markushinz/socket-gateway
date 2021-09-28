@@ -15,7 +15,6 @@ export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evalua
             const url = new URL(req.url || '', `http://${req.headers.host}`)
             
             if (url.pathname.startsWith('/admin')) {
-                url.pathname = url.pathname.substr(6)
                 return adminRouter(req, res)
             }
 
