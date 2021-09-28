@@ -6,11 +6,11 @@ import { JWTPayload } from '../../models'
 export class ChallengeTool {
     private pendingChallenges: Set<string>
 
-    constructor (public validity: number, public publicKey: string | Buffer) {
+    constructor(public validity: number, public publicKey: string | Buffer) {
         this.pendingChallenges = new Set()
     }
 
-    createChallenge (): string {
+    createChallenge(): string {
         const challenge = uuid()
         this.pendingChallenges.add(challenge)
         console.log(`Created challege "${challenge}".`)
@@ -23,7 +23,7 @@ export class ChallengeTool {
         return challenge
     }
 
-    verifyChallengeResponse (token: string): boolean {
+    verifyChallengeResponse(token: string): boolean {
         try {
             const payload = verify(token, this.publicKey, { algorithms: ['RS256'] }) as JWTPayload
             if (this.pendingChallenges.has(payload.challenge)) {
@@ -39,7 +39,7 @@ export class ChallengeTool {
         }
     }
 
-    decodeChallengeResponse (token: string): JWTPayload {
+    decodeChallengeResponse(token: string): JWTPayload {
         return decode(token) as JWTPayload
     }
 }

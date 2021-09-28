@@ -1,6 +1,6 @@
 import { Headers } from '../../models'
 
-function rewriteString (str: string, fromHost: string, toHost: string) {
+function rewriteString(str: string, fromHost: string, toHost: string) {
     str = str.replace(new RegExp(encodeURIComponent(fromHost), 'g'), encodeURIComponent(toHost))
     return str.replace(new RegExp(fromHost, 'g'), toHost)
 }
@@ -19,13 +19,13 @@ export class RewriteTool {
         'content-length'
     ]
 
-    constructor (public removeCSPs: boolean) {
+    constructor(public removeCSPs: boolean) {
         if (removeCSPs) {
             this.blacklist.push('content-security-policy')
         }
     }
 
-    sanitizeHeaders (headers: Headers): Headers {
+    sanitizeHeaders(headers: Headers): Headers {
         const sanitizedHeaders: Headers = {}
         Object.keys(headers).forEach(key => {
             if (!this.blacklist.includes(key)) {
@@ -35,7 +35,7 @@ export class RewriteTool {
         return sanitizedHeaders
     }
 
-    rewriteHeaders (headers: Headers, fromHost: string, toHost: string): Headers {
+    rewriteHeaders(headers: Headers, fromHost: string, toHost: string): Headers {
         return JSON.parse(rewriteString(JSON.stringify(headers), fromHost, toHost))
     }
 }

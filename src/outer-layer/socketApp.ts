@@ -7,10 +7,10 @@ import { EvaluateTool } from './tools/evaluate'
 import { OuterLayerConfig } from '.'
 import { sendStatus } from '../helpers'
 
-export function NewSocketApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): RequestListener {
+export function NewSocketApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): RequestListener {
     const adminRouter = newAdminRouter(config, gateway, evaluateTool)
     const defaultRouter = newDefaultRouter(gateway)
-    return async function (req, res) {
+    return async function(req, res) {
         try {
             const url = new URL(req.url || '', `http://${req.headers.host}`)
             

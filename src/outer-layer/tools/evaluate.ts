@@ -7,7 +7,7 @@ type Cache = {
     targets: Record<string, Target>;
 }
 
-function pathToRegex (path: string): RegExp{
+function pathToRegex(path: string): RegExp{
     if (path === '*') {
         return new RegExp('.*')
     }
@@ -19,13 +19,13 @@ function pathToRegex (path: string): RegExp{
 
 export class EvaluateTool {
     cache: Cache
-    constructor (public targets: string) {
+    constructor(public targets: string) {
         this.cache = {
             targets: {}
         }
     }
 
-    get targetsParsed (): Record<string, Target> {
+    get targetsParsed(): Record<string, Target> {
         try {
             const now = Date.now()
             if (!this.cache.timestamp || now - this.cache.timestamp > 60000) {
@@ -42,12 +42,12 @@ export class EvaluateTool {
         }
     }
 
-    getTarget (host: string): Target | undefined {
+    getTarget(host: string): Target | undefined {
         const casedHost = Object.keys(this.targetsParsed).find(key => key.toLowerCase() === host)
         return casedHost ? this.targetsParsed[casedHost] : undefined
     }
 
-    evaluatePolicy (policy: Policy, testPath: string, method: string): boolean {
+    evaluatePolicy(policy: Policy, testPath: string, method: string): boolean {
         if (policy === '*') {
             return true
         }

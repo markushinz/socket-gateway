@@ -29,10 +29,10 @@ export class Gateway {
     private pendingRequests: Map<string, PendingRequest> = new Map()
     private connectionsMap: Map<string, Connection> = new Map()
 
-    constructor (public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
+    constructor(public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
         this.io = new Server({ serveClient: false })
 
-        this.io.use(function (socket, next) {
+        this.io.use(function(socket, next) {
             const headers = socket.handshake.headers as { 'x-challenge-response'?: string }
             const challengeResponse = headers['x-challenge-response']
             if (challengeResponse &&
@@ -94,15 +94,15 @@ export class Gateway {
         })
     }
 
-    get connections (): Connection[] {
+    get connections(): Connection[] {
         return Array.from(this.connectionsMap.values())
     }
 
-    attach (server: HTTPServer): void {
+    attach(server: HTTPServer): void {
         this.io.attach(server)
     }
 
-    request (identifier: undefined | string | string[], host: string, rewriteHost: string, appReq: IncomingMessage, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
+    request(identifier: undefined | string | string[], host: string, rewriteHost: string, appReq: IncomingMessage, appRes: ServerResponse, gatewayReq: GatewayRequest): void {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })

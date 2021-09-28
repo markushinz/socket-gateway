@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http'
 import { Headers } from './models'
 
-export function color (status: number): number {
+export function color(status: number): number {
     switch (true){
         case status >= 500: return 31
         case status >= 400: return 33
@@ -11,11 +11,11 @@ export function color (status: number): number {
     }
 }
 
-export function log (req: IncomingMessage, res: ServerResponse): void {
+export function log(req: IncomingMessage, res: ServerResponse): void {
     process.stdout.write(`\x1b[0m${req.method} ${req.url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
 }
 
-export function sendStatus (req: IncomingMessage, res: ServerResponse, status: number, body?: string | string[]): void {
+export function sendStatus(req: IncomingMessage, res: ServerResponse, status: number, body?: string | string[]): void {
     res.statusCode = status
     const statusMessage = STATUS_CODES[status]
     if (statusMessage) {
@@ -34,7 +34,7 @@ export function sendStatus (req: IncomingMessage, res: ServerResponse, status: n
     log(req, res)
 }
 
-export function setHeaders (res: ServerResponse, headers: Headers): void {
+export function setHeaders(res: ServerResponse, headers: Headers): void {
     for (const [key, value] of Object.entries(headers)) {
         if (value) {
             res.setHeader(key, value)

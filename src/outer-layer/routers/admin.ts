@@ -5,7 +5,7 @@ import { sendStatus } from '../../helpers'
 import { Gateway } from '../gateway'
 import { EvaluateTool } from '../tools/evaluate'
 
-function html (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool) {
+function html(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool) {
     return `<!DOCTYPE html>
     <html lang="en">
     
@@ -79,7 +79,7 @@ pre {
 }
 `
 
-export function newAdminRouter (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): RequestListener {
+export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool): RequestListener {
     const adminCredentialsParsed = (() => {
         if (config['admin-password']) {
             return Buffer.from(`admin:${config['admin-password']}`).toString('base64')
@@ -88,7 +88,7 @@ export function newAdminRouter (config: OuterLayerConfig, gateway: Gateway, eval
         }
     })()
     
-    return function (req, res) {
+    return function(req, res) {
         if (adminCredentialsParsed) {
             if (req.headers.authorization === `Basic ${adminCredentialsParsed}`) {
                 const url = new URL(req.url || '/', `http://${req.headers.host}`)

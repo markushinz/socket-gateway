@@ -9,7 +9,7 @@ module.exports = {
     ],
     rules: {
         '@typescript-eslint/semi': ['error', 'never'],
-        '@typescript-eslint/space-before-function-paren': 'error',
+        '@typescript-eslint/space-before-function-paren': ['error', 'never'],
         '@typescript-eslint/member-delimiter-style': 'error',
         '@typescript-eslint/type-annotation-spacing': 'error',
         '@typescript-eslint/comma-dangle': 'error',

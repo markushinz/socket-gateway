@@ -2,7 +2,7 @@ import { Headers } from './models'
 import { request as httpRequest, RequestOptions, IncomingMessage, ClientRequest } from 'http'
 import { request as httpsRequest } from 'https'
 
-export async function request (method: string, url: URL, headers: Headers, data?: string): Promise<IncomingMessage> {
+export async function request(method: string, url: URL, headers: Headers, data?: string): Promise<IncomingMessage> {
     return new Promise<IncomingMessage>((resolve, reject) => {
         try {
             let requestor: (url: URL, options: RequestOptions, callback: (res: IncomingMessage) => void) => ClientRequest

@@ -15,12 +15,12 @@ export class InnerLayer implements Closeable {
     private reconnect: boolean
     private socket: Promise<Socket>
 
-    constructor (public config: InnerLayerConfig) {
+    constructor(public config: InnerLayerConfig) {
         this.reconnect = true
         this.socket = this.connect()
     }
 
-    private async getChallenge (attempt = 0): Promise<string> {
+    private async getChallenge(attempt = 0): Promise<string> {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
             const res = await request('GET', challengeURL, {})
@@ -41,19 +41,19 @@ export class InnerLayer implements Closeable {
         }
     }
 
-    private solveChallenge (challenge: string) {
+    private solveChallenge(challenge: string) {
         const payload: JWTPayload = { challenge, identifier: this.config.identifier }
         return sign(payload, this.config['private-key'], { algorithm: 'RS256' })
     }
 
-    private async getHeaders () {
+    private async getHeaders() {
         const challenge = await this.getChallenge()
         return {
             'x-challenge-response': this.solveChallenge(challenge)
         }
     }
 
-    private async connect () {
+    private async connect() {
         const outerLayer = this.config['outer-layer'].href
         const socket = io(outerLayer, {
             transportOptions: {
@@ -77,7 +77,7 @@ export class InnerLayer implements Closeable {
             }
         })
 
-        socket.on('request', async (gatewayReq: GatewayRequest) => {
+        socket.on('request', async(gatewayReq: GatewayRequest) => {
             let _statusCode = 500
             const gatewayRes: GatewayResponse = {
                 uuid: gatewayReq.uuid,
@@ -122,7 +122,7 @@ export class InnerLayer implements Closeable {
         return socket
     }
 
-    async close (): Promise<void> {
+    async close(): Promise<void> {
         this.reconnect = false;
         (await this.socket).close()
     }

@@ -11,9 +11,9 @@ import { GatewayRequest, Headers } from '../models'
 import { OuterLayerConfig } from '.'
 import { sendStatus } from '../helpers'
 
-export function NewApp (config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool, rewriteTool: RewriteTool): RequestListener {
+export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool, rewriteTool: RewriteTool): RequestListener {
     const defaultRouter = newDefaultRouter(gateway)
-    return async function (appReq, appRes) {
+    return async function(appReq, appRes) {
         const appURL = new URL(appReq.url || '/', `http://${appReq.headers.host}`)
         const target = evaluateTool.getTarget(appURL.hostname)
         if (!target) {

@@ -8,7 +8,7 @@ import { OuterLayer } from './outer-layer'
 import { pki } from 'node-forge'
 import { Closeable } from './models'
 
-function coerceOuterLayer (url: string, insecure: boolean): URL {
+function coerceOuterLayer(url: string, insecure: boolean): URL {
     const parsed = new URL(url)
     if (
         insecure ||
@@ -20,17 +20,17 @@ function coerceOuterLayer (url: string, insecure: boolean): URL {
     throw new Error('Protocol must be https: or wss:')
 }
 
-function coerceFileExists (file: string) {
+function coerceFileExists(file: string) {
     readFileSync(file)
     return file
 }
 
-function coerceTrustProxy (values: string) {
+function coerceTrustProxy(values: string) {
     return compile(values ? values.split(/ *, */) : [])
 }
 
-export function cli (args: string[]): Promise<Closeable> {
-    return new Promise(function (resolve) {
+export function cli(args: string[]): Promise<Closeable> {
+    return new Promise(function(resolve) {
         yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion().strict()
             
             .command('inner-layer', 'Start the inner-layer', yargs_ => {

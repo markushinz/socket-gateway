@@ -20,7 +20,7 @@ export class GatewayRequest {
     headers: Headers
     data: string | undefined
 
-    constructor (raw: {
+    constructor(raw: {
         method: string;
         url: URL;
         headers: Headers;

@@ -56,13 +56,13 @@ writeFileSync(join(directory, 'targets.yaml'), JSON.stringify({
 }))
 
 const closeables: Closeable[] = []
-beforeAll(async function () {
+beforeAll(async function() {
     closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--public-key', config.publicKey]))
     closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--private-key', config.privateKey, '--identifier', 'identifier']))
     closeables.push(await cli(['outer-layer', '--app-port', config.appPort, '--socket-port', config.socketPort, '--timeout', config.timeout, '--targets', config.targets, '--public-key', config.publicKey, '--admin-password', config.adminPassword]))
 })
 
-afterAll(async function () {
+afterAll(async function() {
     closeables.forEach(closbale => closbale.close())
     rmSync(directory, { recursive: true, force: true })
 })
@@ -271,9 +271,9 @@ const tests: Test[] = [
     }
 ]
 
-tests.forEach(function (tt) {
-    test(tt.name, async function () {
-        const testServer = createServer(async function (req, res) {
+tests.forEach(function(tt) {
+    test(tt.name, async function() {
+        const testServer = createServer(async function(req, res) {
             await new Promise(r => setTimeout(r, tt.args.timeout || 0))
             sendStatus(req, res, tt.args.statusCode || 200, tt.args.body || 'OK')
         })
