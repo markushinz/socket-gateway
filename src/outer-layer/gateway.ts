@@ -55,27 +55,27 @@ export class Gateway {
 
             console.log(`Inner layer ${socket.id} connected.`)
 
-            socket.on('response', (res: GatewayResponse) => {
-                const pendingRequest = this.pendingRequests.get(res.uuid)
-                if (pendingRequest) {
-                    if (res.statusCode) {
-                        pendingRequest.res.statusCode = res.statusCode
+            socket.on('response', (gwRes: GatewayResponse) => {
+                const pendingReq = this.pendingRequests.get(gwRes.uuid)
+                if (pendingReq) {
+                    if (gwRes.statusCode) {
+                        pendingReq.res.statusCode = gwRes.statusCode
                     }
-                    if (res.statusMessage) {
-                        pendingRequest.res.statusMessage = res.statusMessage
+                    if (gwRes.statusMessage) {
+                        pendingReq.res.statusMessage = gwRes.statusMessage
                     }
-                    if (res.headers) {
-                        res.headers = rewriteTool.sanitizeHeaders(res.headers)
-                        res.headers = rewriteTool.rewriteHeaders(res.headers, pendingRequest.host, pendingRequest.rewriteHost)
-                        setHeaders(pendingRequest.res, res.headers)
+                    if (gwRes.headers) {
+                        gwRes.headers = rewriteTool.sanitizeHeaders(gwRes.headers)
+                        gwRes.headers = rewriteTool.rewriteHeaders(gwRes.headers, pendingReq.host, pendingReq.rewriteHost)
+                        setHeaders(pendingReq.res, gwRes.headers)
                     }
-                    if (res.data) {
-                        pendingRequest.res.write(res.data)
+                    if (gwRes.data) {
+                        pendingReq.res.write(gwRes.data)
                     }
-                    if (res.end) {
-                        this.pendingRequests.delete(res.uuid)
-                        pendingRequest.res.end()
-                        log(pendingRequest.req, pendingRequest.res)
+                    if (gwRes.end) {
+                        this.pendingRequests.delete(gwRes.uuid)
+                        pendingReq.res.end()
+                        log(pendingReq.req, pendingReq.res)
                     }
                 }
             })
@@ -84,8 +84,8 @@ export class Gateway {
                 this.connectionsMap.delete(socket.id)
 
                 if (this.connectionsMap.size == 0) {
-                    this.pendingRequests.forEach(pendingRequest => {
-                        sendStatus(pendingRequest.req, pendingRequest.res, 502)
+                    this.pendingRequests.forEach(pendingReq => {
+                        sendStatus(pendingReq.req, pendingReq.res, 502)
                     })
                     this.pendingRequests.clear()
                 }
@@ -108,7 +108,7 @@ export class Gateway {
         })
         
         if (possibleConnections.length > 0) {
-            const pendingRequest: PendingRequest = {
+            const pendingReq: PendingRequest = {
                 uuid: gatewayReq.uuid,
                 host,
                 rewriteHost,
@@ -116,7 +116,7 @@ export class Gateway {
                 res: appRes
             }
 
-            this.pendingRequests.set(pendingRequest.uuid, pendingRequest)
+            this.pendingRequests.set(pendingReq.uuid, pendingReq)
 
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
@@ -127,8 +127,8 @@ export class Gateway {
             this.io.to(connectionID).emit('request', gatewayReq)
 
             setTimeout(() => {
-                if (this.pendingRequests.has(pendingRequest.uuid)) {
-                    this.pendingRequests.delete(pendingRequest.uuid)
+                if (this.pendingRequests.has(pendingReq.uuid)) {
+                    this.pendingRequests.delete(pendingReq.uuid)
                     sendStatus(appReq, appRes, 504)
                 }
             }, this.timeout)
