@@ -36,17 +36,10 @@ export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool:
             headers['x-forwarded-port'] = trustProxy ? outerReq.headers['x-forwarded-port'] || outerReq.socket.localPort : outerReq.socket.localPort
             headers['x-forwarded-proto'] = trustProxy ? outerReq.headers['x-forwarded-proto'] || 'http' : 'http'
 
-            const chunks = []
-            for await (const chunk of outerReq) {
-                chunks.push(chunk)
-            }
-            const body = Buffer.concat(chunks).toString()
-            const method = outerReq.method || 'GET'
-            const gwReq: GatewayRequest={
-                method,
+            const gwReq: GatewayRequest = {
+                method: outerReq.method || 'GET',
                 url: url.href,
-                headers,
-                data: method == 'GET' ? undefined : body
+                headers
             }
 
             gateway.request(target.identifier, url.host, rewriteHost, outerReq, outerRes, gwReq)

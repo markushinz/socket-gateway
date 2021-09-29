@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'http'
+import { ClientRequest, IncomingMessage } from 'http'
 import { io, Socket } from 'socket.io-client'
 import { request, requestLegacy } from './request'
 import { sign } from 'jsonwebtoken'
@@ -12,16 +12,16 @@ type InnerLayerConfig = {
     identifier: string;
 }
 
-type PendingResponse = {
-    req: IncomingMessage;
-    res: ServerResponse;
+type PendingRequest = {
+    req: ClientRequest;
+    res: Promise<IncomingMessage>;
 }
 
 export class InnerLayer implements Closeable {
     private reconnect: boolean
     private socket: Promise<Socket>
 
-    private pendingReses: Map<string, PendingResponse> = new Map()
+    private pendingReqs: Map<string, PendingRequest> = new Map()
 
     constructor(public config: InnerLayerConfig) {
         this.reconnect = true
@@ -94,13 +94,9 @@ export class InnerLayer implements Closeable {
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
-                const { req, res } = request(gwReq.method, new URL(gwReq.url), gwReq.headers)
-                if (gwReq.data) {
-                    req.setHeader('content-length', gwReq.data.length)
-                    req.write(gwReq.data)
-                }
-                req.end()
-                const innerRes = await res
+                const pendingReq = request(gwReq.method, new URL(gwReq.url), gwReq.headers)
+                this.pendingReqs.set(uuid, pendingReq)
+                const innerRes = await pendingReq.res
                 _statusCode = innerRes.statusCode || _statusCode
                 gwRes.statusCode = innerRes.statusCode
                 gwRes.statusMessage = innerRes.statusMessage
@@ -121,6 +117,20 @@ export class InnerLayer implements Closeable {
                 gwRes.end = true
                 socket.emit('gw_res', uuid, gwRes)
                 process.stdout.write(`\x1b[0m${gwReq.method} ${gwReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
+            }
+        })
+
+        socket.on('gw_req_data', async(uuid: string, data: Buffer) => {
+            const pendingReq = this.pendingReqs.get(uuid)
+            if (pendingReq) {
+                pendingReq.req.write(data)
+            }
+        })
+
+        socket.on('gw_req_end', async(uuid: string) => {
+            const pendingReq = this.pendingReqs.get(uuid)
+            if (pendingReq) {
+                pendingReq.req.end()
             }
         })
 

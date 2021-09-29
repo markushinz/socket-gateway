@@ -15,8 +15,7 @@ export class RewriteTool {
         'proxy-authorization',
         'proxy-authentication',
         'trailer',
-        'upgrade',
-        'content-length'
+        'upgrade'
     ]
 
     constructor(public removeCSPs: boolean) {

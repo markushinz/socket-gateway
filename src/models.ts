@@ -16,7 +16,6 @@ export type GatewayRequest = {
     url: string;
     method: string;
     headers: Headers;
-    data: string | undefined;
 }
 
 export type GatewayResponse = {

@@ -102,7 +102,7 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request(identifier: undefined | string | string[], host: string, rewriteHost: string, outerReq: IncomingMessage, outerRes: ServerResponse, gwReq: GatewayRequest): void {
+    async request(identifier: undefined | string | string[], host: string, rewriteHost: string, outerReq: IncomingMessage, outerRes: ServerResponse, gwReq: GatewayRequest): Promise<void> {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
@@ -124,14 +124,18 @@ export class Gateway {
             const connectionIndex = (outerReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
-            this.io.to(connectionID).emit('gw_req', uuid, gwReq)
-
             setTimeout(() => {
                 if (this.pendingReqs.has(uuid)) {
                     this.pendingReqs.delete(uuid)
                     sendStatus(outerReq, outerRes, 504)
                 }
             }, this.timeout)
+
+            this.io.to(connectionID).emit('gw_req', uuid, gwReq)
+            for await (const data of outerReq) {
+                this.io.to(connectionID).emit('gw_req_data', uuid, data)
+            }
+            this.io.to(connectionID).emit('gw_req_end', uuid)
         } else {
             sendStatus(outerReq, outerRes, 502)
         }
