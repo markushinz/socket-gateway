@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 
-import { request } from './request'
+import { requestLegacy } from './request'
 
 import { cli } from './cli'
 import { Closeable, Target, Headers } from './models'
@@ -283,7 +283,7 @@ tests.forEach(function(tt) {
             const method = tt.args.req.method || 'GET'
             const url = new URL(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`)
             const headers = { host: tt.args.req.host, ...tt.args.req.headers }
-            const res = await request(method, url, headers)
+            const res = await requestLegacy(method, url, headers)
             expect(res.statusCode).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
             const wantBody = tt.wantBody || [tt.args.body].flat().join('') || 'OK'
             const chunks = []

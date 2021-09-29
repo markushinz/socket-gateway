@@ -1,5 +1,6 @@
+import { IncomingMessage, ServerResponse } from 'http'
 import { io, Socket } from 'socket.io-client'
-import { request } from './request'
+import { request, requestLegacy } from './request'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
@@ -11,9 +12,16 @@ type InnerLayerConfig = {
     identifier: string;
 }
 
+type PendingResponse = {
+    req: IncomingMessage;
+    res: ServerResponse;
+}
+
 export class InnerLayer implements Closeable {
     private reconnect: boolean
     private socket: Promise<Socket>
+
+    private pendingReses: Map<string, PendingResponse> = new Map()
 
     constructor(public config: InnerLayerConfig) {
         this.reconnect = true
@@ -23,7 +31,7 @@ export class InnerLayer implements Closeable {
     private async getChallenge(attempt = 0): Promise<string> {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
-            const res = await request('GET', challengeURL, {})
+            const res = await requestLegacy('GET', challengeURL, {})
             if (res.statusCode !== 200) {
                 throw new Error(`Unexpected status ${res.statusCode} ${res.statusMessage}`)
             }
@@ -86,8 +94,13 @@ export class InnerLayer implements Closeable {
                 headers: { 'content-type': 'text/plain; charset=utf-8' }
             }
             try {
-                const innerRes = await request(gwReq.method, new URL(gwReq.url), gwReq.headers, gwReq.data)
-  
+                const { req, res } = request(gwReq.method, new URL(gwReq.url), gwReq.headers)
+                if (gwReq.data) {
+                    req.setHeader('content-length', gwReq.data.length)
+                    req.write(gwReq.data)
+                }
+                req.end()
+                const innerRes = await res
                 _statusCode = innerRes.statusCode || _statusCode
                 gwRes.statusCode = innerRes.statusCode
                 gwRes.statusMessage = innerRes.statusMessage
