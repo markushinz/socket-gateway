@@ -91,7 +91,7 @@ export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evalu
     return function(req, res) {
         if (adminCredentialsParsed) {
             if (req.headers.authorization === `Basic ${adminCredentialsParsed}`) {
-                const url = new URL(req.url || '/', `http://${req.headers.host}`)
+                const url = new URL(req.url || '', `http://${req.headers.host}`)
                 if (['/admin', '/admin/'].includes(url.pathname) && req.method === 'GET') {
                     res.setHeader('content-type', 'text/html; charset=utf-8')
                     return sendStatus(req, res, 200, html(config, gateway, evaluateTool))

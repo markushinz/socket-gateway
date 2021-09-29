@@ -1,11 +1,12 @@
 import { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http'
+import { v1 } from 'uuid'
 
 import { Server } from 'socket.io'
 
 import { ChallengeTool } from './tools/challenge'
 import { RewriteTool } from './tools/rewrite'
 
-import { Headers, GatewayResponse, GatewayRequest, JWTPayload } from '../models'
+import { Headers, GatewayResponse, GatewayRequest, JWTPayload, PendingServerRequest } from '../models'
 import { log, sendStatus, setHeaders } from '../helpers'
 
 export type Connection = {
@@ -16,17 +17,9 @@ export type Connection = {
     payload: JWTPayload;
 }
 
-type PendingRequest = {
-    uuid: string;
-    host: string;
-    rewriteHost: string;
-    req: IncomingMessage;
-    res: ServerResponse;
-}
-
 export class Gateway {
     private io: Server
-    private pendingReqs: Map<string, PendingRequest> = new Map()
+    private pendingReqs: Map<string, PendingServerRequest> = new Map()
     private connectionsMap: Map<string, Connection> = new Map()
 
     constructor(public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
@@ -55,28 +48,30 @@ export class Gateway {
 
             console.log(`Inner layer ${socket.id} connected.`)
 
-            socket.on('response', (gwRes: GatewayResponse) => {
-                const pendingReq = this.pendingReqs.get(gwRes.uuid)
+            socket.on('gw_res', (uuid: string, gwRes: GatewayResponse) => {
+                const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
-                    if (gwRes.statusCode) {
-                        pendingReq.res.statusCode = gwRes.statusCode
-                    }
-                    if (gwRes.statusMessage) {
-                        pendingReq.res.statusMessage = gwRes.statusMessage
-                    }
-                    if (gwRes.headers) {
-                        gwRes.headers = rewriteTool.sanitizeHeaders(gwRes.headers)
-                        gwRes.headers = rewriteTool.rewriteHeaders(gwRes.headers, pendingReq.host, pendingReq.rewriteHost)
-                        setHeaders(pendingReq.res, gwRes.headers)
-                    }
-                    if (gwRes.data) {
-                        pendingReq.res.write(gwRes.data)
-                    }
-                    if (gwRes.end) {
-                        this.pendingReqs.delete(gwRes.uuid)
-                        pendingReq.res.end()
-                        log(pendingReq.req, pendingReq.res)
-                    }
+                    pendingReq.res.statusCode = gwRes.statusCode
+                    pendingReq.res.statusMessage = gwRes.statusMessage
+                    gwRes.headers = rewriteTool.sanitizeHeaders(gwRes.headers)
+                    gwRes.headers = rewriteTool.rewriteHeaders(gwRes.headers, pendingReq.host, pendingReq.rewriteHost)
+                    setHeaders(pendingReq.res, gwRes.headers)
+                }
+            })
+
+            socket.on('gw_res_data', (uuid: string, data: Buffer) => {
+                const pendingReq = this.pendingReqs.get(uuid)
+                if (pendingReq) {
+                    pendingReq.res.write(data)
+                }
+            })
+
+            socket.on('gw_res_end', (uuid: string) => {
+                const pendingReq = this.pendingReqs.get(uuid)
+                if (pendingReq) {
+                    this.pendingReqs.delete(uuid)
+                    pendingReq.res.end()
+                    log(pendingReq.req.method, pendingReq.req.url, pendingReq.res.statusCode, pendingReq.req.headers.host)
                 }
             })
 
@@ -102,21 +97,21 @@ export class Gateway {
         this.io.attach(server)
     }
 
-    request(identifier: undefined | string | string[], host: string, rewriteHost: string, outerReq: IncomingMessage, outerRes: ServerResponse, gwReq: GatewayRequest): void {
+    async request(identifier: undefined | string | string[], host: string, rewriteHost: string, outerReq: IncomingMessage, outerRes: ServerResponse, gwReq: GatewayRequest): Promise<void> {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
         
         if (possibleConnections.length > 0) {
-            const pendingReq: PendingRequest = {
-                uuid: gwReq.uuid,
+            const uuid = v1()
+            const pendingReq: PendingServerRequest = {
                 host,
                 rewriteHost,
                 req: outerReq,
                 res: outerRes
             }
 
-            this.pendingReqs.set(pendingReq.uuid, pendingReq)
+            this.pendingReqs.set(uuid, pendingReq)
 
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
@@ -124,14 +119,18 @@ export class Gateway {
             const connectionIndex = (outerReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
-            this.io.to(connectionID).emit('request', gwReq)
-
             setTimeout(() => {
-                if (this.pendingReqs.has(pendingReq.uuid)) {
-                    this.pendingReqs.delete(pendingReq.uuid)
+                if (this.pendingReqs.has(uuid)) {
+                    this.pendingReqs.delete(uuid)
                     sendStatus(outerReq, outerRes, 504)
                 }
             }, this.timeout)
+
+            this.io.to(connectionID).emit('gw_req', uuid, gwReq)
+            for await (const data of outerReq) {
+                this.io.to(connectionID).emit('gw_req_data', uuid, data)
+            }
+            this.io.to(connectionID).emit('gw_req_end', uuid)
         } else {
             sendStatus(outerReq, outerRes, 502)
         }

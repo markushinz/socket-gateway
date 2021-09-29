@@ -2,8 +2,8 @@ import { io, Socket } from 'socket.io-client'
 import { request } from './request'
 import { sign } from 'jsonwebtoken'
 
-import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
-import { color } from './helpers'
+import { Closeable, GatewayRequest, JWTPayload, GatewayResponse, PendingClientRequest } from './models'
+import { log } from './helpers'
 
 type InnerLayerConfig = {
     'private-key': string | Buffer;
@@ -15,6 +15,8 @@ export class InnerLayer implements Closeable {
     private reconnect: boolean
     private socket: Promise<Socket>
 
+    private pendingReqs: Map<string, PendingClientRequest> = new Map()
+
     constructor(public config: InnerLayerConfig) {
         this.reconnect = true
         this.socket = this.connect()
@@ -23,7 +25,9 @@ export class InnerLayer implements Closeable {
     private async getChallenge(attempt = 0): Promise<string> {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
-            const res = await request('GET', challengeURL, {})
+            const pendingReq = request('GET', challengeURL, {})
+            pendingReq.req.end()
+            const res = await pendingReq.res
             if (res.statusCode !== 200) {
                 throw new Error(`Unexpected status ${res.statusCode} ${res.statusMessage}`)
             }
@@ -77,38 +81,52 @@ export class InnerLayer implements Closeable {
             }
         })
 
-        socket.on('request', async(gwReq: GatewayRequest) => {
-            let _statusCode = 500
-            const gwRes: GatewayResponse = {
-                uuid: gwReq.uuid,
-                statusCode: _statusCode,
-                statusMessage: 'Internal Server Error',
-                data: 'Internal Server Error',
-                headers: { 'content-type': 'text/plain; charset=utf-8' }
-            }
+        socket.on('gw_req', async(uuid: string, gwReq: GatewayRequest) => {
             try {
-                const innerRes = await request(gwReq.method, new URL(gwReq.url), gwReq.headers, gwReq.data)
-  
-                _statusCode = innerRes.statusCode || _statusCode
-                gwRes.statusCode = innerRes.statusCode
-                gwRes.statusMessage = innerRes.statusMessage
-                delete gwRes.data
-                gwRes.headers = innerRes.headers
-
-                for await (const chunk of innerRes) {
-                    gwRes.data = chunk
-                    socket.emit('response', gwRes)
-                    delete gwRes.statusCode
-                    delete gwRes.statusMessage
-                    delete gwRes.data
-                    delete gwRes.headers
+                const pendingReq = request(gwReq.method, new URL(gwReq.url), gwReq.headers)
+                this.pendingReqs.set(uuid, pendingReq)
+                const innerRes = await pendingReq.res
+                const gwRes: GatewayResponse = {
+                    statusCode: innerRes.statusCode || 0,
+                    statusMessage: innerRes.statusMessage || '',
+                    headers: innerRes.headers
                 }
+                socket.emit('gw_res', uuid, gwRes)
+                for await (const data of innerRes) {
+                    socket.emit('gw_res_data', uuid, data)
+                }
+                socket.emit('gw_res_end', uuid)
+                log(gwReq.method, gwReq.url, gwRes.statusCode)
             } catch (error) {
-                console.error('request', gwReq, error)
+                const data = 'Internal Server Error'
+                const gwRes: GatewayResponse = {
+                    statusCode: 500,
+                    statusMessage: 'Internal Server Error',
+                    headers: { 
+                        'content-type': 'text/plain; charset=utf-8',
+                        'content-length': data.length 
+                    }
+                }
+                socket.emit('gw_res', uuid, gwRes)
+                socket.emit('gw_res_data', uuid, data)
+                socket.emit('gw_res_end', uuid)
+                console.error(error, 'gw_req', gwReq, 'gw_res', gwRes)
             } finally {
-                gwRes.end = true
-                socket.emit('response', gwRes)
-                process.stdout.write(`\x1b[0m${gwReq.method} ${gwReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
+                this.pendingReqs.delete(uuid)
+            }
+        })
+
+        socket.on('gw_req_data', async(uuid: string, data: Buffer) => {
+            const pendingReq = this.pendingReqs.get(uuid)
+            if (pendingReq) {
+                pendingReq.req.write(data)
+            }
+        })
+
+        socket.on('gw_req_end', async(uuid: string) => {
+            const pendingReq = this.pendingReqs.get(uuid)
+            if (pendingReq) {
+                pendingReq.req.end()
             }
         })
 

@@ -1,5 +1,4 @@
-import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
-import { v1 as uuid } from 'uuid'
+import { IncomingHttpHeaders, OutgoingHttpHeaders, ClientRequest, IncomingMessage, ServerResponse } from 'http'
 
 export type Policy = '*' | Record<string, '*' | string[]>
 
@@ -13,34 +12,16 @@ export type Target = {
 
 export type Headers = IncomingHttpHeaders | OutgoingHttpHeaders
 
-export class GatewayRequest {
-    uuid: string
-    url: string
-    method: string
-    headers: Headers
-    data: string | undefined
-
-    constructor(raw: {
-        method: string;
-        url: URL;
-        headers: Headers;
-        data: string | undefined; }
-    ) {
-        this.uuid = uuid()
-        this.method = raw.method
-        this.url = raw.url.href
-        this.headers = raw.headers
-        this.data = raw.data
-    }
+export type GatewayRequest = {
+    url: string;
+    method: string;
+    headers: Headers;
 }
 
 export type GatewayResponse = {
-    uuid: string;
-    headers?: Headers;
-    data?: string;
-    statusCode?: number;
-    statusMessage?: string;
-    end?: boolean;
+    statusCode: number;
+    statusMessage: string;
+    headers: Headers;
 }
 
 export type JWTPayload = {
@@ -50,4 +31,16 @@ export type JWTPayload = {
 
 export interface Closeable {
     close: () => void;
+}
+
+export type PendingClientRequest = {
+    req: ClientRequest;
+    res: Promise<IncomingMessage>;
+}
+
+export type PendingServerRequest = {
+    host: string;
+    rewriteHost: string;
+    req: IncomingMessage;
+    res: ServerResponse;
 }

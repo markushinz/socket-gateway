@@ -76,13 +76,14 @@ type Test = {
             host: string;
             path?: string;
             headers?: Headers;
+            body?: string | string[];
         };
         timeout?: number;
         statusCode?: number;
-        body?: string | string[];
+        resBody?: string | string[];
     };
     wantStatusCode?: number;
-    wantBody?: string;
+    wantBody?: string | string[];
     wantBodyToContain?: boolean;
 }
 
@@ -93,7 +94,7 @@ const tests: Test[] = [
             req: {
                 host: 'withoutPolicy'
             },
-            body: 'OK'
+            resBody: 'OK'
         }
     },
     {
@@ -102,7 +103,17 @@ const tests: Test[] = [
             req: {
                 host: 'withoutPolicy'
             },
-            body: ['O', 'K']
+            resBody: ['O', 'K']
+        }
+    },
+    {
+        name: 'withoutPolicy - allowed POST with chuncked body',
+        args: {
+            req: {
+                method: 'POST',
+                host: 'withoutPolicy',
+                body: ['P', 'O', 'S', 'T']
+            }
         }
     },
     {
@@ -274,8 +285,16 @@ const tests: Test[] = [
 tests.forEach(function(tt) {
     test(tt.name, async function() {
         const testServer = createServer(async function(req, res) {
+            const chunks = []
+            for await (const chunk of req) {
+                chunks.push(chunk)
+            }
+            if (req.method === 'GET') {
+                expect(chunks.length).toStrictEqual(0)
+            }
+            const data = Buffer.concat(chunks).toString()
             await new Promise(r => setTimeout(r, tt.args.timeout || 0))
-            sendStatus(req, res, tt.args.statusCode || 200, tt.args.body || 'OK')
+            sendStatus(req, res, tt.args.statusCode || 200, tt.args.resBody || data || 'OK')
         })
         testServer.listen(config.serverPort)
         await new Promise(r => setTimeout(r, 100))
@@ -283,9 +302,14 @@ tests.forEach(function(tt) {
             const method = tt.args.req.method || 'GET'
             const url = new URL(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`)
             const headers = { host: tt.args.req.host, ...tt.args.req.headers }
-            const res = await request(method, url, headers)
+            const pendingReq = request(method, url, headers)
+            if (tt.args.req.body) {
+                [tt.args.req.body].flat().forEach(data => pendingReq.req.write(data))
+            }
+            pendingReq.req.end()
+            const res = await pendingReq.res
             expect(res.statusCode).toStrictEqual(tt.wantStatusCode || tt.args.statusCode || 200)
-            const wantBody = tt.wantBody || [tt.args.body].flat().join('') || 'OK'
+            const wantBody = [tt.wantBody || tt.args.resBody || tt.args.req.body].flat().join('') || 'OK'
             const chunks = []
             for await (const chunk of res) {
                 chunks.push(chunk)
