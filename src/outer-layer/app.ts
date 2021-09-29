@@ -42,12 +42,12 @@ export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool:
             }
             const body = Buffer.concat(chunks).toString()
             const method = outerReq.method || 'GET'
-            const gwReq = new GatewayRequest({
+            const gwReq: GatewayRequest={
                 method,
-                url,
+                url: url.href,
                 headers,
                 data: method == 'GET' ? undefined : body
-            })
+            }
 
             gateway.request(target.identifier, url.host, rewriteHost, outerReq, outerRes, gwReq)
         } else {

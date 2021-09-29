@@ -1,4 +1,5 @@
 import { Server as HTTPServer, IncomingMessage, ServerResponse } from 'http'
+import { v1 } from 'uuid'
 
 import { Server } from 'socket.io'
 
@@ -17,7 +18,6 @@ export type Connection = {
 }
 
 type PendingRequest = {
-    uuid: string;
     host: string;
     rewriteHost: string;
     req: IncomingMessage;
@@ -55,8 +55,8 @@ export class Gateway {
 
             console.log(`Inner layer ${socket.id} connected.`)
 
-            socket.on('response', (gwRes: GatewayResponse) => {
-                const pendingReq = this.pendingReqs.get(gwRes.uuid)
+            socket.on('response', (uuid: string, gwRes: GatewayResponse) => {
+                const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
                     if (gwRes.statusCode) {
                         pendingReq.res.statusCode = gwRes.statusCode
@@ -73,7 +73,7 @@ export class Gateway {
                         pendingReq.res.write(gwRes.data)
                     }
                     if (gwRes.end) {
-                        this.pendingReqs.delete(gwRes.uuid)
+                        this.pendingReqs.delete(uuid)
                         pendingReq.res.end()
                         log(pendingReq.req, pendingReq.res)
                     }
@@ -108,15 +108,15 @@ export class Gateway {
         })
         
         if (possibleConnections.length > 0) {
+            const uuid = v1()
             const pendingReq: PendingRequest = {
-                uuid: gwReq.uuid,
                 host,
                 rewriteHost,
                 req: outerReq,
                 res: outerRes
             }
 
-            this.pendingReqs.set(pendingReq.uuid, pendingReq)
+            this.pendingReqs.set(uuid, pendingReq)
 
             // Do reproducable scheduling depeing on the remotePort. This will make sure that all requests
             // of one TCP connection get routed to the same inner layer.
@@ -124,11 +124,11 @@ export class Gateway {
             const connectionIndex = (outerReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
-            this.io.to(connectionID).emit('request', gwReq)
+            this.io.to(connectionID).emit('request', uuid, gwReq)
 
             setTimeout(() => {
-                if (this.pendingReqs.has(pendingReq.uuid)) {
-                    this.pendingReqs.delete(pendingReq.uuid)
+                if (this.pendingReqs.has(uuid)) {
+                    this.pendingReqs.delete(uuid)
                     sendStatus(outerReq, outerRes, 504)
                 }
             }, this.timeout)
