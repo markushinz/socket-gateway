@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse, STATUS_CODES } from 'http'
 import { Headers } from './models'
 
-export function color(status: number): number {
+function color(status: number): number {
     switch (true){
         case status >= 500: return 31
         case status >= 400: return 33
@@ -31,7 +31,7 @@ export function sendStatus(req: IncomingMessage, res: ServerResponse, status: nu
         res.write(statusMessage)
     }
     res.end()
-    log(req.method, req.url, res.statusCode)
+    log(req.method, req.url, res.statusCode, req.headers.host)
 }
 
 export function setHeaders(res: ServerResponse, headers: Headers): void {
