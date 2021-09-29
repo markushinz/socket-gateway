@@ -1,4 +1,4 @@
-import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
+import { IncomingHttpHeaders, OutgoingHttpHeaders, ClientRequest, IncomingMessage, ServerResponse } from 'http'
 
 export type Policy = '*' | Record<string, '*' | string[]>
 
@@ -19,11 +19,9 @@ export type GatewayRequest = {
 }
 
 export type GatewayResponse = {
-    headers?: Headers;
-    data?: string;
-    statusCode?: number;
-    statusMessage?: string;
-    end?: boolean;
+    statusCode: number;
+    statusMessage: string;
+    headers: Headers;
 }
 
 export type JWTPayload = {
@@ -33,4 +31,16 @@ export type JWTPayload = {
 
 export interface Closeable {
     close: () => void;
+}
+
+export type PendingClientRequest = {
+    req: ClientRequest;
+    res: Promise<IncomingMessage>;
+}
+
+export type PendingServerRequest = {
+    host: string;
+    rewriteHost: string;
+    req: IncomingMessage;
+    res: ServerResponse;
 }

@@ -1,10 +1,9 @@
-import { ClientRequest, IncomingMessage } from 'http'
 import { io, Socket } from 'socket.io-client'
 import { request, requestLegacy } from './request'
 import { sign } from 'jsonwebtoken'
 
-import { Closeable, GatewayRequest, JWTPayload, GatewayResponse } from './models'
-import { color } from './helpers'
+import { Closeable, GatewayRequest, JWTPayload, GatewayResponse, PendingClientRequest } from './models'
+import { log } from './helpers'
 
 type InnerLayerConfig = {
     'private-key': string | Buffer;
@@ -12,16 +11,11 @@ type InnerLayerConfig = {
     identifier: string;
 }
 
-type PendingRequest = {
-    req: ClientRequest;
-    res: Promise<IncomingMessage>;
-}
-
 export class InnerLayer implements Closeable {
     private reconnect: boolean
     private socket: Promise<Socket>
 
-    private pendingReqs: Map<string, PendingRequest> = new Map()
+    private pendingReqs: Map<string, PendingClientRequest> = new Map()
 
     constructor(public config: InnerLayerConfig) {
         this.reconnect = true
@@ -86,37 +80,35 @@ export class InnerLayer implements Closeable {
         })
 
         socket.on('gw_req', async(uuid: string, gwReq: GatewayRequest) => {
-            let _statusCode = 500
-            const gwRes: GatewayResponse = {
-                statusCode: _statusCode,
-                statusMessage: 'Internal Server Error',
-                data: 'Internal Server Error',
-                headers: { 'content-type': 'text/plain; charset=utf-8' }
-            }
             try {
                 const pendingReq = request(gwReq.method, new URL(gwReq.url), gwReq.headers)
                 this.pendingReqs.set(uuid, pendingReq)
                 const innerRes = await pendingReq.res
-                _statusCode = innerRes.statusCode || _statusCode
-                gwRes.statusCode = innerRes.statusCode
-                gwRes.statusMessage = innerRes.statusMessage
-                delete gwRes.data
-                gwRes.headers = innerRes.headers
-
-                for await (const chunk of innerRes) {
-                    gwRes.data = chunk
-                    socket.emit('gw_res', uuid, gwRes)
-                    delete gwRes.statusCode
-                    delete gwRes.statusMessage
-                    delete gwRes.data
-                    delete gwRes.headers
+                const gwRes: GatewayResponse = {
+                    statusCode: innerRes.statusCode || 200,
+                    statusMessage: innerRes.statusMessage || 'OK',
+                    headers: innerRes.headers
                 }
-            } catch (error) {
-                console.error('gw_req', gwReq, error)
-            } finally {
-                gwRes.end = true
                 socket.emit('gw_res', uuid, gwRes)
-                process.stdout.write(`\x1b[0m${gwReq.method} ${gwReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
+                for await (const data of innerRes) {
+                    socket.emit('gw_res_data', uuid, data)
+                }
+                socket.emit('gw_res_end', uuid)
+                log(gwReq.method, gwReq.url, gwRes.statusCode)
+            } catch (error) {
+                const data = Buffer.from('Internal Server Error')
+                const gwRes: GatewayResponse = {
+                    statusCode: 500,
+                    statusMessage: 'Internal Server Error',
+                    headers: { 
+                        'content-type': 'text/plain; charset=utf-8',
+                        'content-length': data.length 
+                    }
+                }
+                socket.emit('gw_res', uuid, gwRes)
+                socket.emit('gw_res_data', uuid, data)
+                socket.emit('gw_res_end', uuid)
+                console.error(error, 'gw_req', gwReq, 'gw_res', gwRes)
             }
         })
 

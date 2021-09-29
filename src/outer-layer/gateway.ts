@@ -6,7 +6,7 @@ import { Server } from 'socket.io'
 import { ChallengeTool } from './tools/challenge'
 import { RewriteTool } from './tools/rewrite'
 
-import { Headers, GatewayResponse, GatewayRequest, JWTPayload } from '../models'
+import { Headers, GatewayResponse, GatewayRequest, JWTPayload, PendingServerRequest } from '../models'
 import { log, sendStatus, setHeaders } from '../helpers'
 
 export type Connection = {
@@ -17,16 +17,9 @@ export type Connection = {
     payload: JWTPayload;
 }
 
-type PendingRequest = {
-    host: string;
-    rewriteHost: string;
-    req: IncomingMessage;
-    res: ServerResponse;
-}
-
 export class Gateway {
     private io: Server
-    private pendingReqs: Map<string, PendingRequest> = new Map()
+    private pendingReqs: Map<string, PendingServerRequest> = new Map()
     private connectionsMap: Map<string, Connection> = new Map()
 
     constructor(public challengeTool: ChallengeTool, public rewriteTool: RewriteTool, public timeout: number) {
@@ -58,25 +51,27 @@ export class Gateway {
             socket.on('gw_res', (uuid: string, gwRes: GatewayResponse) => {
                 const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
-                    if (gwRes.statusCode) {
-                        pendingReq.res.statusCode = gwRes.statusCode
-                    }
-                    if (gwRes.statusMessage) {
-                        pendingReq.res.statusMessage = gwRes.statusMessage
-                    }
-                    if (gwRes.headers) {
-                        gwRes.headers = rewriteTool.sanitizeHeaders(gwRes.headers)
-                        gwRes.headers = rewriteTool.rewriteHeaders(gwRes.headers, pendingReq.host, pendingReq.rewriteHost)
-                        setHeaders(pendingReq.res, gwRes.headers)
-                    }
-                    if (gwRes.data) {
-                        pendingReq.res.write(gwRes.data)
-                    }
-                    if (gwRes.end) {
-                        this.pendingReqs.delete(uuid)
-                        pendingReq.res.end()
-                        log(pendingReq.req, pendingReq.res)
-                    }
+                    pendingReq.res.statusCode = gwRes.statusCode
+                    pendingReq.res.statusMessage = gwRes.statusMessage
+                    gwRes.headers = rewriteTool.sanitizeHeaders(gwRes.headers)
+                    gwRes.headers = rewriteTool.rewriteHeaders(gwRes.headers, pendingReq.host, pendingReq.rewriteHost)
+                    setHeaders(pendingReq.res, gwRes.headers)
+                }
+            })
+
+            socket.on('gw_res_data', (uuid: string, data: Buffer) => {
+                const pendingReq = this.pendingReqs.get(uuid)
+                if (pendingReq) {
+                    pendingReq.res.write(data)
+                }
+            })
+
+            socket.on('gw_res_end', (uuid: string) => {
+                const pendingReq = this.pendingReqs.get(uuid)
+                if (pendingReq) {
+                    this.pendingReqs.delete(uuid)
+                    pendingReq.res.end()
+                    log(pendingReq.req.method, pendingReq.req.url, pendingReq.res.statusCode, pendingReq.req.headers.host)
                 }
             })
 
@@ -109,7 +104,7 @@ export class Gateway {
         
         if (possibleConnections.length > 0) {
             const uuid = v1()
-            const pendingReq: PendingRequest = {
+            const pendingReq: PendingServerRequest = {
                 host,
                 rewriteHost,
                 req: outerReq,

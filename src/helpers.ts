@@ -11,9 +11,8 @@ export function color(status: number): number {
     }
 }
 
-export function log(req: IncomingMessage, res: ServerResponse): void {
-    const url = new URL(req.url || '', `http://${req.headers.host}`)
-    process.stdout.write(`\x1b[0m${req.method} ${url} \x1b[${color(res.statusCode)}m${res.statusCode}\x1b[0m\n`)
+export function log(method: string | undefined, url: string | URL | undefined, statusCode: number, host?: string): void {
+    process.stdout.write(`\x1b[0m${method} ${url} \x1b[${color(statusCode)}m${statusCode}\x1b[0m${host ? ` (${host})`: ''}\n`)
 }
 
 export function sendStatus(req: IncomingMessage, res: ServerResponse, status: number, body?: string | string[]): void {
@@ -32,7 +31,7 @@ export function sendStatus(req: IncomingMessage, res: ServerResponse, status: nu
         res.write(statusMessage)
     }
     res.end()
-    log(req, res)
+    log(req.method, req.url, res.statusCode)
 }
 
 export function setHeaders(res: ServerResponse, headers: Headers): void {
