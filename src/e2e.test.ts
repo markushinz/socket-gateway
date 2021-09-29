@@ -281,7 +281,7 @@ tests.forEach(function(tt) {
         await new Promise(r => setTimeout(r, 100))
         try {
             const method = tt.args.req.method || 'GET'
-            const url = new URL(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || '/'}`)
+            const url = new URL(`http://localhost:${tt.args.req.port || config.appPort}${tt.args.req.path || ''}`)
             const headers = { host: tt.args.req.host, ...tt.args.req.headers }
             const pendingReq = request(method, url, headers)
             pendingReq.req.end()

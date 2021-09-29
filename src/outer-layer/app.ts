@@ -14,7 +14,7 @@ import { sendStatus } from '../helpers'
 export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool, rewriteTool: RewriteTool): RequestListener {
     const defaultRouter = newDefaultRouter(gateway)
     return async function(outerReq, outerRes) {
-        const appURL = new URL(outerReq.url || '/', `http://${outerReq.headers.host}`)
+        const appURL = new URL(outerReq.url || '', `http://${outerReq.headers.host}`)
         const target = evaluateTool.getTarget(appURL.hostname)
         if (!target) {
             return defaultRouter(outerReq, outerRes)
@@ -24,7 +24,7 @@ export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool:
         const url = new URL(`${protocol}://${target.hostname}:${port}${outerReq.url}`)
         const policy = target.policy || '*'
 
-        if (evaluateTool.evaluatePolicy(policy, appURL.pathname, outerReq.method || 'GET')) {
+        if (evaluateTool.evaluatePolicy(policy, appURL.pathname, outerReq.method || '')) {
             const rewriteHost = appURL.host
             const headers = rewriteTool.sanitizeHeaders(outerReq.headers as Headers)
 
@@ -37,7 +37,7 @@ export function NewApp(config: OuterLayerConfig, gateway: Gateway, evaluateTool:
             headers['x-forwarded-proto'] = trustProxy ? outerReq.headers['x-forwarded-proto'] || 'http' : 'http'
 
             const gwReq: GatewayRequest = {
-                method: outerReq.method || 'GET',
+                method: outerReq.method || '',
                 url: url.href,
                 headers
             }

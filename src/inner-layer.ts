@@ -87,8 +87,8 @@ export class InnerLayer implements Closeable {
                 this.pendingReqs.set(uuid, pendingReq)
                 const innerRes = await pendingReq.res
                 const gwRes: GatewayResponse = {
-                    statusCode: innerRes.statusCode || 200,
-                    statusMessage: innerRes.statusMessage || 'OK',
+                    statusCode: innerRes.statusCode || 0,
+                    statusMessage: innerRes.statusMessage || '',
                     headers: innerRes.headers
                 }
                 socket.emit('gw_res', uuid, gwRes)
@@ -98,7 +98,7 @@ export class InnerLayer implements Closeable {
                 socket.emit('gw_res_end', uuid)
                 log(gwReq.method, gwReq.url, gwRes.statusCode)
             } catch (error) {
-                const data = Buffer.from('Internal Server Error')
+                const data = 'Internal Server Error'
                 const gwRes: GatewayResponse = {
                     statusCode: 500,
                     statusMessage: 'Internal Server Error',
