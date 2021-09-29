@@ -12,7 +12,7 @@ function color(status: number): number {
 }
 
 export function log(method: string | undefined, url: string | URL | undefined, statusCode: number, host?: string): void {
-    process.stdout.write(`\x1b[0m${method} ${url} \x1b[${color(statusCode)}m${statusCode}\x1b[0m${host ? ` (${host})`: ''}\n`)
+    process.stdout.write(`\x1b[0m${method} ${url} ${host ? `(${host}) `: ''}\x1b[${color(statusCode)}m${statusCode}\x1b[0m\n`)
 }
 
 export function sendStatus(req: IncomingMessage, res: ServerResponse, status: number, body?: string | string[]): void {
