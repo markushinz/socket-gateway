@@ -77,7 +77,7 @@ export class InnerLayer implements Closeable {
             }
         })
 
-        socket.on('request', async(uuid: string, gwReq: GatewayRequest) => {
+        socket.on('gw_req', async(uuid: string, gwReq: GatewayRequest) => {
             let _statusCode = 500
             const gwRes: GatewayResponse = {
                 statusCode: _statusCode,
@@ -96,17 +96,17 @@ export class InnerLayer implements Closeable {
 
                 for await (const chunk of innerRes) {
                     gwRes.data = chunk
-                    socket.emit('response', uuid, gwRes)
+                    socket.emit('gw_res', uuid, gwRes)
                     delete gwRes.statusCode
                     delete gwRes.statusMessage
                     delete gwRes.data
                     delete gwRes.headers
                 }
             } catch (error) {
-                console.error('request', gwReq, error)
+                console.error('gw_req', gwReq, error)
             } finally {
                 gwRes.end = true
-                socket.emit('response', uuid, gwRes)
+                socket.emit('gw_res', uuid, gwRes)
                 process.stdout.write(`\x1b[0m${gwReq.method} ${gwReq.url} \x1b[${color(_statusCode)}m${_statusCode}\x1b[0m\n`)
             }
         })

@@ -55,7 +55,7 @@ export class Gateway {
 
             console.log(`Inner layer ${socket.id} connected.`)
 
-            socket.on('response', (uuid: string, gwRes: GatewayResponse) => {
+            socket.on('gw_res', (uuid: string, gwRes: GatewayResponse) => {
                 const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
                     if (gwRes.statusCode) {
@@ -124,7 +124,7 @@ export class Gateway {
             const connectionIndex = (outerReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
-            this.io.to(connectionID).emit('request', uuid, gwReq)
+            this.io.to(connectionID).emit('gw_req', uuid, gwReq)
 
             setTimeout(() => {
                 if (this.pendingReqs.has(uuid)) {
