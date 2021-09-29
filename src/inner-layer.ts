@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client'
-import { request, requestLegacy } from './request'
+import { request } from './request'
 import { sign } from 'jsonwebtoken'
 
 import { Closeable, GatewayRequest, JWTPayload, GatewayResponse, PendingClientRequest } from './models'
@@ -25,7 +25,9 @@ export class InnerLayer implements Closeable {
     private async getChallenge(attempt = 0): Promise<string> {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
-            const res = await requestLegacy('GET', challengeURL, {})
+            const pendingReq = request('GET', challengeURL, {})
+            pendingReq.req.end()
+            const res = await pendingReq.res
             if (res.statusCode !== 200) {
                 throw new Error(`Unexpected status ${res.statusCode} ${res.statusMessage}`)
             }
@@ -109,6 +111,8 @@ export class InnerLayer implements Closeable {
                 socket.emit('gw_res_data', uuid, data)
                 socket.emit('gw_res_end', uuid)
                 console.error(error, 'gw_req', gwReq, 'gw_res', gwRes)
+            } finally {
+                this.pendingReqs.delete(uuid)
             }
         })
 
