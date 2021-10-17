@@ -7,7 +7,7 @@ on:
 jobs:
   ci:
     name: CI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16.9.1"
+          node-version: "16.11.1"
       - name: Version, Lint, Test, Build and Pack
         run: |
           export VERSION=$(./version.sh)
