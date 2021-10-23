@@ -1,6 +1,6 @@
 # socket-gateway
 
-![CI](https://github.com/markushinz/socket-gateway/actions/workflows/ci.yaml/badge.svg)
+[![CI](https://github.com/markushinz/socket-gateway/actions/workflows/ci.yaml/badge.svg)](https://github.com/markushinz/socket-gateway/actions/workflows/ci.yaml)
 
 An API Gateway based on websockets to expose HTTP(S) endpoints not reachable from the Internet - implemented in node.js.
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
