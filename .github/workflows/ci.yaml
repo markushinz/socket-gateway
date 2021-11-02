@@ -53,4 +53,4 @@ jobs:
         run: GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" gh release create "v${VERSION}" --title "v${VERSION}" --notes "v${VERSION}" ./socket-gateway.tgz
       - name: Deploy
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: GITHUB_TOKEN="${{ secrets.TU_TOKEN }}" gh workflow run -R "${{ secrets.DEPLOY_REPO }}" cd.yaml -f "repository=markushinz/socket-gateway" -f "tag=v${VERSION}"
+        run: GITHUB_TOKEN="${{ secrets.TU_TOKEN }}" gh workflow run -R "${{ secrets.DEPLOY_REPO }}" cd.yaml -f "repository=markushinz/socket-gateway" -f "tag=v${VERSION}" -f "merge=true"
