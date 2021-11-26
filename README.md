@@ -15,7 +15,13 @@ The outer layer uses that connection to forward requests to the target network (
 ### Docker 🐳
 ```bash
 # https://hub.docker.com/r/markushinz/socket-gateway/tags
-docker pull markushinz/socket-gateway:latest
+
+docker run -v $(pwd)/certificates:/mnt/certificates \
+  markushinz/socket-gateway:latest \
+  certificates --private-key /mnt/certificates/innerLayer.key --public-key /mnt/certificates/innerLayer.crt # generate key pair
+echo '{"targets":{"localhost":{"hostname":"jsonplaceholder.typicode.com"}}}' > targets.yaml
+
+docker run -v $(pwd)/certificates/innerLayer.crt:/mnt/innerLayer/innerLayer.crt
 ```
 ### npm
 
