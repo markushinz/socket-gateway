@@ -1,6 +1,7 @@
 # socket-gateway
 
 [![CI](https://github.com/markushinz/socket-gateway/actions/workflows/ci.yaml/badge.svg)](https://github.com/markushinz/socket-gateway/actions/workflows/ci.yaml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=markushinz_socket-gateway&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=markushinz_socket-gateway)
 
 An API Gateway based on websockets to expose HTTP(S) endpoints not reachable from the Internet - implemented in node.js.
 The gateway allows you to reach endpoints not reachable due to NAT, ISP restrictions, or any other reasons.
@@ -15,13 +16,7 @@ The outer layer uses that connection to forward requests to the target network (
 ### Docker 🐳
 ```bash
 # https://hub.docker.com/r/markushinz/socket-gateway/tags
-
-docker run -v $(pwd)/certificates:/mnt/certificates \
-  markushinz/socket-gateway:latest \
-  certificates --private-key /mnt/certificates/innerLayer.key --public-key /mnt/certificates/innerLayer.crt # generate key pair
-echo '{"targets":{"localhost":{"hostname":"jsonplaceholder.typicode.com"}}}' > targets.yaml
-
-docker run -v $(pwd)/certificates/innerLayer.crt:/mnt/innerLayer/innerLayer.crt
+docker pull markushinz/socket-gateway:latest
 ```
 ### npm
 
