@@ -26,7 +26,7 @@ function coerceFileExists(file: string) {
 }
 
 function coerceTrustProxy(values: string) {
-    return compile(values ? values.split(/ *, */) : [])
+    return compile(values ? values.split(',').map(value => value.trim()) : [])
 }
 
 export function cli(args: string[]): Promise<Closeable> {
