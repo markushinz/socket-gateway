@@ -9,7 +9,7 @@ type Cache = {
 
 function pathToRegex(path: string): RegExp{
     if (path === '*') {
-        return new RegExp('.*')
+        return /.*/
     }
     if (path.startsWith('^')) {
         return new RegExp(path)
@@ -29,7 +29,7 @@ export class EvaluateTool {
         try {
             const now = Date.now()
             if (!this.cache.timestamp || now - this.cache.timestamp > 60000) {
-                const config = load(readFileSync(this.targets as string, 'utf8')) as {
+                const config = load(readFileSync(this.targets, 'utf8')) as {
                     targets: Record<string, Target>;
                 }
                 this.cache.targets = config.targets

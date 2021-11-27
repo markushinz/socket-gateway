@@ -3,6 +3,5 @@ module.exports = {
     testEnvironment: 'node',
     silent: true,
     verbose: true,
-    collectCoverage: true,
-    testResultsProcessor: 'jest-sonar-reporter'
+    collectCoverage: true
 }
