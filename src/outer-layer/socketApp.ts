@@ -19,7 +19,7 @@ export function NewSocketApp(config: OuterLayerConfig, gateway: Gateway, evaluat
             }
 
             if (['/challenge', '/challenge/'].includes(url.pathname) && req.method === 'GET') {
-                const challenge = await gateway.challengeTool.createChallenge()
+                const challenge = gateway.challengeTool.createChallenge()
                 return sendStatus(req, res, 200, challenge)
             }
 
