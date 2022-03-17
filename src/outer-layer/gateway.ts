@@ -51,6 +51,7 @@ export class Gateway {
             socket.on('gw_res', (uuid: string, gwRes: GatewayResponse) => {
                 const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
+                    pendingReq.lastHeartbeat = new Date()
                     pendingReq.res.statusCode = gwRes.statusCode
                     pendingReq.res.statusMessage = gwRes.statusMessage
                     gwRes.headers = rewriteTool.sanitizeHeaders(gwRes.headers)
@@ -62,6 +63,7 @@ export class Gateway {
             socket.on('gw_res_data', (uuid: string, data: Buffer) => {
                 const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
+                    pendingReq.lastHeartbeat = new Date()
                     pendingReq.res.write(data)
                 }
             })
@@ -69,6 +71,7 @@ export class Gateway {
             socket.on('gw_res_end', (uuid: string) => {
                 const pendingReq = this.pendingReqs.get(uuid)
                 if (pendingReq) {
+                    pendingReq.lastHeartbeat = new Date()
                     this.pendingReqs.delete(uuid)
                     pendingReq.res.end()
                     log(pendingReq.req.method, pendingReq.req.url, pendingReq.res.statusCode, pendingReq.req.headers.host)
@@ -119,12 +122,7 @@ export class Gateway {
             const connectionIndex = (outerReq.socket.remotePort ?? 0) % possibleConnections.length
             const connectionID = possibleConnections[connectionIndex].id
 
-            setTimeout(() => {
-                if (this.pendingReqs.has(uuid)) {
-                    this.pendingReqs.delete(uuid)
-                    sendStatus(outerReq, outerRes, 504)
-                }
-            }, this.timeout)
+            this.checkTimeout(uuid, pendingReq)
 
             this.io.to(connectionID).emit('gw_req', uuid, gwReq)
             for await (const data of outerReq) {
@@ -134,5 +132,22 @@ export class Gateway {
         } else {
             sendStatus(outerReq, outerRes, 502)
         }
+    }
+
+    checkTimeout(uuid: string, pendingReq: PendingServerRequest, checkInTime = this.timeout) {
+        setTimeout(() => {
+            const pr = this.pendingReqs.get(uuid)
+            if (pr) {
+                const timeSinceLastHeartbeat = pr.lastHeartbeat ? Date.now() - pr.lastHeartbeat.getTime() : this.timeout
+                const timeTillTimeout = this.timeout - timeSinceLastHeartbeat
+                if (timeTillTimeout > 0) {
+                    this.checkTimeout(uuid, pendingReq, timeTillTimeout)
+                } else {
+                    this.pendingReqs.delete(uuid)
+                    sendStatus(pendingReq.req, pendingReq.res, 504)
+                }
+               
+            }
+        }, checkInTime)
     }
 }

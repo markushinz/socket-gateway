@@ -43,4 +43,5 @@ export type PendingServerRequest = {
     rewriteHost: string;
     req: IncomingMessage;
     res: ServerResponse;
+    lastHeartbeat?: Date;
 }
