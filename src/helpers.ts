@@ -17,19 +17,21 @@ export function log(method: string | undefined, url: string | URL | undefined, s
 }
 
 export function sendStatus(req: IncomingMessage, res: ServerResponse, status: number, body?: string | string[]): void {
-    res.statusCode = status
-    const statusMessage = STATUS_CODES[status]
-    if (statusMessage) {
-        res.statusMessage = statusMessage
-    }
-    if (!res.hasHeader('content-type')) {
-        res.setHeader('content-type', 'text/plain; charset=utf-8')
-    }
-    if (body) {
-        body = [body].flat()
-        body.forEach(data => res.write(data))
-    } else if (statusMessage) {
-        res.write(statusMessage)
+    if (!res.headersSent) {
+        res.statusCode = status
+        const statusMessage = STATUS_CODES[status]
+        if (statusMessage) {
+            res.statusMessage = statusMessage
+        }
+        if (!res.hasHeader('content-type')) {
+            res.setHeader('content-type', 'text/plain; charset=utf-8')
+        }
+        if (body) {
+            body = [body].flat()
+            body.forEach(data => res.write(data))
+        } else if (statusMessage) {
+            res.write(statusMessage)
+        }
     }
     res.end()
     log(req.method, req.url, res.statusCode, req.headers.host)
