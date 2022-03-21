@@ -16,7 +16,7 @@ export type OuterLayerConfig = {
     validity: number;
     'app-port': number;
     'socket-port': number;
-    'public-key': string | Buffer;
+    'inner-layer-certificate': string | Buffer;
     targets: string;
     'remove-csps': boolean;
 }
@@ -26,7 +26,7 @@ export class OuterLayer implements Closeable {
     socketServer: Server
 
     constructor(config: OuterLayerConfig) {
-        const challegeTool = new ChallengeTool(config.validity, config['public-key'])
+        const challegeTool = new ChallengeTool(config.validity, config['inner-layer-certificate'])
         const evaluateTool = new EvaluateTool(config.targets)
         const rewriteTool = new RewriteTool(config['remove-csps'])
         

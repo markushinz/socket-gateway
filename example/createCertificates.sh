@@ -21,7 +21,13 @@ EOF
 openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout server.key -out server.crt -config server.conf -extensions "v3_req"
 rm -f server.conf
 
-openssl genrsa -out innerLayer.pem 4096
-openssl rsa -in innerLayer.pem -pubout -out innerLayer.crt
-openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in innerLayer.pem -out innerLayer.key
-rm -f innerLayer.pem
+cat << EOF > innerLayer.conf
+[req]
+distinguished_name = req_distinguished_name
+prompt = no
+[req_distinguished_name]
+CN = inner-layer
+EOF
+
+openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout innerLayer.key -out innerLayer.crt -config innerLayer.conf
+rm -f innerLayer.conf

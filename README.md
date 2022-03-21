@@ -20,21 +20,23 @@ docker pull markushinz/socket-gateway:latest
 ```
 ### npm
 
+> ⚠️ This is a very simple setup. Check out the [help section](#help) for all configuration options and [this example](example) for a secure production setup.
+
 ```bash
 # npm https://github.com/markushinz/socket-gateway/releases
 npm install -g https://github.com/markushinz/socket-gateway/releases/latest/download/socket-gateway.tgz
 
-socket-gateway certificates # generate key pair (innerLayer.crt and innerLayer.key)
+socket-gateway certificates # generate certificate (innerLayer.crt and innerLayer.key)
 echo '{"targets":{"localhost":{"hostname":"jsonplaceholder.typicode.com"}}}' > targets.yaml
 
 socket-gateway outer-layer \
-  --public-key innerLayer.crt \
+  --inner-layer-certificate innerLayer.crt \
   --targets targets.yaml \
   --app-port 3000 \
   --socket-port 3001 # keep running
 
 socket-gateway inner-layer \
-  --private-key innerLayer.key \
+  --inner-layer-private-key innerLayer.key \
   --outer-layer ws://localhost:3001 # keep running
 
 curl http://localhost:3000 # just like curl https://jsonplaceholder.typicode.com
@@ -70,4 +72,84 @@ Now, all requests that are allowed py the specified policy that have the request
 
 ### Inner Layer
 
-*Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs. This is also required if the outer layer uses a self-signed certificate.
+*Optional*: Provide an environment variable `NODE_EXTRA_CA_CERTS` to extend the well known "root" CAs for your private APIs.
+
+## Help
+
+### certificates
+
+```
+$ socket-gateway certificates --help
+
+Generate certificates
+
+Options:
+  --help                       Show help                               [boolean]
+  --version                    Show version number                     [boolean]
+  --private-key                The private key file to write
+                                                     [default: "innerLayer.key"]
+  --certificate, --public-key  The public key file to write
+                                                     [default: "innerLayer.crt"]
+  --common-name                The common name of the certificate
+                                                        [default: "inner-layer"]
+  --validity                   The certificate validity in years  [default: 100]
+```
+
+### outer-layer
+
+```
+$ socket-gateway outer-layer
+
+Start the outer-layer --help
+
+Options:
+  --help            Show help                                          [boolean]
+  --version         Show version number                                [boolean]
+  --admin-password  The admin password                                  [string]
+  --trust-proxy                    [default: "loopback, linklocal, uniquelocal"]
+  --timeout                                                    [default: 180000]
+  --validity                                                     [default: 1000]
+  --remove-csps     Removes content-security-policy response headers
+                                                      [boolean] [default: false]
+  --app-port        The port the gateway consumers connect to    [default: 3000]
+  --socket-port     The port the inner layer(s) connect to       [default: 3001]
+  --public-key      The corresponsing public key or certificate file of the
+                    inner layer(s)                                    [required]
+  --targets         The targets file   
+```
+
+### inner-layer
+
+```
+$ socket-gateway inner-layer --help
+
+Start the inner-layer
+
+Options:
+  --help                                    Show help                  [boolean]
+  --version                                 Show version number        [boolean]
+  --inner-layer-identifier, --identifier    The identifier to distinguish
+                                            multiple inner layers
+                                                 [default: "<hostname>"]
+  --outer-layer-ca                          The outer layer cert or CA file to
+                                            check against. If not provided all
+                                            well known CAs are accepted.[string]
+  --inner-layer-private-key, --private-key  The private key file used to
+                                            authenticate against the outer
+                                            layer. The private key is used
+                                            during a challenge-response
+                                            authentication mechanism. [required]
+  --inner-layer-certificate                 The certificate file signed by the
+                                            private key to use when establishing
+                                            the TLS connection to the outer
+                                            layer. Provide the certificate if
+                                            you want to use client certificate
+                                            authenticaion on top of the
+                                            challenge-response authentication
+                                            mechanism.                  [string]
+  --outer-layer                             The outer layer URI to connect to
+                                                                      [required]
+  --insecure                                Allow connections to the outer layer
+                                            via http/ws
+                                                      [boolean] [default: false]
+```
