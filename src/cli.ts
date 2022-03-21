@@ -3,6 +3,7 @@ import { compile } from 'proxy-addr'
 
 import { hostname } from 'os'
 import { readFileSync, writeFileSync } from 'fs'
+import { randomInt } from 'crypto'
 import { InnerLayer } from './inner-layer'
 import { OuterLayer } from './outer-layer'
 import { pki, md } from 'node-forge'
@@ -33,7 +34,7 @@ function generateSerial() {
     const max = Math.pow(2, 32)
     let serial = ''
     for (let i = 0; i < 4; i++) {
-        serial += Math.floor(Math.random() * Math.floor(max)).toString(16)
+        serial += randomInt(max).toString(16)
     }
     return '00' + serial.toUpperCase()
 }
