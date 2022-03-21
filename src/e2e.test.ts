@@ -17,7 +17,7 @@ const config = {
     timeout: '500',
     adminPassword: 'admin',
     privateKey: join(directory, 'innerLayer.key'),
-    publicKey: join(directory, 'innerLayer.crt'),
+    certificate: join(directory, 'innerLayer.crt'),
     targets: join(directory, 'targets.yaml')
 }
 const adminCredentials = Buffer.from(`admin:${config.adminPassword}`).toString('base64')
@@ -57,9 +57,9 @@ writeFileSync(join(directory, 'targets.yaml'), JSON.stringify({
 
 const closeables: Closeable[] = []
 beforeAll(async function() {
-    closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--public-key', config.publicKey]))
-    closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--private-key', config.privateKey, '--identifier', 'identifier']))
-    closeables.push(await cli(['outer-layer', '--app-port', config.appPort, '--socket-port', config.socketPort, '--timeout', config.timeout, '--targets', config.targets, '--public-key', config.publicKey, '--admin-password', config.adminPassword]))
+    closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--certificate', config.certificate]))
+    closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--inner-layer-private-key', config.privateKey, '--inner-layer-identifier', 'identifier']))
+    closeables.push(await cli(['outer-layer', '--app-port', config.appPort, '--socket-port', config.socketPort, '--timeout', config.timeout, '--targets', config.targets, '--inner-layer-certificate', config.certificate, '--admin-password', config.adminPassword]))
 })
 
 afterAll(async function() {

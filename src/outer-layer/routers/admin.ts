@@ -22,7 +22,7 @@ function html(config: OuterLayerConfig, gateway: Gateway, evaluateTool: Evaluate
             <h3>Inner Layers</h3>
             <pre>${JSON.stringify(gateway.connections, null, 4)}</pre>
             <h3>Inner Layer Public Key</h3>
-            <pre>${config['public-key']}</pre>
+            <pre>${config['inner-layer-certificate']}</pre>
             <h3>Targets</h3>
             <pre>${JSON.stringify(evaluateTool.targetsParsed, null, 4)}</pre>
         </div>

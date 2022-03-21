@@ -11,6 +11,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./server.crt:/etc/nginx/server.crt
       - ./server.key:/etc/nginx/server.key
+      - ./innerLayer.crt:/etc/nginx/innerLayer.crt
     logging:
       driver: none
   outer-layer-service:
@@ -19,7 +20,7 @@ services:
     command: outer-layer
     environment:
       - SG_TARGETS=/mnt/targets.yaml
-      - SG_PUBLIC_KEY=/mnt/innerLayer.crt
+      - SG_INNER_LAYER_CERTIFICATE=/mnt/innerLayer.crt
       - SG_REMOVE_CSPS=true
       - SG_ADMIN_PASSWORD=admin
     ports:
@@ -32,11 +33,13 @@ services:
     restart: always
     command: inner-layer
     environment:
-      - NODE_EXTRA_CA_CERTS=/mnt/server.crt
       - SG_OUTER_LAYER=${SG_OUTER_LAYER:-https://nginx-service:3001}
-      - SG_PRIVATE_KEY=/mnt/innerLayer.key
+      - SG_INNER_LAYER_PRIVATE_KEY=/mnt/innerLayer.key
+      - SG_OUTER_LAYER_CA=/mnt/server.crt
+      - SG_INNER_LAYER_CERTIFICATE=/mnt/innerLayer.crt
     volumes:
       - ./server.crt:/mnt/server.crt
+      - ./innerLayer.crt:/mnt/innerLayer.crt
       - ./innerLayer.key:/mnt/innerLayer.key
   example-server-service:
     image: markushinz/example-server:v2.2.3

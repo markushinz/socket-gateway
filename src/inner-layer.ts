@@ -6,9 +6,11 @@ import { Closeable, GatewayRequest, JWTPayload, GatewayResponse, PendingClientRe
 import { log } from './helpers'
 
 type InnerLayerConfig = {
-    'private-key': string | Buffer;
+    'inner-layer-identifier': string;
+    'outer-layer-ca'?: string;
+    'inner-layer-certificate'?: string;
+    'inner-layer-private-key': string;
     'outer-layer': URL;
-    identifier: string;
 }
 
 export class InnerLayer implements Closeable {
@@ -25,7 +27,11 @@ export class InnerLayer implements Closeable {
     private async getChallenge(attempt = 0): Promise<string> {
         const challengeURL = new URL('/challenge', this.config['outer-layer'])
         try {
-            const pendingReq = request('GET', challengeURL, {})
+            const pendingReq = request('GET', challengeURL, {}, {
+                ca: this.config['outer-layer-ca'],
+                cert: this.config['inner-layer-certificate'],
+                key: this.config['inner-layer-private-key']
+            })
             pendingReq.req.end()
             const res = await pendingReq.res
             if (res.statusCode !== 200) {
@@ -46,8 +52,8 @@ export class InnerLayer implements Closeable {
     }
 
     private solveChallenge(challenge: string) {
-        const payload: JWTPayload = { challenge, identifier: this.config.identifier }
-        return sign(payload, this.config['private-key'], { algorithm: 'RS256' })
+        const payload: JWTPayload = { challenge, identifier: this.config['inner-layer-identifier'] }
+        return sign(payload, this.config['inner-layer-private-key'], { algorithm: 'RS256' })
     }
 
     private async getHeaders() {
@@ -65,7 +71,10 @@ export class InnerLayer implements Closeable {
                     extraHeaders: await this.getHeaders()
                 }
             },
-            reconnection: false
+            reconnection: false,
+            ca: this.config['outer-layer-ca'],
+            cert: this.config['inner-layer-certificate'],
+            key: this.config['inner-layer-private-key']
         })
 
         console.log(`Connecting to outer layer ${outerLayer}...`)
