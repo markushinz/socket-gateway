@@ -9,16 +9,18 @@ import { OuterLayer } from './outer-layer'
 import { pki, md } from 'node-forge'
 import { Closeable } from './models'
 
-function coerceOuterLayer(url: string, insecure: boolean): URL {
-    const parsed = new URL(url)
-    if (
-        insecure ||
-        ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) || 
-        ['https:', 'wss:'].includes(parsed.protocol)
-    ) {
-        return parsed
+function coerceOuterLayer(url: string) {
+    return function(insecure: boolean) {
+        const parsed = new URL(url)
+        if (
+            insecure ||
+            ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) || 
+            ['https:', 'wss:'].includes(parsed.protocol)
+        ) {
+            return parsed
+        }
+        throw new Error('Protocol must be https: or wss:')
     }
-    throw new Error('Protocol must be https: or wss:')
 }
 
 function coerceFileExists(file: string) {
@@ -69,7 +71,7 @@ export function cli(args: string[]): Promise<Closeable> {
                     .option('outer-layer', {
                         description: 'The outer layer URI to connect to',
                         demandOption: true,
-                        coerce: url => coerceOuterLayer(url, yargs_.argv.insecure as boolean)
+                        coerce: url => coerceOuterLayer(url)
                     })
                     .option('insecure', {
                         type: 'boolean',
