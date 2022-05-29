@@ -10,22 +10,25 @@ type InnerLayerConfig = {
     'outer-layer-ca'?: string;
     'inner-layer-certificate'?: string;
     'inner-layer-private-key': string;
-    'outer-layer': URL;
+    'outer-layer': (insecure: boolean) => URL;
+    insecure: boolean;
 }
 
 export class InnerLayer implements Closeable {
+    private outerLayer: URL
     private reconnect: boolean
     private socket: Promise<Socket>
 
     private pendingReqs: Map<string, PendingClientRequest> = new Map()
 
     constructor(public config: InnerLayerConfig) {
+        this.outerLayer = this.config['outer-layer'](this.config.insecure)
         this.reconnect = true
         this.socket = this.connect()
     }
 
     private async getChallenge(attempt = 0): Promise<string> {
-        const challengeURL = new URL('/challenge', this.config['outer-layer'])
+        const challengeURL = new URL('/challenge', this.outerLayer)
         try {
             const pendingReq = request('GET', challengeURL, {}, {
                 ca: this.config['outer-layer-ca'],
@@ -64,7 +67,7 @@ export class InnerLayer implements Closeable {
     }
 
     private async connect() {
-        const outerLayer = this.config['outer-layer'].href
+        const outerLayer = this.outerLayer.href
         const socket = io(outerLayer, {
             transportOptions: {
                 polling: {
