@@ -57,6 +57,7 @@ writeFileSync(join(directory, 'targets.yaml'), JSON.stringify({
 
 const closeables: Closeable[] = []
 beforeAll(async function() {
+    console.log(config)
     closeables.push(await cli(['certificates', '--private-key', config.privateKey,  '--certificate', config.certificate]))
     closeables.push(await cli(['inner-layer', '--outer-layer', `ws://localhost:${config.socketPort}`, '--inner-layer-private-key', config.privateKey, '--inner-layer-identifier', 'identifier']))
     closeables.push(await cli(['outer-layer', '--app-port', config.appPort, '--socket-port', config.socketPort, '--timeout', config.timeout, '--targets', config.targets, '--inner-layer-certificate', config.certificate, '--admin-password', config.adminPassword]))
