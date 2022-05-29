@@ -43,7 +43,7 @@ function generateSerial() {
 
 export function cli(args: string[]): Promise<Closeable> {
     return new Promise(function(resolve) {
-        yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion().strict(false)
+        yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion().strict()
             
             .command('inner-layer', 'Start the inner-layer', yargs_ => {
                 return yargs_
