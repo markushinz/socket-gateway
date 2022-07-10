@@ -104,7 +104,7 @@ export class Gateway {
         const possibleConnections = this.connections.filter(connection => {
             return !identifier || [identifier].flat().includes(connection.payload.identifier)
         })
-        
+
         if (possibleConnections.length > 0) {
             const uuid = v1()
             const pendingReq: PendingServerRequest = {
@@ -146,7 +146,7 @@ export class Gateway {
                     this.pendingReqs.delete(uuid)
                     sendStatus(pendingReq.req, pendingReq.res, 504)
                 }
-               
+
             }
         }, checkInTime)
     }
