@@ -14,7 +14,7 @@ function coerceOuterLayer(url: string) {
         const parsed = new URL(url)
         if (
             insecure ||
-            ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) || 
+            ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) ||
             ['https:', 'wss:'].includes(parsed.protocol)
         ) {
             return parsed
@@ -44,7 +44,7 @@ function generateSerial() {
 export function cli(args: string[]): Promise<Closeable> {
     return new Promise(function(resolve) {
         yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion()
-            
+
             .command('inner-layer', 'Start the inner-layer', yargs_ => {
                 return yargs_
                     .option('inner-layer-identifier', {

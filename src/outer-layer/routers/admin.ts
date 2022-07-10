@@ -8,14 +8,14 @@ import { EvaluateTool } from '../tools/evaluate'
 function html(config: OuterLayerConfig, gateway: Gateway, evaluateTool: EvaluateTool) {
     return `<!DOCTYPE html>
     <html lang="en">
-    
+
     <head>
         <meta charset="utf-8">
         <title>Socket Gateway</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="/admin/stylesheet.css">
     </head>
-    
+
     <body>
         <div id="container">
             <h1>Socket Gateway</h1>
@@ -27,7 +27,7 @@ function html(config: OuterLayerConfig, gateway: Gateway, evaluateTool: Evaluate
             <pre>${JSON.stringify(evaluateTool.targetsParsed, null, 4)}</pre>
         </div>
     </body>
-    
+
     </html>
     `
 }
@@ -87,7 +87,7 @@ export function newAdminRouter(config: OuterLayerConfig, gateway: Gateway, evalu
             return undefined
         }
     })()
-    
+
     return function(req, res) {
         if (adminCredentialsParsed) {
             if (req.headers.authorization === `Basic ${adminCredentialsParsed}`) {

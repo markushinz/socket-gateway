@@ -12,7 +12,7 @@ In the preceding scenario `Client` can not directly connect to `Server` as no co
 When using the socket-gateway the inner layer (a component that is able to establish a connection to `Server`) creates a persistent websocket connection (`Inner layer -> Router 2 -> Internet -> Router 3 -> Outer layer`) to the outer layer (a compoent that can be connected to from the `Internet`).
 The outer layer uses that connection to forward requests to the target network (if allowed).
 `Client` can connect to `Server` using the socket-gateway via `Client -> Router 1 -> Internet -> Router 3 -> Outer layer -> Router 3 -> Internet -> Router 2 -> Inner layer -> Router 2 -> Server`.
- 
+
 ### Docker 🐳
 ```bash
 # https://hub.docker.com/r/markushinz/socket-gateway/tags
@@ -115,7 +115,7 @@ Options:
   --socket-port     The port the inner layer(s) connect to       [default: 3001]
   --public-key      The corresponsing public key or certificate file of the
                     inner layer(s)                                    [required]
-  --targets         The targets file   
+  --targets         The targets file
 ```
 
 ### inner-layer
