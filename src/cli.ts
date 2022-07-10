@@ -14,7 +14,7 @@ function coerceOuterLayer(url: string) {
         const parsed = new URL(url)
         if (
             insecure ||
-            ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) || 
+            ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) ||
             ['https:', 'wss:'].includes(parsed.protocol)
         ) {
             return parsed
@@ -32,11 +32,20 @@ function coerceTrustProxy(values: string) {
     return compile(values ? values.split(',').map(value => value.trim()) : [])
 }
 
-function generateSerial() {
+// function generateSerial() {
+//     const max = Math.pow(2, 32)
+//     let serial = ''
+//     for (let i = 0; i < 4; i++) {
+//         serial += randomInt(max).toString(16)
+//     }
+//     return '00' + serial.toUpperCase()
+// }
+
+const generateSerial = function() {
     const max = Math.pow(2, 32)
     let serial = ''
     for (let i = 0; i < 4; i++) {
-        serial += randomInt(max).toString(16)
+        serial += Math.floor(Math.random() * Math.floor(max)).toString(16)
     }
     return '00' + serial.toUpperCase()
 }
@@ -44,7 +53,7 @@ function generateSerial() {
 export function cli(args: string[]): Promise<Closeable> {
     return new Promise(function(resolve) {
         yargs(args).detectLocale(false).env('SG').demandCommand().recommendCommands().completion()
-            
+
             .command('inner-layer', 'Start the inner-layer', yargs_ => {
                 return yargs_
                     .option('inner-layer-identifier', {
@@ -141,24 +150,60 @@ export function cli(args: string[]): Promise<Closeable> {
                         default: 100
                     })
             }, argv => {
+                const caKeys = pki.rsa.generateKeyPair({ bits: 4096 })
+                const caCertificate = pki.createCertificate()
+                caCertificate.publicKey = caKeys.publicKey
+                caCertificate.serialNumber = generateSerial()
+                caCertificate.validity.notBefore = new Date()
+                caCertificate.validity.notAfter = new Date(caCertificate.validity.notBefore.getTime())
+                caCertificate.validity.notAfter.setFullYear(caCertificate.validity.notBefore.getFullYear() + argv.validity)
+                const caSubject = [{
+                    name: 'commonName',
+                    value: `${argv['common-name']} CA`
+                }]
+                caCertificate.setSubject(caSubject)
+                caCertificate.setIssuer(caSubject)
+                const caExtensions = [
+                    {
+                        name: 'basicConstraints',
+                        critical: true,
+                        cA: true
+                    },
+                    {
+                        name: 'subjectAltName',
+                        altNames: [],
+                        critical: true
+                    }
+                ]
+                caCertificate.setExtensions(caExtensions)
+                caCertificate.sign(caKeys.privateKey, md.sha256.create())
+
+                writeFileSync(`ca-${argv['private-key']}`, pki.privateKeyToPem(caKeys.privateKey))
+                writeFileSync(`ca-${argv['certificate']}`, pki.certificateToPem(caCertificate))
+
                 const keys = pki.rsa.generateKeyPair({ bits: 4096 })
                 const certificate = pki.createCertificate()
                 certificate.publicKey = keys.publicKey
                 certificate.serialNumber = generateSerial()
-                certificate.validity.notBefore = new Date()
-                certificate.validity.notAfter = new Date(certificate.validity.notBefore.getTime())
-                certificate.validity.notAfter.setFullYear(certificate.validity.notBefore.getFullYear() + argv.validity)
+                certificate.validity.notBefore = caCertificate.validity.notBefore
+                certificate.validity.notAfter = caCertificate.validity.notAfter
                 const subject = [{
                     name: 'commonName',
                     value: argv['common-name']
                 }]
                 certificate.setSubject(subject)
-                certificate.setIssuer(subject)
+                // certificate.setIssuer(caSubject)
+                certificate.setIssuer(caCertificate.subject.attributes)
                 const extensions = [
                     {
                         name: 'basicConstraints',
                         critical: true,
                         cA: false
+                    },
+                    {
+                        name: 'subjectAltName',
+                        altNames: [],
+                        critical: true
                     },
                     {
                         name: 'keyUsage',
@@ -174,7 +219,7 @@ export function cli(args: string[]): Promise<Closeable> {
                     }
                 ]
                 certificate.setExtensions(extensions)
-                certificate.sign(keys.privateKey, md.sha256.create())
+                certificate.sign(caKeys.privateKey, md.sha256.create())
 
                 writeFileSync(argv['private-key'], pki.privateKeyToPem(keys.privateKey))
                 writeFileSync(argv['certificate'], pki.certificateToPem(certificate))

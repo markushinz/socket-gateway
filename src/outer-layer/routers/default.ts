@@ -10,7 +10,7 @@ export function newDefaultRouter(gateway: Gateway): RequestListener {
                 return sendStatus(req, res, 200)
             }
             if (['/readyz', '/readyz/'].includes(url.pathname)) {
-                return sendStatus(req, res, gateway.connections.length > 0 ? 200: 502) 
+                return sendStatus(req, res, gateway.connections.length > 0 ? 200: 502)
             }
         }
         return sendStatus(req, res, 404)

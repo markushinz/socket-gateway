@@ -114,9 +114,9 @@ export class InnerLayer implements Closeable {
                 const gwRes: GatewayResponse = {
                     statusCode: 500,
                     statusMessage: 'Internal Server Error',
-                    headers: { 
+                    headers: {
                         'content-type': 'text/plain; charset=utf-8',
-                        'content-length': data.length 
+                        'content-length': data.length
                     }
                 }
                 socket.emit('gw_res', uuid, gwRes)

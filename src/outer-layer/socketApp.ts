@@ -13,7 +13,7 @@ export function NewSocketApp(config: OuterLayerConfig, gateway: Gateway, evaluat
     return async function(req, res) {
         try {
             const url = new URL(req.url || '', `http://${req.headers.host}`)
-            
+
             if (url.pathname.startsWith('/admin')) {
                 return adminRouter(req, res)
             }
@@ -29,4 +29,4 @@ export function NewSocketApp(config: OuterLayerConfig, gateway: Gateway, evaluat
             sendStatus(req, res, 500)
         }
     }
-} 
+}

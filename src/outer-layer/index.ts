@@ -29,7 +29,7 @@ export class OuterLayer implements Closeable {
         const challegeTool = new ChallengeTool(config.validity, config['inner-layer-certificate'])
         const evaluateTool = new EvaluateTool(config.targets)
         const rewriteTool = new RewriteTool(config['remove-csps'])
-        
+
         const gateway = new Gateway(challegeTool, rewriteTool, config.timeout)
 
         const socketApp = NewSocketApp(config, gateway, evaluateTool)
