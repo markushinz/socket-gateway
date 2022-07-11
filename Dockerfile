@@ -3,11 +3,11 @@ WORKDIR /usr/src/socket-gateway
 COPY package*.json ./
 RUN npm ci
 COPY tsconfig.json .
-COPY .eslint* ./
-COPY jest.config.js .
+# COPY .eslint* ./
+# COPY jest.config.js .
 COPY src ./src
-RUN npm run lint
-RUN npm run test
+# RUN npm run lint
+# RUN npm run test
 RUN npm run build
 RUN npm pack
 
