@@ -19,7 +19,7 @@
         "yargs": "17.5.1"
     },
     "devDependencies": {
-        "@types/jest": "28.1.6",
+        "@types/jest": "28.1.7",
         "@types/js-yaml": "4.0.5",
         "@types/jsonwebtoken": "8.5.8",
         "@types/node": "18.7.6",
