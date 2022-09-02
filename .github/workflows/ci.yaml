@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3.4.1
         with:
-          node-version: "18.2.0"
+          node-version: "18.8.0"
       - name: Workflow Mutex
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: markushinz/actions/workflow-mutex@v1.0.8
