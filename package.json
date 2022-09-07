@@ -15,7 +15,7 @@
         "proxy-addr": "2.0.7",
         "socket.io": "4.5.2",
         "socket.io-client": "4.5.2",
-        "uuid": "8.3.2",
+        "uuid": "9.0.0",
         "yargs": "17.5.1"
     },
     "devDependencies": {
