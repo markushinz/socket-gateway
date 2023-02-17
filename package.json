@@ -16,7 +16,7 @@
         "socket.io": "4.6.0",
         "socket.io-client": "4.6.0",
         "uuid": "9.0.0",
-        "yargs": "17.6.2"
+        "yargs": "17.7.0"
     },
     "devDependencies": {
         "@types/jest": "29.4.0",
