@@ -17,7 +17,7 @@ jobs:
       - name: pre-commit
         uses: markushinz/actions/pre-commit@v1.1.4
       - name: Set up Node.js
-        uses: actions/setup-node@v3.8.1
+        uses: actions/setup-node@v3.8.2
         with:
           node-version: "18.2.0"
       - name: Version
