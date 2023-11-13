@@ -2,21 +2,13 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     ":dependencyDashboard",
-    ":enablePreCommit"
+    ":enablePreCommit",
+    "docker:pinDigests"
   ],
   "kubernetes": {
     "fileMatch": [
       "\\.ya?ml$"
     ]
   },
-  "bumpVersion": "patch",
-  "rebaseWhen": "behind-base-branch",
-  "packageRules": [
-    {
-      "matchCategories": [
-        "docker"
-      ],
-      "pinDigests": true
-    }
-  ]
+  "rebaseWhen": "behind-base-branch"
 }
