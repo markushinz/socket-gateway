@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   nginx-service:
-    image: nginx:1.25.2-alpine
+    image: nginx:1.25.2-alpine@sha256:7272a6e0f728e95c8641d219676605f3b9e4759abbdb6b39e5bbd194ce55ebaf
     restart: always
     ports:
       # - 80:80
@@ -42,5 +42,5 @@ services:
       - ./innerLayer.crt:/mnt/innerLayer.crt
       - ./innerLayer.key:/mnt/innerLayer.key
   example-server-service:
-    image: markushinz/example-server:v2.2.58
+    image: markushinz/example-server:v2.2.58@sha256:122b9947c28beb655386dad5954ee22a08ac730903956fa607b8e5854143a9e9
     restart: always
