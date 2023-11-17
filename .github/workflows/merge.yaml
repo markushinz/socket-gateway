@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          number=$(GITHUB_TOKEN="${{ secrets.TU_TOKEN }}" gh pr list --repo ${{ github.repository }} --limit 1 --author app/renovate --json number --jq '.[0].number')
-          [[ -n "${number}" ]] && GITHUB_TOKEN="${{ secrets.TU_TOKEN }}" gh pr merge --repo ${{ github.repository }} --auto --squash "${number}" || exit 0
+          number=$(gh pr list --repo ${{ github.repository }} --limit 1 --author app/renovate --json number --jq '.[0].number')
+          [[ -n "${number}" ]] && gh pr merge --repo ${{ github.repository }} --auto --squash "${number}" || exit 0
