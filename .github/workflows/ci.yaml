@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4.0.0
         with:
-          node-version: "18.2.0"
+          node-version: 16
       - name: Version
         uses: markushinz/actions/version@v1.1.9
         with:
