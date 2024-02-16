@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   nginx-service:
-    image: nginx:1.25.4-alpine@sha256:6bc13a3abb0699ce8b5c131d5a2d847df121192b7fe05fb5063fd7a51ae4bead
+    image: nginx:1.25.4-alpine@sha256:c84cfc41ddfde5c3590458e34a2837958d757d28441c3678a37c953e7b940a05
     restart: always
     ports:
       # - 80:80
