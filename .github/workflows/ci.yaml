@@ -15,13 +15,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: pre-commit
-        uses: markushinz/actions/pre-commit@v1.1.9
+        uses: markushinz/actions/pre-commit@v1.1.10
       - name: Set up Node.js
         uses: actions/setup-node@v4.0.2
         with:
           node-version: 16
       - name: Version
-        uses: markushinz/actions/version@v1.1.9
+        uses: markushinz/actions/version@v1.1.10
         with:
           minimum_version_command: cat version.txt
       - name: Lint, Test, Build and Pack
