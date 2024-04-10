@@ -42,5 +42,5 @@ services:
       - ./innerLayer.crt:/mnt/innerLayer.crt
       - ./innerLayer.key:/mnt/innerLayer.key
   example-server-service:
-    image: markushinz/example-server:v2.2.87@sha256:4fa440da0590460f667e1a065af25a1ee604801a07fe9c827b8022c642f6cde0
+    image: markushinz/example-server:v2.2.88@sha256:e15ebbca5671594bc84aecab7445d3807b6f479a603be8a399a547f778fbced0
     restart: always
